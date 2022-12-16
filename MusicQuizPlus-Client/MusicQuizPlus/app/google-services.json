@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "527230771909",
+    "project_id": "musicquizplus",
+    "storage_bucket": "musicquizplus.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:527230771909:android:b79dc632d8f79229fe86ac",
+        "android_client_info": {
+          "package_name": "com.example.musicquizplus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "527230771909-1jap9dm602ikqbg1qekd5f8p6si98jpi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.musicquizplus",
+            "certificate_hash": "d2e828d9142df43a5893e1925a9934453aab0fa7"
+          }
+        },
+        {
+          "client_id": "527230771909-8rbaqpq55trns8aj15s46522iticgga7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPV49ZwA2I6IzKIv08dE2tmOcNm1jnVhM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "527230771909-8rbaqpq55trns8aj15s46522iticgga7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
