@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "527230771909",
+    "firebase_url": "https://musicquizplus-default-rtdb.firebaseio.com",
     "project_id": "musicquizplus",
     "storage_bucket": "musicquizplus.appspot.com"
   },
