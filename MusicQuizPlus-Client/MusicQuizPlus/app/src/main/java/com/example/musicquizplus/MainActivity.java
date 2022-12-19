@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
-                        .setServerClientId("527230771909-cj8hltj5s56ki2eckni63k4t7hupran7.apps.googleusercontent.com")
+                        .setServerClientId(getString(R.string.SERVER_CLIENT_ID))
                         // Show all accounts on the device.
                         .setFilterByAuthorizedAccounts(false)
                         .build())
