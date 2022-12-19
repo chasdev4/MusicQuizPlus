@@ -9,7 +9,6 @@ import android.os.Bundle;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.BeginSignInResult;
 import com.google.android.gms.auth.api.identity.Identity;
-import com.google.android.gms.auth.api.identity.SignInClient;
 import com.google.android.gms.auth.api.identity.SignInCredential;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -34,21 +33,23 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.musicquizplus.databinding.ActivityMainBinding;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
+import service.FirebaseService;
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    private FirebaseFirestore db;
     private GoogleSignIn googleSignIn;
     private static final int REQ_ONE_TAP = 2;
     Button signInWithGoogleButton;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         googleSignIn = new GoogleSignIn();
+        db = FirebaseFirestore.getInstance();
 
         // Find the view of the button and set the on click listener to begin signing in
         signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
@@ -147,8 +149,7 @@ public class MainActivity extends AppCompatActivity {
                     SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
-                        // Got an ID token from Google. Use it to authenticate
-                        // with your backend.
+                        // Got an ID token from Google.
                         Log.d(TAG, "Got ID token.");
 
                         // With the Google ID token, exchange it for a Firebase credential,
@@ -162,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
                                             FirebaseUser user = googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(user, db);
                                             updateUI(user);
                                         } else {
                                             // If sign in fails, display a message to the user.
