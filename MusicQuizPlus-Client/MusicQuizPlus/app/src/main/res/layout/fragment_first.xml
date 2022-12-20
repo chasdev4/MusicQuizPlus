@@ -16,6 +16,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <include
+        layout="@layout/button_sign_in_with_google"/>
+
     <Button
         android:id="@+id/button_first"
         android:layout_width="wrap_content"

@@ -1,11 +1,28 @@
 package com.example.musicquizplus;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
 
+import com.google.android.gms.auth.api.identity.BeginSignInRequest;
+import com.google.android.gms.auth.api.identity.BeginSignInResult;
+import com.google.android.gms.auth.api.identity.Identity;
+import com.google.android.gms.auth.api.identity.SignInCredential;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -14,14 +31,29 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.musicquizplus.databinding.ActivityMainBinding;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+
+import model.GoogleSignIn;
+import service.FirebaseService;
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+
+    private FirebaseFirestore db;
+    private GoogleSignIn googleSignIn;
+    private static final int REQ_ONE_TAP = 2;
+    Button signInWithGoogleButton;
+    private boolean showOneTapUI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +75,123 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+
+        googleSignIn = new GoogleSignIn();
+        db = FirebaseFirestore.getInstance();
+
+        // Find the view of the button and set the on click listener to begin signing in
+        signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                signInWithGoogle();
+            }
+        });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = googleSignIn.getAuth().getCurrentUser();
+        updateUI(currentUser);
+    }
+
+    private void updateUI(FirebaseUser currentUser) {
+        // TODO: Update the state of entire app depending if the user is logged in or not
+    }
+
+    private void signInWithGoogle() {
+        // Configuration of Google Sign IN
+        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
+        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
+                .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                        .setSupported(true)
+                        // Your server's client ID, not your Android client ID.
+                        .setServerClientId(getString(R.string.SERVER_CLIENT_ID))
+                        // Show all accounts on the device.
+                        .setFilterByAuthorizedAccounts(false)
+                        .build())
+                .build());
+
+        // Begin the Sign In Request
+        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
+                .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
+                    @Override
+                    public void onSuccess(BeginSignInResult result) {
+                        try {
+                            startIntentSenderForResult(
+                                    result.getPendingIntent().getIntentSender(), REQ_ONE_TAP,
+                                    null, 0, 0, 0);
+                        } catch (IntentSender.SendIntentException e) {
+                            Log.e(TAG, "Couldn't start One Tap UI: " + e.getLocalizedMessage());
+                        }
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // No Google Accounts found. Just continue presenting the signed-out UI.
+                        Log.d(TAG, e.getLocalizedMessage());
+                    }
+                });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Check the request code
+        switch (requestCode) {
+            case REQ_ONE_TAP:
+                try {
+                    // Create an account with a Google ID token
+                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
+                    String idToken = credential.getGoogleIdToken();
+                    if (idToken != null) {
+                        // Got an ID token from Google.
+                        Log.d(TAG, "Got ID token.");
+
+                        // With the Google ID token, exchange it for a Firebase credential,
+                        // and authenticate with Firebase using the Firebase credential
+                        AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
+                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
+                                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        if (task.isSuccessful()) {
+                                            // Sign in success, update UI with the signed-in user's information
+                                            Log.d(TAG, "signInWithCredential:success");
+                                            FirebaseUser user = googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(user, db);
+                                            updateUI(user);
+                                        } else {
+                                            // If sign in fails, display a message to the user.
+                                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                                            updateUI(null);
+                                        }
+                                    }
+                                });
+                    }
+                } catch (ApiException e) {
+                    switch (e.getStatusCode()) {
+                        case CommonStatusCodes.CANCELED:
+                            Log.d(TAG, "One-tap dialog was closed.");
+                            // Don't re-prompt the user.
+                            showOneTapUI = false;
+                            break;
+                        case CommonStatusCodes.NETWORK_ERROR:
+                            Log.d(TAG, "One-tap encountered a network error.");
+                            // Try again or just ignore.
+                            break;
+                        default:
+                            Log.d(TAG, "Couldn't get credential from result."
+                                    + e.getLocalizedMessage());
+                            break;
+                    }
+                }
+                break;
+        }
     }
 
     @Override

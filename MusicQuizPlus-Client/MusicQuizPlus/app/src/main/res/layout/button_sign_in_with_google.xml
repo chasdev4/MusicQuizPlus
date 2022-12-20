@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+        android:id="@+id/sign_in_with_google_button"
+        android:backgroundTint="@android:color/white"
+        android:text="@string/common_signin_button_text_long"
+        android:textAllCaps="false"
+        android:textColor="@color/common_google_signin_btn_text_light"
+        app:icon="@drawable/googleg_standard_color_18"
+        app:iconTintMode="multiply"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
