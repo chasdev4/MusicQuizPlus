@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    //Stock Colors Used In Stock Theme
+    //These colors can be deleted once our theme is implemented with our custom colors
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -7,4 +10,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    //Music Quiz Plus Specific Colors
+    <color name="mqWhite">#FFFFFF</color>
+    <color name="mqRed">#F2055C</color>
+    <color name="mqBlue">#2D87FD</color>
+    <color name="mqPurple1">#581AB0</color>
+    <color name="mqPurple2">#2B1B6B</color>
+    <color name="mqPurple3">#231559</color>
+    <color name="mqEasy">#8FFF00</color>
+    <color name="mqMedium">#FFC700</color>
+    <color name="mqHard">#FF3D00</color>
+    <color name="spotifyGreen">#1ED760</color>
+
 </resources>
