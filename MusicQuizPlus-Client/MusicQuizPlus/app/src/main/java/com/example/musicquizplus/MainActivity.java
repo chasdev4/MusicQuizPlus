@@ -35,7 +35,9 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.DatabaseReference;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    private FirebaseFirestore db;
+    DatabaseReference db;
+    private FirebaseFirestore firestore;
     private GoogleSignIn googleSignIn;
     private static final int REQ_ONE_TAP = 2;
     Button signInWithGoogleButton;
@@ -77,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         googleSignIn = new GoogleSignIn();
-        db = FirebaseFirestore.getInstance();
+        firestore = FirebaseFirestore.getInstance();
+        db = FirebaseDatabase.getInstance().getReference();
 
         // Find the view of the button and set the on click listener to begin signing in
         signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
@@ -163,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
                                             FirebaseUser user = googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(user, db);
+                                            FirebaseService.createUser(user, firestore, db);
                                             updateUI(user);
                                         } else {
                                             // If sign in fails, display a message to the user.
