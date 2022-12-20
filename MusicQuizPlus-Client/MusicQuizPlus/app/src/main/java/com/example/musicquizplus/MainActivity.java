@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateUI(FirebaseUser currentUser) {
-        // TODO: Update the state of entire app depending if the user is logged in or not
+        // TODO: Update the state of app depending if the user is logged in or not
     }
 
     private void signInWithGoogle() {
