@@ -1,7 +1,6 @@
 package com.example.musicquizplus;
 
 import static android.content.ContentValues.TAG;
-import static android.provider.Settings.System.getString;
 
 import android.content.Intent;
 import android.content.IntentSender;
@@ -53,12 +52,12 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    DatabaseReference db;
-    private FirebaseFirestore firestore;
-    private GoogleSignIn googleSignIn;
+    private DatabaseReference _db;
+    private FirebaseFirestore _firestore;
+    private GoogleSignIn _googleSignIn;
+    private Button _signInWithGoogleButton;
+    private boolean _showOneTapUI;
     private static final int REQ_ONE_TAP = 2;
-    Button signInWithGoogleButton;
-    private boolean showOneTapUI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +89,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        googleSignIn = new GoogleSignIn();
-        firestore = FirebaseFirestore.getInstance();
-        db = FirebaseDatabase.getInstance().getReference();
+        _googleSignIn = new GoogleSignIn();
+        _firestore = FirebaseFirestore.getInstance();
+        _db = FirebaseDatabase.getInstance().getReference();
 
 
 
         // Find the view of the button and set the on click listener to begin signing in
-        signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
-        signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
+        _signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signInWithGoogle();
@@ -112,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = googleSignIn.getAuth().getCurrentUser();
+        FirebaseUser currentUser = _googleSignIn.getAuth().getCurrentUser();
         updateUI(currentUser);
     }
 
@@ -122,8 +121,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void signInWithGoogle() {
         // Configuration of Google Sign IN
-        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
+        _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
+        _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
@@ -134,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 .build());
 
         // Begin the Sign In Request
-        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
+        _googleSignIn.getOneTapClient().beginSignIn(_googleSignIn.getSignUpRequest())
                 .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
                     @Override
                     public void onSuccess(BeginSignInResult result) {
@@ -165,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             case REQ_ONE_TAP:
                 try {
                     // Create an account with a Google ID token
-                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
+                    SignInCredential credential = _googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
                         // Got an ID token from Google.
@@ -174,15 +173,15 @@ public class MainActivity extends AppCompatActivity {
                         // With the Google ID token, exchange it for a Firebase credential,
                         // and authenticate with Firebase using the Firebase credential
                         AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
+                        _googleSignIn.getAuth().signInWithCredential(firebaseCredential)
                                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                     @Override
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            FirebaseUser user = googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(user, firestore, db);
+                                            FirebaseUser user = _googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(user, _firestore, _db);
                                             updateUI(user);
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -197,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
                         case CommonStatusCodes.CANCELED:
                             Log.d(TAG, "One-tap dialog was closed.");
                             // Don't re-prompt the user.
-                            showOneTapUI = false;
+                            _showOneTapUI = false;
                             break;
                         case CommonStatusCodes.NETWORK_ERROR:
                             Log.d(TAG, "One-tap encountered a network error.");
