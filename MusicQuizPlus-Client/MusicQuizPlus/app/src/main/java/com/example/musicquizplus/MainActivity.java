@@ -1,6 +1,7 @@
 package com.example.musicquizplus;
 
 import static android.content.ContentValues.TAG;
+import static android.provider.Settings.System.getString;
 
 import android.content.Intent;
 import android.content.IntentSender;
@@ -45,6 +46,7 @@ import android.widget.Button;
 
 import model.GoogleSignIn;
 import service.FirebaseService;
+import service.SpotifyService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -76,12 +78,23 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                new Thread(new Runnable() {
+                    public void run() {
+                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+                        final short limit = 30;
+                        svc.Search("Morrissey", limit, 0);
+                    }
+                }).start();
+
             }
         });
 
         googleSignIn = new GoogleSignIn();
         firestore = FirebaseFirestore.getInstance();
         db = FirebaseDatabase.getInstance().getReference();
+
+
 
         // Find the view of the button and set the on click listener to begin signing in
         signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
@@ -91,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
                 signInWithGoogle();
             }
         });
+
+
     }
 
     @Override
