@@ -3,22 +3,24 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#2B1B6B">
+    android:background="#2B1B6B"
+    android:paddingStart="1dp"
+    android:paddingEnd="1dp">
 
     <ImageView
-        android:id="@+id/icon"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
+        android:id="@+id/gridViewPlaylistCover"
+        android:layout_width="225dp"
+        android:layout_height="225dp"
         android:src="@drawable/spotify_todays_hits" />
 
     <TextView
-        android:layout_below="@id/icon"
+        android:id="@+id/gridViewPlaylistName"
+        android:layout_below="@id/gridViewPlaylistCover"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/top_hits"
         android:textSize="24sp"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/white"
-        android:fontFamily="@font/concert_one"/>
+        android:textColor="@color/white" />
 
 </RelativeLayout>
