@@ -186,7 +186,6 @@ public class SearchResults {
                     artistNames,
                     artistIds));
 
-
         }
         Log.d(TAG, "Tracks initialized.");
     }

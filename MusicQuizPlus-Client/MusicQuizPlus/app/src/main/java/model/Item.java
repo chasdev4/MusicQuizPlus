@@ -1,8 +1,7 @@
 package model;
 
-import java.net.URI;
-
-import javax.annotation.Nullable;
+// SUMMARY
+// The Item model is an abstract class that is the parent and a framework for item models
 
 public abstract class Item {
     private final String _id;  // Spotify ID
@@ -15,19 +14,15 @@ public abstract class Item {
         _photoUrl = photoUrl;
     }
 
-    public String getId() {
+    public String get_id() {
         return _id;
     }
 
-    public String getName() {
+    public String get_name() {
         return _name;
     }
 
-    public PhotoUrl getPhotoUrl(short index) {
-        return _photoUrl[index];
-    }
-
-    public PhotoUrl getPhotoUrl() {
-        return _photoUrl[0];
+    public PhotoUrl[] get_photoUrl() {
+        return _photoUrl;
     }
 }

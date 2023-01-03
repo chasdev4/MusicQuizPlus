@@ -3,6 +3,9 @@ package model.item;
 import model.Item;
 import model.PhotoUrl;
 
+// SUMMARY
+// The Album item model stores album information
+
 public class Album extends Item {
 
     private final String[] _artistNames;

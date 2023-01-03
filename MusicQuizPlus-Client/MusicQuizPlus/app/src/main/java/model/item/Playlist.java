@@ -3,6 +3,9 @@ package model.item;
 import model.Item;
 import model.PhotoUrl;
 
+// SUMMARY
+// The Playlist item model stores playlist information
+
 public class Playlist extends Item {
 
     private final String _owner;
