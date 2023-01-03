@@ -35,12 +35,11 @@ public class SpotifyService {
             String json = response.body().string();
 
             Gson gson = new Gson();
-            TypeToken<SearchResults> mapType = new TypeToken<SearchResults>(){};
 
             JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
             searchResults = new SearchResults(jsonObject, gson);
 
-            return null;
+            return searchResults;
 
 
         } catch (IOException e) {
