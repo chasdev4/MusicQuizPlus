@@ -1,7 +1,5 @@
 package model;
 
-import static android.content.ContentValues.TAG;
-
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -26,6 +24,8 @@ public class SearchResults {
     List<Playlist> playlists;
     List<Track> tracks;
 
+    final private String TAG = "SearchResults.java";
+
     public SearchResults(JsonObject json, Gson gson) {
         this.gson = gson;
         Init(json);
@@ -34,6 +34,7 @@ public class SearchResults {
     private void Init(JsonObject json) {
         InitAlbums(json);
         InitArtists(json);
+        InitPlaylists(json);
     }
 
     private void InitAlbums(JsonObject json) {
@@ -67,6 +68,7 @@ public class SearchResults {
                     jsonObject.getAsJsonObject().get("name").getAsString(),
                     photoUrls, artistNames, artistIds));
         }
+        Log.d(TAG, "Albums initialized.");
     }
 
     private void InitArtists(JsonObject json) {
@@ -74,7 +76,6 @@ public class SearchResults {
 
         JsonArray jsonArray = json.getAsJsonObject("artists").getAsJsonArray("items");
 
-        // Loop through and store all the albums
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonObject = jsonArray.get(i).getAsJsonObject().getAsJsonObject("data");
 
@@ -90,9 +91,50 @@ public class SearchResults {
             artists.add(new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
                     photoUrls));
-
-            Log.e("TAG", ".......................................");
         }
+        Log.d(TAG, "Artists initialized.");
+    }
+
+    private void InitPlaylists(JsonObject json) {
+        playlists = new ArrayList<>();
+
+        JsonArray jsonArray = json.getAsJsonObject("playlists").getAsJsonArray("items");
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject().getAsJsonObject("data");
+
+            JsonArray imageJsonArray = jsonObject.getAsJsonObject("images").getAsJsonArray("items");
+            PhotoUrl[] photoUrls = new PhotoUrl[1];
+
+            JsonArray sourcesJsonArray = imageJsonArray.get(0).getAsJsonObject().getAsJsonArray("sources");
+
+
+            double width =
+                    (sourcesJsonArray.get(0).getAsJsonObject().get("width").isJsonNull())
+                            ? 0
+                            : sourcesJsonArray.get(0).getAsJsonObject().get("width").getAsDouble();
+
+
+            double height =
+                    (sourcesJsonArray.get(0).getAsJsonObject().get("height").isJsonNull())
+                            ? 0
+                            : sourcesJsonArray.get(0).getAsJsonObject().get("height").getAsDouble();
+
+
+            photoUrls[0] = new PhotoUrl(
+                    URI.create(
+                            sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString()
+                    ), width, height);
+
+
+            playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
+                    jsonObject.get("name").getAsString(),
+                    photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
+                    jsonObject.get("description").getAsString()));
+
+
+        }
+        Log.d(TAG, "Playlists initialized.");
     }
 
 }
