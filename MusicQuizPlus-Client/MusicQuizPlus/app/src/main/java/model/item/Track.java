@@ -1,5 +1,7 @@
 package model.item;
 
+import java.util.List;
+
 import model.Item;
 import model.PhotoUrl;
 
@@ -10,11 +12,11 @@ public class Track extends Item {
 
     private final String _albumName;
     private final String _albumId;
-    private final String[] _artistNames;
-    private final String[] _artistIds;
+    private final List<String> _artistNames;
+    private final List<String> _artistIds;
 
-    public Track(String id, String name, PhotoUrl[] photoUrl, String albumName, String albumId,
-                 String[] artistNames, String[] artistIds) {
+    public Track(String id, String name, List<PhotoUrl> photoUrl, String albumName, String albumId,
+                 List<String> artistNames, List<String> artistIds) {
         super(id, name, photoUrl);
         _albumName = albumName;
         _albumId = albumId;
@@ -30,11 +32,11 @@ public class Track extends Item {
         return _albumId;
     }
 
-    public String[] get_artistNames() {
+    public List<String> get_artistNames() {
         return _artistNames;
     }
 
-    public String[] get_artistIds() {
+    public List<String> get_artistIds() {
         return _artistIds;
     }
 }

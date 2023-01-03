@@ -44,6 +44,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
+import model.SearchResults;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -82,7 +83,25 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
                         final short limit = 30;
-                        svc.Search("Morrissey", limit, 0);
+                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
+
+                        //#region Temporary Method to push Search Results to Realtime DB.
+//                        for (Artist artist : searchResults.getArtists()) {
+//                            _db.child("sample_artists").child(artist.get_id()).setValue(artist);
+//                        }
+//                        for (Album album : searchResults.getAlbums()) {
+//                            _db.child("sample_albums").child(album.get_id()).setValue(album);
+//                        }
+//                        for (Playlist playlist : searchResults.getPlaylists()) {
+//                            _db.child("sample_playlists").child(playlist.get_id()).setValue(playlist);
+//                        }
+//                        for (Track track : searchResults.getTracks()) {
+//                            _db.child("sample_tracks").child(track.get_id()).setValue(track);
+//                        }
+//
+//                        Log.d("TEMP", "Goodie goodie");
+                        //#endregion
+
                     }
                 }).start();
 

@@ -3,12 +3,15 @@ package model;
 // SUMMARY
 // The Item model is an abstract class that is the parent and a framework for item models
 
+import java.util.List;
+
 public abstract class Item {
     private final String _id;  // Spotify ID
     private final String _name;
-    private PhotoUrl[] _photoUrl;
 
-    public Item(String id, String name, PhotoUrl[] photoUrl) {
+    private List<PhotoUrl> _photoUrl;
+
+    public Item(String id, String name, List<PhotoUrl> photoUrl) {
         _id = id;
         _name = name;
         _photoUrl = photoUrl;
@@ -22,7 +25,7 @@ public abstract class Item {
         return _name;
     }
 
-    public PhotoUrl[] get_photoUrl() {
+    public List<PhotoUrl> get_photoUrl() {
         return _photoUrl;
     }
 }

@@ -1,5 +1,7 @@
 package model.item;
 
+import java.util.List;
+
 import model.Item;
 import model.PhotoUrl;
 
@@ -12,7 +14,7 @@ public class Playlist extends Item {
 
     private final String _description;
 
-    public Playlist(String id, String name, PhotoUrl[] photoUrl, String owner, String description) {
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         super(id, name, photoUrl);
         _owner = owner;
         _description = description;
