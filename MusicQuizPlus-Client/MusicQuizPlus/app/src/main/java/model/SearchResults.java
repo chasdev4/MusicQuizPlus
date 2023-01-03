@@ -35,6 +35,7 @@ public class SearchResults {
         InitAlbums(json);
         InitArtists(json);
         InitPlaylists(json);
+        InitTracks(json);
     }
 
     private void InitAlbums(JsonObject json) {
@@ -131,6 +132,47 @@ public class SearchResults {
                     jsonObject.get("name").getAsString(),
                     photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
                     jsonObject.get("description").getAsString()));
+
+
+        }
+        Log.d(TAG, "Playlists initialized.");
+    }
+    private void InitTracks(JsonObject json) {
+        tracks = new ArrayList<>();
+
+        JsonArray jsonArray = json.getAsJsonObject("tracks").getAsJsonArray("items");
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject().getAsJsonObject("data");
+
+            JsonObject albumOfTrack = jsonObject.getAsJsonObject("albumOfTrack");
+            JsonArray imageJsonArray = albumOfTrack.getAsJsonObject("coverArt").getAsJsonArray("sources");
+            PhotoUrl[] photoUrls = new PhotoUrl[imageJsonArray.size()];
+            for (int j = 0; j < imageJsonArray.size(); j++) {
+                photoUrls[j] = new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
+                        imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
+                        imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble());
+            }
+
+
+            JsonArray artistJsonArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
+            String[] artistNames = new String[artistJsonArray.size()];
+            String[] artistIds = new String[artistJsonArray.size()];
+            for (int j = 0; j < artistJsonArray.size(); j++) {
+                artistNames[j] = artistJsonArray.get(j).getAsJsonObject().get("profile")
+                        .getAsJsonObject().get("name").getAsString();
+                artistIds[j] = artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString();
+            }
+
+
+            tracks.add(new Track(
+                    jsonObject.get("uri").getAsString(),
+                    jsonObject.get("name").getAsString(),
+                    photoUrls,
+                    albumOfTrack.get("name").getAsString(),
+                    albumOfTrack.get("uri").getAsString(),
+                    artistNames,
+                    artistIds);
 
 
         }
