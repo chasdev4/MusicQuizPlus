@@ -29,8 +29,9 @@
         android:layout_marginBottom="-15dp"
         android:background="@drawable/avatar_level_background"
         android:text="@string/guest"
-        android:textSize="14sp"
+        android:textSize="15sp"
         android:textColor="@color/white"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:fontFamily="@font/titan_one"/>
 
 </RelativeLayout>
