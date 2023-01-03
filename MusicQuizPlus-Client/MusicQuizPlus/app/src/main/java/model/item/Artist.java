@@ -3,13 +3,10 @@ package model.item;
 import java.net.URI;
 
 import model.Item;
+import model.PhotoUrl;
 
 public class Artist extends Item {
-    public Artist(String id, String name, URI photoUrl) {
+    public Artist(String id, String name, PhotoUrl[] photoUrl) {
         super(id, name, photoUrl);
-    }
-
-    public Artist(Item item) {
-        super(item);
     }
 }

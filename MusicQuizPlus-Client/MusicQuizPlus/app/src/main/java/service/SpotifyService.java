@@ -1,8 +1,8 @@
 package service;
 
-import static android.provider.Settings.System.getString;
-
-import com.example.musicquizplus.R;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 
@@ -11,8 +11,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class SpotifyService {
 
@@ -23,8 +21,8 @@ public class SpotifyService {
     }
 
     public SearchResults Search(String query, short limit, int offset) {
+        SearchResults searchResults;
         OkHttpClient client = new OkHttpClient();
-
         final Request request = new Request.Builder()
                 .url("https://spotify23.p.rapidapi.com/search/?q=" + query + "&type=multi&offset=" + offset +"&limit=" + limit + "&numberOfTopResults=5")
                 .get()
@@ -32,17 +30,23 @@ public class SpotifyService {
                 .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            //System.out.println();
+        try (Response response = client.newCall(request).execute())
+        {
+            String json = response.body().string();
 
-            JSONObject json = new JSONObject(response.body().string());
+            Gson gson = new Gson();
+            TypeToken<SearchResults> mapType = new TypeToken<SearchResults>(){};
+
+            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+            searchResults = new SearchResults(jsonObject, gson);
+
+            return null;
+
 
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
 
-        return new SearchResults();
+        return null;
     }
 }

@@ -2,21 +2,17 @@ package model;
 
 import java.net.URI;
 
+import javax.annotation.Nullable;
+
 public abstract class Item {
     private final String _id;  // Spotify ID
     private final String _name;
-    private final URI _photoUrl;
+    private PhotoUrl[] _photoUrl;
 
-    public Item(String id, String name, URI photoUrl) {
+    public Item(String id, String name, PhotoUrl[] photoUrl) {
         _id = id;
         _name = name;
         _photoUrl = photoUrl;
-    }
-
-    public Item (Item item) {
-        _id = item.getId();
-        _name = item.getName();
-        _photoUrl = item.getPhotoUrl();
     }
 
     public String getId() {
@@ -27,7 +23,11 @@ public abstract class Item {
         return _name;
     }
 
-    public URI getPhotoUrl() {
-        return _photoUrl;
+    public PhotoUrl getPhotoUrl(short index) {
+        return _photoUrl[index];
+    }
+
+    public PhotoUrl getPhotoUrl() {
+        return _photoUrl[0];
     }
 }

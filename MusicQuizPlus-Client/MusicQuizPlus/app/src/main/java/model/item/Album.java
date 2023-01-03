@@ -3,14 +3,16 @@ package model.item;
 import java.net.URI;
 
 import model.Item;
+import model.PhotoUrl;
 
 public class Album extends Item {
 
-    public Album(String id, String name, URI photoUrl) {
-        super(id, name, photoUrl);
-    }
+    private final String[] _artistName;
+    private final String[] _artistId;
 
-    public Album(Item item) {
-        super(item);
+    public Album(String id, String name, PhotoUrl[] photoUrl, String[] artistName, String[] artistId) {
+        super(id, name, photoUrl);
+        _artistName = artistName;
+        _artistId = artistId;
     }
 }
