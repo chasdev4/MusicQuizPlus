@@ -1,5 +1,9 @@
 package model;
 
+import static android.content.ContentValues.TAG;
+
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -29,6 +33,7 @@ public class SearchResults {
 
     private void Init(JsonObject json) {
         InitAlbums(json);
+        InitArtists(json);
     }
 
     private void InitAlbums(JsonObject json) {
@@ -41,9 +46,9 @@ public class SearchResults {
             JsonObject jsonObject = jsonArray.get(i).getAsJsonObject().getAsJsonObject("data");
 
             JsonArray imageJsonArray = jsonObject.getAsJsonObject("coverArt").getAsJsonArray("sources");
-            PhotoUrl[] uris = new PhotoUrl[imageJsonArray.size()];
+            PhotoUrl[] photoUrls = new PhotoUrl[imageJsonArray.size()];
             for (int j = 0; j < imageJsonArray.size(); j++) {
-                uris[j] = new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
+                photoUrls[j] = new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
                         imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
                         imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble());
             }
@@ -60,7 +65,33 @@ public class SearchResults {
 
             albums.add(new Album(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    uris, artistNames, artistIds));
+                    photoUrls, artistNames, artistIds));
+        }
+    }
+
+    private void InitArtists(JsonObject json) {
+        artists = new ArrayList<>();
+
+        JsonArray jsonArray = json.getAsJsonObject("artists").getAsJsonArray("items");
+
+        // Loop through and store all the albums
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject().getAsJsonObject("data");
+
+            JsonArray imageJsonArray = jsonObject.getAsJsonObject("visuals").getAsJsonObject("avatarImage")
+                    .getAsJsonArray("sources");
+            PhotoUrl[] photoUrls = new PhotoUrl[imageJsonArray.size()];
+            for (int j = 0; j < imageJsonArray.size(); j++) {
+                photoUrls[j] = new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
+                        imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
+                        imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble());
+            }
+
+            artists.add(new Artist(jsonObject.get("uri").getAsString(),
+                    jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
+                    photoUrls));
+
+            Log.e("TAG", ".......................................");
         }
     }
 
