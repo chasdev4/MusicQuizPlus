@@ -35,25 +35,30 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.DatabaseReference;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
+import model.SearchResults;
 import service.FirebaseService;
+import service.SpotifyService;
 
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    private FirebaseFirestore db;
-    private GoogleSignIn googleSignIn;
+    private DatabaseReference _db;
+    private FirebaseFirestore _firestore;
+    private GoogleSignIn _googleSignIn;
+    private Button _signInWithGoogleButton;
+    private boolean _showOneTapUI;
     private static final int REQ_ONE_TAP = 2;
-    Button signInWithGoogleButton;
-    private boolean showOneTapUI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,38 +78,70 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+
+                new Thread(new Runnable() {
+                    public void run() {
+//                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+//                        final short limit = 30;
+//                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
+
+                        //#region Temporary Method to push Search Results to Realtime DB.
+//                        for (Artist artist : searchResults.getArtists()) {
+//                            _db.child("sample_artists").child(artist.get_id()).setValue(artist);
+//                        }
+//                        for (Album album : searchResults.getAlbums()) {
+//                            _db.child("sample_albums").child(album.get_id()).setValue(album);
+//                        }
+//                        for (Playlist playlist : searchResults.getPlaylists()) {
+//                            _db.child("sample_playlists").child(playlist.get_id()).setValue(playlist);
+//                        }
+//                        for (Track track : searchResults.getTracks()) {
+//                            _db.child("sample_tracks").child(track.get_id()).setValue(track);
+//                        }
+//
+//                        Log.d("TEMP", "Goodie goodie");
+                        //#endregion
+
+                    }
+                }).start();
+
             }
         });
 
-        googleSignIn = new GoogleSignIn();
-        db = FirebaseFirestore.getInstance();
+        _googleSignIn = new GoogleSignIn();
+        _firestore = FirebaseFirestore.getInstance();
+        _db = FirebaseDatabase.getInstance().getReference();
+
+
 
         // Find the view of the button and set the on click listener to begin signing in
-        signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
-        signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
+        _signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signInWithGoogle();
             }
         });
+
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = googleSignIn.getAuth().getCurrentUser();
+        FirebaseUser currentUser = _googleSignIn.getAuth().getCurrentUser();
         updateUI(currentUser);
     }
 
     private void updateUI(FirebaseUser currentUser) {
-        // TODO: Update the state of entire app depending if the user is logged in or not
+        // TODO: Update the state of app depending if the user is logged in or not
     }
 
     private void signInWithGoogle() {
         // Configuration of Google Sign IN
-        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
+        _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
+        _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
@@ -115,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 .build());
 
         // Begin the Sign In Request
-        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
+        _googleSignIn.getOneTapClient().beginSignIn(_googleSignIn.getSignUpRequest())
                 .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
                     @Override
                     public void onSuccess(BeginSignInResult result) {
@@ -146,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
             case REQ_ONE_TAP:
                 try {
                     // Create an account with a Google ID token
-                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
+                    SignInCredential credential = _googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
                         // Got an ID token from Google.
@@ -155,15 +192,15 @@ public class MainActivity extends AppCompatActivity {
                         // With the Google ID token, exchange it for a Firebase credential,
                         // and authenticate with Firebase using the Firebase credential
                         AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
+                        _googleSignIn.getAuth().signInWithCredential(firebaseCredential)
                                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                     @Override
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            FirebaseUser user = googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(user, db);
+                                            FirebaseUser user = _googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(user, _firestore, _db);
                                             updateUI(user);
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -178,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                         case CommonStatusCodes.CANCELED:
                             Log.d(TAG, "One-tap dialog was closed.");
                             // Don't re-prompt the user.
-                            showOneTapUI = false;
+                            _showOneTapUI = false;
                             break;
                         case CommonStatusCodes.NETWORK_ERROR:
                             Log.d(TAG, "One-tap encountered a network error.");

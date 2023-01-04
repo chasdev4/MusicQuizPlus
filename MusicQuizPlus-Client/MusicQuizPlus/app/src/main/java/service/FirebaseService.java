@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
@@ -16,15 +17,15 @@ import java.util.Map;
 
 public class FirebaseService {
 
-    public static void createUser(FirebaseUser firebaseUser, FirebaseFirestore db) {
+    public static void createUser(FirebaseUser firebaseUser, FirebaseFirestore firestore, DatabaseReference db) {
         // Create a new user with a first and last name
-        Map<String, Object> user = new HashMap<>();
-        user.put("name", firebaseUser.getDisplayName());
-        user.put("email", firebaseUser.getEmail());
-        user.put("photo_url", firebaseUser.getPhotoUrl());
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("name", firebaseUser.getDisplayName());
+        userMap.put("email", firebaseUser.getEmail());
+        userMap.put("photo_url", firebaseUser.getPhotoUrl());
 
-        db.collection("users").document(firebaseUser.getUid())
-                .set(user)
+        firestore.collection("users").document(firebaseUser.getUid())
+                .set(userMap)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -37,5 +38,12 @@ public class FirebaseService {
                         Log.w(TAG, "Error writing document", e);
                     }
                 });
+
+        userMap.clear();
+        userMap = new HashMap<>();
+        userMap.put("xp", 0);
+        userMap.put("level", 1);
+
+        db.child("users").child(firebaseUser.getUid()).setValue(userMap);
     }
 }
