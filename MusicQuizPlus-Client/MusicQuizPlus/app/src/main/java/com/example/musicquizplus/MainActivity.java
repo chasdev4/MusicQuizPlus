@@ -1,7 +1,5 @@
 package com.example.musicquizplus;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
@@ -44,9 +42,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
-import model.SearchResults;
 import service.FirebaseService;
-import service.SpotifyService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -58,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignIn _googleSignIn;
     private Button _signInWithGoogleButton;
     private boolean _showOneTapUI;
+
+    private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
 
     @Override
@@ -119,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGoogle();
+                signInWithGoogle(view);
             }
         });
 
@@ -138,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Update the state of app depending if the user is logged in or not
     }
 
-    private void signInWithGoogle() {
-        // Configuration of Google Sign IN
+    private void signInWithGoogle(View view) {
+        // Configuration of Google Sign In
         _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
         _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
@@ -168,8 +166,14 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        // TODO: (C-Feature) Take the user to a Google Sign In Form to add an account
+                        // Note: Might not work
+
+                        Snackbar.make(view, "ERROR: No accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+
                         // No Google Accounts found. Just continue presenting the signed-out UI.
-                        Log.d(TAG, e.getLocalizedMessage());
+                        Log.e(TAG, e.getLocalizedMessage());
                     }
                 });
     }
