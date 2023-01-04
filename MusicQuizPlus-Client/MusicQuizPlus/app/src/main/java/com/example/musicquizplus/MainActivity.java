@@ -81,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
-                        final short limit = 30;
-                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
+//                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+//                        final short limit = 30;
+//                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
 
                         //#region Temporary Method to push Search Results to Realtime DB.
 //                        for (Artist artist : searchResults.getArtists()) {
