@@ -9,18 +9,27 @@ import java.net.URI;
 
 public class PhotoUrl implements Serializable {
 
-    private final URI url;
+    private final URI uri;
+    private final String url;
     private final double width;
     private final double height;
 
-    public PhotoUrl(URI url, double width, double height) {
+    public PhotoUrl(URI uri, double width, double height) {
+        this.uri = uri;
+        url = uri.toString();
+        this.width = width;
+        this.height = height;
+    }
+
+    public PhotoUrl(String url, double width, double height) {
+        this.uri = URI.create(url);
         this.url = url;
         this.width = width;
         this.height = height;
     }
 
-    public URI getUrl() {
-        return url;
+    public URI getUri() {
+        return uri;
     }
 
     public double getWidth() {
@@ -29,5 +38,9 @@ public class PhotoUrl implements Serializable {
 
     public double getHeight() {
         return height;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

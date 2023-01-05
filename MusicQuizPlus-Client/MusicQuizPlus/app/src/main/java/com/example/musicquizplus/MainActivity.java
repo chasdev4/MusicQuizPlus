@@ -41,8 +41,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import model.GoogleSignIn;
+import model.PhotoUrl;
+import model.item.Album;
 import service.FirebaseService;
+import service.SpotifyService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,9 +60,12 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignIn _googleSignIn;
     private Button _signInWithGoogleButton;
     private boolean _showOneTapUI;
+    private SpotifyService _spotifyService;
 
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +88,8 @@ public class MainActivity extends AppCompatActivity {
 
 //                new Thread(new Runnable() {
 //                    public void run() {
-//                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 //                        final short limit = 30;
-//                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
+//                        SearchResults searchResults = _spotifyService.Search("Morrissey", limit, 0);
 
                         //#region Temporary Method to push Search Results to Realtime DB.
 //                        for (Artist artist : searchResults.getArtists()) {
@@ -99,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //
 //                        Log.d("TEMP", "Goodie goodie");
-                        //#endregion
-
+////                        #endregion
+//
 //                    }
 //                }).start();
 
@@ -110,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         _googleSignIn = new GoogleSignIn();
         _firestore = FirebaseFirestore.getInstance();
         _db = FirebaseDatabase.getInstance().getReference();
-
+        _spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
 
         // Find the view of the button and set the on click listener to begin signing in
@@ -137,9 +144,24 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Update the state of app depending if the user is logged in or not
         if (_user != null) {
             // User is signed in
-            _signInWithGoogleButton.setVisibility(View.GONE);
+          //  _signInWithGoogleButton.setVisibility(View.GONE);
             Log.d(TAG, _user.getDisplayName());
             Log.d(TAG, _user.getEmail());
+
+            FirebaseService.heartAlbum(_user, _db,
+                    new Album("spotify:album:3t3BbpFJiGcXl4jI5CRLLA", "Rocky IV",
+                            new ArrayList<PhotoUrl>() {{
+                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e02f4a2ccbe20d6d52f16816812",
+                                    300, 300));}},
+                            new ArrayList<String>() {
+                                {
+                                    add("Various Artists");
+                                }
+                            }, new ArrayList<String>() {
+                        {
+                            add("spotify:artist:0LyfQWJT6nXafLPZqxe9Of");
+                        }
+                    }), _spotifyService);
         } else {
             // No user is signed in
             _signInWithGoogleButton.setVisibility(View.VISIBLE);
