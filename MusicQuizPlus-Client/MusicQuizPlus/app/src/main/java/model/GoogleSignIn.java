@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.SignInClient;
 import com.google.firebase.auth.FirebaseAuth;
@@ -9,6 +11,7 @@ public class GoogleSignIn {
     private BeginSignInRequest signUpRequest;
     private final FirebaseAuth auth;
 
+    private final static String TAG = "GoogleSignIn.java";
 
     public GoogleSignIn() {
         // Initialize Firebase Auth
@@ -33,5 +36,9 @@ public class GoogleSignIn {
 
     public void setSignUpRequest(BeginSignInRequest beginSignInRequest) {
         signUpRequest = beginSignInRequest;
+    }
+
+    public void signOut() {
+        auth.signOut();
     }
 }
