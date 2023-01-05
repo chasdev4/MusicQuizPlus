@@ -166,8 +166,7 @@ public class SearchResults {
             playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString()));
-
+                    jsonObject.get("description").getAsString(), null));
 
         }
         Log.d(TAG, "Playlists initialized.");

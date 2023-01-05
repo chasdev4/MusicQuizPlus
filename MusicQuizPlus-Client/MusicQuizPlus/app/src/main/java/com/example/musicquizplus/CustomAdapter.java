@@ -1,6 +1,11 @@
 package com.example.musicquizplus;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,14 +14,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import org.w3c.dom.Text;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 
-public class CustomAdapter extends ArrayAdapter<GridViewItems> {
+import model.item.Playlist;
 
-    List<GridViewItems> items_list;
+public class CustomAdapter extends ArrayAdapter<Playlist> {
+
+    Handler mainHandler = new Handler();
+
+    List<Playlist> items_list;
     int custom_layout_id;
 
-    public CustomAdapter(@NonNull Context context, int resource, @NonNull List<GridViewItems> objects) {
+    public CustomAdapter(@NonNull Context context, int resource, @NonNull List<Playlist> objects) {
         super(context, resource, objects);
         items_list = objects;
         custom_layout_id = resource;
@@ -41,11 +56,71 @@ public class CustomAdapter extends ArrayAdapter<GridViewItems> {
         TextView textView = v.findViewById(R.id.gridViewPlaylistName);
 
         // get the item using the position param
-        GridViewItems item = items_list.get(position);
+        Playlist item = items_list.get(position);
 
-        imageView.setImageResource(item.getImage_id());
-        textView.setText(item.getText());
+        String url = item.get_url();
+        String title = item.get_name();
+        new FetchImage(url, imageView, textView, title).start();
         return v;
     }
-}
 
+    class FetchImage extends Thread{
+
+        String URL;
+        Bitmap bitmap;
+        ImageView imView;
+        TextView txView;
+        String title;
+
+        FetchImage(String URL, ImageView imView, TextView txView, String title){
+            this.URL = URL;
+            this.imView = imView;
+            this.txView = txView;
+            this.title = title;
+        }
+
+
+        public void run() {
+
+/*
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+
+                    progressDialog = new ProgressDialog(getContext());
+                    progressDialog.setMessage("Getting your pic....");
+                    progressDialog.setCancelable(true);
+                    progressDialog.show();
+                }
+            });
+*/
+
+
+
+            InputStream inputStream;
+            try {
+                inputStream = new URL(URL).openStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mainHandler.post(new Runnable() {
+                @Override
+                public void run() {
+/*
+                    if (progressDialog.isShowing()) {
+                        progressDialog.dismiss();
+                    }
+
+ */
+                    imView.setImageBitmap(bitmap);
+                    txView.setText(title);
+
+                }
+            });
+
+        }
+    }
+
+}
