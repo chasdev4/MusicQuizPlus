@@ -137,15 +137,12 @@ public class MainActivity extends AppCompatActivity {
         // TODO: Update the state of app depending if the user is logged in or not
         if (_user != null) {
             // User is signed in
-            //_signInWithGoogleButton.setVisibility(View.GONE);
+            _signInWithGoogleButton.setVisibility(View.GONE);
             Log.d(TAG, _user.getDisplayName());
             Log.d(TAG, _user.getEmail());
-
-            FirebaseService.deleteUser(_user, _firestore, _db);
-            _user = null;
         } else {
             // No user is signed in
-            //_signInWithGoogleButton.setVisibility(View.VISIBLE);
+            _signInWithGoogleButton.setVisibility(View.VISIBLE);
         }
     }
 
