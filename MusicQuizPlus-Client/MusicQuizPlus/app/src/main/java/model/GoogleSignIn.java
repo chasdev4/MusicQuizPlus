@@ -7,7 +7,8 @@ import com.google.firebase.auth.FirebaseAuth;
 public class GoogleSignIn {
     private SignInClient oneTapClient;
     private BeginSignInRequest signUpRequest;
-    private FirebaseAuth auth;
+    private final FirebaseAuth auth;
+
 
     public GoogleSignIn() {
         // Initialize Firebase Auth

@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseReference _db;
     private FirebaseFirestore _firestore;
+    private FirebaseUser _user;
     private GoogleSignIn _googleSignIn;
     private Button _signInWithGoogleButton;
     private boolean _showOneTapUI;
@@ -77,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-                new Thread(new Runnable() {
-                    public void run() {
+//                new Thread(new Runnable() {
+//                    public void run() {
 //                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 //                        final short limit = 30;
 //                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
@@ -100,8 +101,8 @@ public class MainActivity extends AppCompatActivity {
 //                        Log.d("TEMP", "Goodie goodie");
                         //#endregion
 
-                    }
-                }).start();
+//                    }
+//                }).start();
 
             }
         });
@@ -128,12 +129,24 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = _googleSignIn.getAuth().getCurrentUser();
-        updateUI(currentUser);
+        _user = _googleSignIn.getAuth().getCurrentUser();
+        updateUI();
     }
 
-    private void updateUI(FirebaseUser currentUser) {
+    private void updateUI() {
         // TODO: Update the state of app depending if the user is logged in or not
+        if (_user != null) {
+            // User is signed in
+            //_signInWithGoogleButton.setVisibility(View.GONE);
+            Log.d(TAG, _user.getDisplayName());
+            Log.d(TAG, _user.getEmail());
+
+            FirebaseService.deleteUser(_user, _firestore, _db);
+            _user = null;
+        } else {
+            // No user is signed in
+            //_signInWithGoogleButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private void signInWithGoogle(View view) {
@@ -167,9 +180,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         // TODO: (C-Feature) Take the user to a Google Sign In Form to add an account
-                        // Note: Might not work
+                        // Note: Might not work or be worth the effort...
 
-                        Snackbar.make(view, "ERROR: No accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
+                        Snackbar.make(view, "ERROR: No Google accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
 
                         // No Google Accounts found. Just continue presenting the signed-out UI.
@@ -203,13 +216,13 @@ public class MainActivity extends AppCompatActivity {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            FirebaseUser user = _googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(user, _firestore, _db);
-                                            updateUI(user);
+                                            _user = _googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(_user, _firestore, _db);
+                                            updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.
                                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                                            updateUI(null);
+                                            updateUI();
                                         }
                                     }
                                 });
