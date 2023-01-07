@@ -26,14 +26,6 @@ public class PlaylistsView extends AppCompatActivity {
         setContentView(R.layout.activity_playlists_view);
 
         List<Playlist> itemsList = new ArrayList<>();
-        /*
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-        itemsList.add(new GridViewItems(R.drawable.spotify_todays_hits, "Today's Top Hits"));
-         */
 
         GridView gridView = findViewById(R.id.playlistGridView);
         CustomAdapter customAdapter = new CustomAdapter(this, R.layout.gridview_contents, itemsList);

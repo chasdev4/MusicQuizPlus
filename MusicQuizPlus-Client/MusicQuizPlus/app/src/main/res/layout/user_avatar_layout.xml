@@ -1,36 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="150dp"
+    android:layout_height="150dp">
+
 
     <ImageView
         android:id="@+id/blueStarBackground"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/star_background" />
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:src="@drawable/filled_star"
+        android:rotation="15"
+        android:layout_marginTop="-3dp" />
 
-    <ImageView
-        android:id="@+id/userCustomAvatar"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/outlineOfCustomAvatar"
         android:layout_width="75dp"
         android:layout_height="75dp"
-        android:src="@drawable/guest_account"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="30dp"
-        />
+        app:cardCornerRadius="100dp"
+        android:layout_centerInParent="true"
+        >
+
+        <ImageView
+            android:id="@+id/userCustomAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/default_avatar" />
+
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/userLevel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/userCustomAvatar"
-        android:layout_alignBottom="@+id/userCustomAvatar"
+        android:layout_alignEnd="@+id/outlineOfCustomAvatar"
+        android:layout_alignBottom="@+id/outlineOfCustomAvatar"
         android:layout_marginEnd="-10dp"
-        android:layout_marginBottom="-5dp"
+        android:layout_marginBottom="-12dp"
         android:background="@drawable/avatar_level_background"
         android:text="@string/guest"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textColor="@color/white"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:elevation="10dp"
+        android:fontFamily="@font/titan_one"
+        />
 
 </RelativeLayout>
