@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.item.Album;
+import model.item.Artist;
 
 public class FirebaseService {
 
@@ -89,10 +90,12 @@ public class FirebaseService {
         return result[0];
     }
 
-    public static void heartAlbum(FirebaseUser firebaseUser, DatabaseReference db, Album album, SpotifyService spotifyService) {
+    public static void heartAlbum(FirebaseUser firebaseUser, DatabaseReference db, Album album,
+                                  SpotifyService spotifyService) {
         final boolean[] artistExists = {false};
+        String artistId = album.get_artistIds().get(0);
 
-        db.child("artists").child(album.get_artistIds().get(0)).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        db.child("artists").child(artistId).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
                 if (!task.isSuccessful()) {
@@ -108,9 +111,13 @@ public class FirebaseService {
 
         if (!artistExists[0])
         {
-            db.child("albums").setValue(album);
+           // db.child("albums").setValue(album);
 
-            // TODO: Save the discography?
+
+            Artist artist = spotifyService.ArtistOverview(artistId);
+
+            Log.d(TAG, "New artist");
+
         }
 
 
@@ -118,5 +125,9 @@ public class FirebaseService {
 
         userRef.child("albums").child(album.get_id()).setValue(album.get_artistIds().get(0));
         userRef.child("artists").child(album.get_artistIds().get(0)).setValue(album.get_artistIds().get(0));
+    }
+
+    public static void addOrIgnoreAlbum(Album album) {
+
     }
 }

@@ -1,12 +1,6 @@
 package model;
 
-enum ExternalLinkType {
-    FACEBOOK,
-    TWITTER,
-    INSTAGRAM,
-    WIKIPEDIA,
-    INVALID
-}
+import model.type.ExternalLinkType;
 
 public class ExternalLink {
     private ExternalLinkType type;
@@ -19,7 +13,8 @@ public class ExternalLink {
 
     private ExternalLinkType validateType(String externalLinkType) {
         for (ExternalLinkType type : ExternalLinkType.values()) {
-            if (type.name() == externalLinkType) {
+            String what = type.toString();
+            if (externalLinkType.equals(type.toString())) {
                 return type;
             }
         }

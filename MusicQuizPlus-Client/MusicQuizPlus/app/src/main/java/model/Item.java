@@ -8,7 +8,6 @@ import java.util.List;
 public abstract class Item {
     private final String _id;  // Spotify ID
     private final String _name;
-
     private List<PhotoUrl> _photoUrl;
 
     public Item(String id, String name, List<PhotoUrl> photoUrl) {

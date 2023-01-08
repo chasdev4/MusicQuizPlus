@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.item.Album;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -148,20 +149,27 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, _user.getDisplayName());
             Log.d(TAG, _user.getEmail());
 
-            FirebaseService.heartAlbum(_user, _db,
-                    new Album("spotify:album:3t3BbpFJiGcXl4jI5CRLLA", "Rocky IV",
-                            new ArrayList<PhotoUrl>() {{
-                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e02f4a2ccbe20d6d52f16816812",
-                                    300, 300));}},
-                            new ArrayList<String>() {
+            new Thread(new Runnable() {
+                public void run() {
+                    FirebaseService.heartAlbum(_user, _db,
+                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m", "Nirvana",
+                                    new ArrayList<PhotoUrl>() {{
+                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
+                                                300, 300));}},
+                                    new ArrayList<String>() {
+                                        {
+                                            add("INNA");
+                                        }
+                                    }, new ArrayList<String>() {
                                 {
-                                    add("Various Artists");
+                                    add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
                                 }
-                            }, new ArrayList<String>() {
-                        {
-                            add("spotify:artist:0LyfQWJT6nXafLPZqxe9Of");
-                        }
-                    }), _spotifyService);
+                            }, AlbumType.COMPILATION), _spotifyService);
+                }
+            }).start();
+
+
+
         } else {
             // No user is signed in
             _signInWithGoogleButton.setVisibility(View.VISIBLE);

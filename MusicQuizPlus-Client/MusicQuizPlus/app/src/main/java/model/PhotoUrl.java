@@ -8,28 +8,29 @@ import java.net.URI;
 // Images retrieved from the API that have null width or height will be set to 0.
 
 public class PhotoUrl implements Serializable {
-
-    private final URI uri;
     private final String url;
-    private final double width;
-    private final double height;
-
-    public PhotoUrl(URI uri, double width, double height) {
-        this.uri = uri;
-        url = uri.toString();
-        this.width = width;
-        this.height = height;
-    }
+    private double width;
+    private double height;
 
     public PhotoUrl(String url, double width, double height) {
-        this.uri = URI.create(url);
         this.url = url;
         this.width = width;
         this.height = height;
     }
 
-    public URI getUri() {
-        return uri;
+    public PhotoUrl(String url, String width, String height) {
+        this.url = url;
+        validateDimensions(width, height);
+    }
+
+    private void validateDimensions(String strWidth, String strHeight) {
+        if (strWidth == null || strHeight == null) {
+            width = 0;
+            height = 0;
+            return;
+        }
+        width = Double.parseDouble(strWidth);
+        height = Double.parseDouble(strHeight);
     }
 
     public double getWidth() {
