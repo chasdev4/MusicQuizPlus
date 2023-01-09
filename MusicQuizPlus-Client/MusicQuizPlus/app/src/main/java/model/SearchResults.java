@@ -27,7 +27,12 @@ public class SearchResults {
     private List<Playlist> playlists;
     private List<Track> tracks;
 
-    final private String TAG = "SearchResults.java";
+    final private static String TAG = "SearchResults.java";
+//    final private List<String> empty = new ArrayList<>() {
+//        {
+//            add("NULL");
+//        }
+//    };
 
     public SearchResults(JsonObject json, Gson gson) {
         this.gson = gson;
@@ -89,7 +94,7 @@ public class SearchResults {
             // Add to collection
             albums.add(new Album(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED));
+                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null));
         }
         Log.d(TAG, "Albums initialized.");
     }
@@ -183,22 +188,10 @@ public class SearchResults {
             // JsonObject to retrieve album information, image array is nested inside.
             JsonObject albumOfTrack = jsonObject.getAsJsonObject("albumOfTrack");
 
-            // Create an inner loop to get preview images
-            JsonArray imageJsonArray = albumOfTrack.getAsJsonObject("coverArt").getAsJsonArray("sources");
-            List<PhotoUrl> photoUrls = new ArrayList<>();
-            for (int j = 0; j < imageJsonArray.size(); j++) {
-                photoUrls.add(new PhotoUrl(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString(),
-                        imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
-                        imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble()));
-            }
-
             // Create an inner loop to get artists
             JsonArray artistJsonArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
-            List<String> artistNames = new ArrayList<>();
             List<String> artistIds = new ArrayList<>();
             for (int j = 0; j < artistJsonArray.size(); j++) {
-                artistNames.add(artistJsonArray.get(j).getAsJsonObject().get("profile")
-                        .getAsJsonObject().get("name").getAsString());
                 artistIds.add(artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString());
             }
 
@@ -206,10 +199,7 @@ public class SearchResults {
             tracks.add(new Track(
                     jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
-                    photoUrls,
-                    albumOfTrack.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
-                    artistNames,
                     artistIds));
 
         }

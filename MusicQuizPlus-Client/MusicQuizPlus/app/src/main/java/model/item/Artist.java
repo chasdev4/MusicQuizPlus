@@ -145,7 +145,9 @@ public class Artist {
                 photos,
                 artistName,
                 artistId,
-                albumType);
+                albumType,
+                null
+                );
     }
 
     public List<PhotoUrl> getPhotoUrl() {

@@ -12,12 +12,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import model.item.Album;
 import model.item.Artist;
+import model.item.Track;
 
 public class FirebaseService {
 
@@ -93,7 +98,7 @@ public class FirebaseService {
     public static void heartAlbum(FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
         final boolean[] artistExists = {false};
-        String artistId = album.get_artistIds().get(0);
+        String artistId = album.getArtistIds().get(0);
 
         db.child("artists").child(artistId).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
@@ -111,10 +116,15 @@ public class FirebaseService {
 
         if (!artistExists[0])
         {
-           // db.child("albums").setValue(album);
+            Artist artist = spotifyService.artistOverview(artistId);
 
+            saveArtist(artist, db);
 
-            Artist artist = spotifyService.ArtistOverview(artistId);
+            processAlbums(artist.getAlbums(), db, spotifyService);
+            processAlbums(artist.getSingles(), db, spotifyService);
+            processAlbums(artist.getCompilations(), db, spotifyService);
+
+            saveAlbumTracks(album, db, spotifyService);
 
             Log.d(TAG, "New artist");
 
@@ -123,11 +133,64 @@ public class FirebaseService {
 
         DatabaseReference userRef = db.child("users").child(firebaseUser.getUid());
 
-        userRef.child("albums").child(album.get_id()).setValue(album.get_artistIds().get(0));
-        userRef.child("artists").child(album.get_artistIds().get(0)).setValue(album.get_artistIds().get(0));
+        userRef.child("albums").child(album.get_id()).setValue(album.getArtistIds().get(0));
+        userRef.child("artists").child(album.getArtistIds().get(0)).setValue(album.getArtistIds().get(0));
     }
 
-    public static void addOrIgnoreAlbum(Album album) {
-
+    private static void processAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
+        for (Album a : albums) {
+            db.child("albums").child(a.get_id()).setValue(a);
+        }
     }
+
+    private static void saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
+        JsonObject jsonObject = spotifyService.albumTracks(album.get_id(), 300, 0);
+        JsonArray jsonArray = jsonObject
+                .getAsJsonObject("data")
+                .getAsJsonObject("album")
+                .getAsJsonObject("tracks")
+                .getAsJsonArray("items");
+        // List<Track> tracks = new ArrayList<>();
+
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
+            Track track = new Track(
+                    jsonTrack.get("uri").getAsString(),
+                    jsonTrack.get("name").getAsString(),
+                    album.get_id(),
+                    album.getArtistIds()
+            );
+            db.child("tracks").child(track.getId()).setValue(track);
+
+        }
+    }
+
+    private static void saveArtist(Artist artist, DatabaseReference db) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", artist.getId());
+        map.put("name", artist.getName());
+        map.put("photoUrl", artist.getPhotoUrl());
+        map.put("bio", artist.getBio());
+        map.put("externalLinks", artist.getExternalLinks());
+        map.put("latest", artist.getLatest());
+        List<String> singles = new ArrayList<>();
+        List<String> albums = new ArrayList<>();
+        List<String> compilations = new ArrayList<>();
+        for (Album a : artist.getSingles()) {
+            singles.add(a.get_id());
+        }
+        for (Album a : artist.getAlbums()) {
+            albums.add(a.get_id());
+        }
+        for (Album a : artist.getCompilations()) {
+            compilations.add(a.get_id());
+        }
+
+        map.put("singles", singles);
+        map.put("albums", albums);
+        map.put("compilations", compilations);
+
+        db.child("artists").child(artist.getId()).setValue(map);
+    }
+
 }

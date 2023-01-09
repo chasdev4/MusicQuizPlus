@@ -152,19 +152,27 @@ public class MainActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 public void run() {
                     FirebaseService.heartAlbum(_user, _db,
-                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m", "Nirvana",
+                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
+                                    "Nirvana",
                                     new ArrayList<PhotoUrl>() {{
                                         add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
-                                                300, 300));}},
+                                                300, 300));
+                                    }},
                                     new ArrayList<String>() {
                                         {
                                             add("INNA");
                                         }
-                                    }, new ArrayList<String>() {
+                                    },
+                                    new ArrayList<String>() {
+                                        {
+                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                                        }
+                                    },
+                                    AlbumType.ALBUM, new ArrayList<String>() {
                                 {
-                                    add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                                    add("NULL");
                                 }
-                            }, AlbumType.COMPILATION), _spotifyService);
+                            }), _spotifyService);
                 }
             }).start();
 
