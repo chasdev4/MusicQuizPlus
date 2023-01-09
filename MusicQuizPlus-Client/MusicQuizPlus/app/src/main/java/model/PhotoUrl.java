@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.net.URI;
 
@@ -11,6 +13,8 @@ public class PhotoUrl implements Serializable {
     private final String url;
     private double width;
     private double height;
+
+    private final static String TAG = "PhotoUrl.java";
 
     public PhotoUrl(String url, double width, double height) {
         this.url = url;
@@ -25,6 +29,7 @@ public class PhotoUrl implements Serializable {
 
     private void validateDimensions(String strWidth, String strHeight) {
         if (strWidth == null || strHeight == null) {
+            Log.w(TAG, String.format("Width or Height of image was null. Setting Width and Height to 0 for image: %s", url));
             width = 0;
             height = 0;
             return;

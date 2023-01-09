@@ -6,25 +6,25 @@ package model;
 import java.util.List;
 
 public abstract class Item {
-    private final String _id;  // Spotify ID
-    private final String _name;
-    private List<PhotoUrl> _photoUrl;
+    private final String id;  // Spotify ID
+    private final String name;
+    private List<PhotoUrl> photoUrl;
 
     public Item(String id, String name, List<PhotoUrl> photoUrl) {
-        _id = id;
-        _name = name;
-        _photoUrl = photoUrl;
+        this.id = id;
+        this.name = name;
+        this.photoUrl = photoUrl;
     }
 
-    public String get_id() {
-        return _id;
+    public String getId() {
+        return id;
     }
 
-    public String get_name() {
-        return _name;
+    public String getName() {
+        return name;
     }
 
-    public List<PhotoUrl> get_photoUrl() {
-        return _photoUrl;
+    public List<PhotoUrl> getPhotoUrl() {
+        return photoUrl;
     }
 }

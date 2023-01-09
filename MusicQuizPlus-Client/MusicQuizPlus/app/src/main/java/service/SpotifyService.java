@@ -74,7 +74,7 @@ public class SpotifyService {
             JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
             // Populate Artist model and return
-            return new Artist(jsonObject, gson);
+            return new Artist(jsonObject);
 
 
         } catch (IOException e) {

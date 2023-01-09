@@ -28,27 +28,39 @@ public class Artist {
     private List<Album> albums;
     private List<Album> compilations;
 
-    private final static String TAG = "Artist.java";
-
     public Artist(String id, String name, List<PhotoUrl> photoUrl) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
     }
 
-    public Artist(JsonObject jsonObject, Gson gson) {
-        extractArtist(jsonObject, gson);
+    public Artist(JsonObject jsonObject) {
+        extractArtist(jsonObject);
     }
 
-    private void extractArtist(JsonObject jsonObject, Gson gson) {
+    // Extract information from the Artist Overview JsonObject into the model
+    private void extractArtist(JsonObject jsonObject) {
         JsonObject jsonArtist = jsonObject.getAsJsonObject("data").getAsJsonObject("artist");
         id = jsonArtist.get("uri").getAsString();
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
+
+        // Remove HTML from bio
         bio = Html.fromHtml(
-                jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("biography").getAsJsonObject().get("text").getAsString()
+                jsonArtist.getAsJsonObject()
+                        .get("profile")
+                        .getAsJsonObject()
+                        .get("biography")
+                        .getAsJsonObject()
+                        .get("text")
+                        .getAsString()
         ).toString();
 
-        JsonArray jsonArray = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().getAsJsonObject("externalLinks").getAsJsonArray("items");
+        JsonArray jsonArray = jsonArtist.getAsJsonObject()
+                .get("profile")
+                .getAsJsonObject()
+                .getAsJsonObject("externalLinks")
+                .getAsJsonArray("items");
+
         externalLinks = new ArrayList<>();
         for (int i = 0; i < jsonArray.size(); i++) {
             externalLinks.add(new ExternalLink(
@@ -57,7 +69,11 @@ public class Artist {
             ));
         }
 
-        jsonArray = jsonArtist.getAsJsonObject().getAsJsonObject("visuals").getAsJsonObject("avatarImage").getAsJsonArray("sources");
+        jsonArray = jsonArtist.getAsJsonObject()
+                .getAsJsonObject("visuals")
+                .getAsJsonObject("avatarImage")
+                .getAsJsonArray("sources");
+
         photoUrl = new ArrayList<>();
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject image = jsonArray.get(i).getAsJsonObject();
@@ -83,8 +99,8 @@ public class Artist {
             }
         };
 
+        // Loop thru to extract each album's info and add to it's collection
         for (int k = 0; k < discographyCollections.size(); k++) {
-
             jsonArray = discography.getAsJsonObject(discographyCollections.get(k).toString())
                     .getAsJsonArray("items");
 
@@ -107,10 +123,9 @@ public class Artist {
                 }
             }
         }
-
-        Log.d(TAG, "Artist extracted");
     }
 
+    // Extract information from the album JsonObject created in extractArtist
     private Album extractAlbum(JsonObject album) {
         List<PhotoUrl> photos = new ArrayList<>();
         JsonArray jsonPhotos = album.getAsJsonObject("coverArt").getAsJsonArray("sources");
@@ -146,8 +161,7 @@ public class Artist {
                 artistName,
                 artistId,
                 albumType,
-                null
-                );
+                null);
     }
 
     public List<PhotoUrl> getPhotoUrl() {

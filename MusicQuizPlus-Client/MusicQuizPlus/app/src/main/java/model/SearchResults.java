@@ -28,11 +28,6 @@ public class SearchResults {
     private List<Track> tracks;
 
     final private static String TAG = "SearchResults.java";
-//    final private List<String> empty = new ArrayList<>() {
-//        {
-//            add("NULL");
-//        }
-//    };
 
     public SearchResults(JsonObject json, Gson gson) {
         this.gson = gson;
@@ -57,14 +52,14 @@ public class SearchResults {
 
     // Retrieve All Search Results
     private void Init(JsonObject json) {
-        InitAlbums(json);
-        InitArtists(json);
-        InitPlaylists(json);
-        InitTracks(json);
+        extractAlbums(json);
+        extractArtists(json);
+        extractPlaylists(json);
+        extractTracks(json);
     }
 
     // Retrieve Album Search Results
-    private void InitAlbums(JsonObject json) {
+    private void extractAlbums(JsonObject json) {
         albums = new ArrayList<>();
 
         // Loop through and store all the albums
@@ -96,11 +91,11 @@ public class SearchResults {
                     jsonObject.getAsJsonObject().get("name").getAsString(),
                     photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null));
         }
-        Log.d(TAG, "Albums initialized.");
+        Log.i(TAG, "Album results extracted from JsonObject.");
     }
 
     // Retrieve Artist Search Results
-    private void InitArtists(JsonObject json) {
+    private void extractArtists(JsonObject json) {
         artists = new ArrayList<>();
 
         // Loop through and store all the artists
@@ -132,14 +127,12 @@ public class SearchResults {
             artists.add(new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
                     photoUrls));
-
-            imageJsonArray = null;
         }
-        Log.d(TAG, "Artists initialized.");
+        Log.i(TAG, "Artist results extracted from JsonObject.");
     }
 
     // Retrieve Playlist Search Results
-    private void InitPlaylists(JsonObject json) {
+    private void extractPlaylists(JsonObject json) {
         playlists = new ArrayList<>();
 
         // Loop through and store all the playlists
@@ -173,11 +166,11 @@ public class SearchResults {
 
 
         }
-        Log.d(TAG, "Playlists initialized.");
+        Log.i(TAG, "Playlist results extracted from JsonObject.");
     }
 
     // Retrieve Track Search Results
-    private void InitTracks(JsonObject json) {
+    private void extractTracks(JsonObject json) {
         tracks = new ArrayList<>();
 
         // Loop through and store all the tracks
@@ -203,7 +196,7 @@ public class SearchResults {
                     artistIds));
 
         }
-        Log.d(TAG, "Tracks initialized.");
+        Log.i(TAG, "Track results extracted from JsonObject.");
     }
 
 }

@@ -28,6 +28,7 @@ public class FirebaseService {
 
     private final static String TAG = "FirebaseService.java";
 
+    // Create a new user on both databases
     public static void createUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
                                   DatabaseReference db) {
         // Create a new user with a first and last name
@@ -59,6 +60,7 @@ public class FirebaseService {
         db.child("users").child(firebaseUser.getUid()).setValue(userMap);
     }
 
+    // Delete user from database
     public static boolean deleteUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
                                      DatabaseReference db) {
         final boolean[] result = {true};
@@ -95,11 +97,15 @@ public class FirebaseService {
         return result[0];
     }
 
+    // When the user "hearts" an album
     public static void heartAlbum(FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
+
         final boolean[] artistExists = {false};
         String artistId = album.getArtistIds().get(0);
 
+        // Check to see if the artist exists
+        // If the artist exists, then there is no need to save their discography
         db.child("artists").child(artistId).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DataSnapshot> task) {
@@ -113,55 +119,65 @@ public class FirebaseService {
             }
         });
 
-
+        // If the artist doesn't exist
         if (!artistExists[0])
         {
+            Log.i(TAG, "Fetching artist overview for " + artistId);
+
+            // Get the artist overview from the Spotify API
             Artist artist = spotifyService.artistOverview(artistId);
+            Log.i(TAG, String.format("Artist Overview for \"%s\" %s retrieved.",
+                    artist.getName(),artist.getId()));
 
+
+            // Save the artist to the database
             saveArtist(artist, db);
+            Log.i(TAG, String.format("%s saved to database child \"artists\"", artist.getId()));
 
-            processAlbums(artist.getAlbums(), db, spotifyService);
-            processAlbums(artist.getSingles(), db, spotifyService);
-            processAlbums(artist.getCompilations(), db, spotifyService);
+            // Save each album to the database
+            createAlbums(artist.getAlbums(), db, spotifyService);
+            createAlbums(artist.getSingles(), db, spotifyService);
+            createAlbums(artist.getCompilations(), db, spotifyService);
 
+            // Save the hearted album's tracks to the database
             saveAlbumTracks(album, db, spotifyService);
-
-            Log.d(TAG, "New artist");
+            Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
 
         }
-
 
         DatabaseReference userRef = db.child("users").child(firebaseUser.getUid());
 
-        userRef.child("albums").child(album.get_id()).setValue(album.getArtistIds().get(0));
+        userRef.child("albums").child(album.getId()).setValue(album.getArtistIds().get(0));
+        Log.i(TAG, String.format("Album ID %s saved to database child \"\\users\\albums\"", album.getId()));
         userRef.child("artists").child(album.getArtistIds().get(0)).setValue(album.getArtistIds().get(0));
+        Log.i(TAG, String.format("Artist ID %s saved to database child \"\\users\\artists\"", album.getArtistIds().get(0)));
     }
 
-    private static void processAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
+    private static void createAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
         for (Album a : albums) {
-            db.child("albums").child(a.get_id()).setValue(a);
+            db.child("albums").child(a.getId()).setValue(a);
         }
+        Log.i(TAG, String.format("%s %sS saved to database child \"albums\"",
+                albums.size(), albums.get(0).getType()));
     }
 
     private static void saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
-        JsonObject jsonObject = spotifyService.albumTracks(album.get_id(), 300, 0);
+        JsonObject jsonObject = spotifyService.albumTracks(album.getId(), 300, 0);
         JsonArray jsonArray = jsonObject
                 .getAsJsonObject("data")
                 .getAsJsonObject("album")
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
-        // List<Track> tracks = new ArrayList<>();
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
             Track track = new Track(
                     jsonTrack.get("uri").getAsString(),
                     jsonTrack.get("name").getAsString(),
-                    album.get_id(),
+                    album.getId(),
                     album.getArtistIds()
             );
             db.child("tracks").child(track.getId()).setValue(track);
-
         }
     }
 
@@ -177,13 +193,13 @@ public class FirebaseService {
         List<String> albums = new ArrayList<>();
         List<String> compilations = new ArrayList<>();
         for (Album a : artist.getSingles()) {
-            singles.add(a.get_id());
+            singles.add(a.getId());
         }
         for (Album a : artist.getAlbums()) {
-            albums.add(a.get_id());
+            albums.add(a.getId());
         }
         for (Album a : artist.getCompilations()) {
-            compilations.add(a.get_id());
+            compilations.add(a.getId());
         }
 
         map.put("singles", singles);
