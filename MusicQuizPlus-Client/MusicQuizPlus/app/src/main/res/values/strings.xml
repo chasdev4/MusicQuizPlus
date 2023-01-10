@@ -12,4 +12,6 @@
     <string name="top_hits">Today\'s Top Hits</string>
     <string name="playlists">Playlists</string>
     <string name="guest">GUEST</string>
+    <string name="artists">Artists</string>
+    <string name="SERVER_CLIENT_ID">123</string>
 </resources>
