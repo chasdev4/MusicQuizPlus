@@ -14,9 +14,10 @@
         android:layout_marginBottom="5dp">
 
         <include layout="@layout/user_avatar_layout"
-            android:layout_height="125dp"
-            android:layout_width="125dp"
-            android:layout_marginTop="3dp"/>
+            android:layout_height="150dp"
+            android:layout_width="150dp"
+            android:layout_marginTop="-10dp"
+            android:layout_marginStart="-12dp"/>
 
         <Button
             android:id="@+id/playlistTitle"
@@ -30,9 +31,10 @@
             android:clickable="false"
             android:text="@string/playlists"
             android:textColor="@color/white"
-            android:textSize="30sp"
+            android:textSize="33sp"
             android:paddingTop="30dp"
-            android:paddingStart="15dp" />
+            android:paddingStart="12dp"
+            android:fontFamily="@font/concert_one"/>
 
         <ImageButton
             android:id="@+id/embeddedHelp"
