@@ -85,7 +85,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/artistHeader"
-        android:numColumns="auto_fit" />
+        android:numColumns="auto_fit"
+        android:horizontalSpacing="25dp"
+        android:verticalSpacing="25dp"/>
 
     <ImageButton
         android:layout_width="80dp"

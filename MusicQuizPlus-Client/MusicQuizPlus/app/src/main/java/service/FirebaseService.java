@@ -5,6 +5,7 @@ import static android.content.ContentValues.TAG;
 import android.content.Context;
 import android.util.Log;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
@@ -63,6 +64,7 @@ public class FirebaseService {
     public static void retrieveData(GridView gridView, Context context, String dbChild) {
         List<Playlist> itemsList = new ArrayList<>();
 
+
         CustomAdapter customAdapter = new CustomAdapter(context, R.layout.gridview_contents, itemsList);
         gridView.setAdapter(customAdapter);
 
@@ -86,21 +88,21 @@ public class FirebaseService {
 
                         if(Objects.equals(key, "_description"))
                         {
-                            description = dss.getValue().toString();
+                            description = Objects.requireNonNull(dss.getValue()).toString();
                         }
-                        else if(Objects.equals(key, "_id"))
+                        else if(Objects.equals(key, "id"))
                         {
-                            id = dss.getValue().toString();
+                            id = Objects.requireNonNull(dss.getValue()).toString();
                         }
-                        else if(Objects.equals(key, "_name"))
+                        else if(Objects.equals(key, "name"))
                         {
-                            name = dss.getValue().toString();
+                            name = Objects.requireNonNull(dss.getValue()).toString();
                         }
                         else if(Objects.equals(key, "_owner"))
                         {
-                            owner = dss.getValue().toString();
+                            owner = Objects.requireNonNull(dss.getValue()).toString();
                         }
-                        else if(Objects.equals(key, "_photoUrl"))
+                        else if(Objects.equals(key, "photoUrl"))
                         {
                             for (DataSnapshot photoUrlSnapshot : dss.getChildren())
                             {
@@ -114,7 +116,7 @@ public class FirebaseService {
 
                                         if(Objects.equals(UrlKey, "url"))
                                         {
-                                            photoUrl = urlSnapshot.getValue().toString();
+                                            photoUrl = Objects.requireNonNull(urlSnapshot.getValue()).toString();
                                             break;
                                         }
                                     }
@@ -125,6 +127,7 @@ public class FirebaseService {
                     Playlist playlistToAdd = new Playlist(id, name, null, owner, description, photoUrl);
                     itemsList.add(playlistToAdd);
                 }
+
                 customAdapter.notifyDataSetChanged();
             }
 
