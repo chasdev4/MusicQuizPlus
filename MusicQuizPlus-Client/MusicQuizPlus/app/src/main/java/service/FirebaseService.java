@@ -11,7 +11,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -202,7 +201,7 @@ public class FirebaseService {
             db.child("playlists").child(playlist.getId()).setValue(jsonPlaylist);
         }
 
-        db.child("users").child(firebaseUser.getUid()).child("playlists").child(playlist.getId()).setValue(playlist.getId());
+        db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(playlist.getId()).setValue(playlist.getId());
 
     }
 
@@ -256,9 +255,9 @@ public class FirebaseService {
 
         DatabaseReference userRef = db.child("users").child(firebaseUser.getUid());
 
-        userRef.child("albums").child(album.getId()).setValue(album.getArtistIds().get(0));
+        userRef.child("albumIds").child(album.getId()).setValue(album.getArtistIds().get(0));
         Log.i(TAG, String.format("Album ID %s saved to database child \"\\users\\albums\"", album.getId()));
-        userRef.child("artists").child(album.getArtistIds().get(0)).setValue(album.getArtistIds().get(0));
+        userRef.child("artistIds").child(album.getArtistIds().get(0)).setValue(album.getArtistIds().get(0));
         Log.i(TAG, String.format("Artist ID %s saved to database child \"\\users\\artists\"", album.getArtistIds().get(0)));
     }
 
