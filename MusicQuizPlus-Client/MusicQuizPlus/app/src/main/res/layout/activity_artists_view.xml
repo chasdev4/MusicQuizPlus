@@ -87,7 +87,15 @@
         android:layout_below="@+id/artistHeader"
         android:numColumns="auto_fit"
         android:horizontalSpacing="25dp"
-        android:verticalSpacing="25dp"/>
+        android:verticalSpacing="25dp"
+        android:visibility="visible"/>
+
+    <include layout="@layout/logged_out_message"
+        android:id="@+id/artistNoCurrentUser"
+        android:layout_marginTop="150dp"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:visibility="gone"/>
 
     <ImageButton
         android:layout_width="80dp"

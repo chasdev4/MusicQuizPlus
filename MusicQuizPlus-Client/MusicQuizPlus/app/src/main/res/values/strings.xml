@@ -14,4 +14,7 @@
     <string name="guest">GUEST</string>
     <string name="artists">Artists</string>
     <string name="SERVER_CLIENT_ID">123</string>
+    <string name="logged_out_artists">Save Your Favorite Albums With A MusicQuiz+ Account</string>
+    <string name="link_google_to">Link your Google account to:</string>
+    <string name="benefits_of_account">\t\tSave your favorite albums\n\t\tSave your favorite playlists\n\t\tAccess track history\n\t\tEarn experience points and badges</string>
 </resources>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="500dp"
+    android:background="@color/mqPurple3">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:paddingVertical="50dp"
+        android:src="@drawable/magicstar" />
+
+    <RelativeLayout
+        android:id="@+id/create_account_benefits"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:paddingVertical="5dp">
+
+        <TextView
+            android:id="@+id/logged_out_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="25dp"
+            android:fontFamily="@font/concert_one"
+            android:text="@string/logged_out_artists"
+            android:textAlignment="center"
+            android:textColor="@color/mqWhite"
+            android:textSize="28sp" />
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/logged_out_header"
+            android:layout_centerHorizontal="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/link_google"
+                android:textColor="@color/mqWhite"
+                android:text="@string/link_google_to"
+                android:textSize="18sp"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/link_google"
+                android:textColor="@color/mqWhite"
+                android:text="@string/benefits_of_account"
+                android:textSize="18sp"
+                />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <include layout="@layout/button_sign_in_with_google"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/create_account_benefits"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"/>
+
+</RelativeLayout>

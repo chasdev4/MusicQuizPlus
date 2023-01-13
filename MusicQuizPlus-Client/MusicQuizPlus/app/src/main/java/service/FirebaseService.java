@@ -64,7 +64,6 @@ public class FirebaseService {
     public static void retrieveData(GridView gridView, Context context, String dbChild) {
         List<Playlist> itemsList = new ArrayList<>();
 
-
         CustomAdapter customAdapter = new CustomAdapter(context, R.layout.gridview_contents, itemsList);
         gridView.setAdapter(customAdapter);
 
@@ -72,7 +71,7 @@ public class FirebaseService {
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                itemsList.clear();
+                //itemsList.clear();
 
                 String description = null;
                 String id = null;

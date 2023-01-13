@@ -1,23 +1,13 @@
 package com.example.musicquizplus;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.GridView;
 import android.widget.TextView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
-import model.PhotoUrl;
-import model.item.Playlist;
 import service.FirebaseService;
 
 public class PlaylistsView extends AppCompatActivity {
@@ -28,8 +18,23 @@ public class PlaylistsView extends AppCompatActivity {
         setContentView(R.layout.activity_playlists_view);
 
         GridView gridView = findViewById(R.id.playlistGridView);
+        TextView userLevel = findViewById(R.id.userLevel);
+        View noCurrentUser = findViewById(R.id.playlistNoCurrentUser);
 
-        FirebaseService.retrieveData(gridView, this, "sample_playlists");
+        if(Objects.equals(userLevel.getText(), "GUEST"))
+        {
+            gridView.setVisibility(View.GONE);
+            noCurrentUser.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            gridView.setVisibility(View.VISIBLE);
+            noCurrentUser.setVisibility(View.GONE);
+        }
+
+        if(Objects.equals(gridView.getVisibility(), View.VISIBLE)) {
+            FirebaseService.retrieveData(gridView, this, "sample_playlists");
+        }
 
     }
 }
