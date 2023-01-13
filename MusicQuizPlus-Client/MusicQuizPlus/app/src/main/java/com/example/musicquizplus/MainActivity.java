@@ -1,7 +1,5 @@
 package com.example.musicquizplus;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
@@ -44,7 +42,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
-import model.SearchResults;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -55,10 +52,16 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseReference _db;
     private FirebaseFirestore _firestore;
+    private FirebaseUser _user;
     private GoogleSignIn _googleSignIn;
     private Button _signInWithGoogleButton;
     private boolean _showOneTapUI;
+    private SpotifyService _spotifyService;
+
+    private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,31 +82,29 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-                new Thread(new Runnable() {
-                    public void run() {
-//                        SpotifyService svc = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+//                new Thread(new Runnable() {
+//                    public void run() {
 //                        final short limit = 30;
-//                        SearchResults searchResults = svc.Search("Morrissey", limit, 0);
-
-                        //#region Temporary Method to push Search Results to Realtime DB.
+//                        SearchResults searchResults = _spotifyService.search("Morrissey", limit, 0);
+//
+//
 //                        for (Artist artist : searchResults.getArtists()) {
-//                            _db.child("sample_artists").child(artist.get_id()).setValue(artist);
+//                            _db.child("sample_artists").child(artist.getId()).setValue(artist);
 //                        }
 //                        for (Album album : searchResults.getAlbums()) {
-//                            _db.child("sample_albums").child(album.get_id()).setValue(album);
+//                            _db.child("sample_albums").child(album.getId()).setValue(album);
 //                        }
 //                        for (Playlist playlist : searchResults.getPlaylists()) {
-//                            _db.child("sample_playlists").child(playlist.get_id()).setValue(playlist);
+//                            _db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
 //                        }
 //                        for (Track track : searchResults.getTracks()) {
-//                            _db.child("sample_tracks").child(track.get_id()).setValue(track);
+//                            _db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
 //
 //                        Log.d("TEMP", "Goodie goodie");
-                        //#endregion
-
-                    }
-                }).start();
+//
+//                    }
+//                }).start();
 
             }
         });
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
         _googleSignIn = new GoogleSignIn();
         _firestore = FirebaseFirestore.getInstance();
         _db = FirebaseDatabase.getInstance().getReference();
-
+        _spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
 
         // Find the view of the button and set the on click listener to begin signing in
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGoogle();
+                signInWithGoogle(view);
             }
         });
 
@@ -130,16 +131,55 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = _googleSignIn.getAuth().getCurrentUser();
-        updateUI(currentUser);
+        _user = _googleSignIn.getAuth().getCurrentUser();
+        updateUI();
     }
 
-    private void updateUI(FirebaseUser currentUser) {
+    private void updateUI() {
         // TODO: Update the state of app depending if the user is logged in or not
+        if (_user != null) {
+            // User is signed in
+            _signInWithGoogleButton.setVisibility(View.GONE);
+            Log.d(TAG, _user.getDisplayName());
+            Log.d(TAG, _user.getEmail());
+
+//            new Thread(new Runnable() {
+//                public void run() {
+//                    FirebaseService.heartAlbum(_user, _db,
+//                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
+//                                    "Nirvana",
+//                                    new ArrayList<PhotoUrl>() {{
+//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
+//                                                300, 300));
+//                                    }},
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("INNA");
+//                                        }
+//                                    },
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                                        }
+//                                    },
+//                                    AlbumType.ALBUM, new ArrayList<String>() {
+//                                {
+//                                    add("NULL");
+//                                }
+//                            }), _spotifyService);
+//                }
+//            }).start();
+
+
+
+        } else {
+            // No user is signed in
+            _signInWithGoogleButton.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void signInWithGoogle() {
-        // Configuration of Google Sign IN
+    private void signInWithGoogle(View view) {
+        // Configuration of Google Sign In
         _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
         _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
@@ -168,8 +208,14 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        // TODO: (C-Feature) Take the user to a Google Sign In Form to add an account
+                        // Note: Might not work or be worth the effort...
+
+                        Snackbar.make(view, "ERROR: No Google accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
+
                         // No Google Accounts found. Just continue presenting the signed-out UI.
-                        Log.d(TAG, e.getLocalizedMessage());
+                        Log.e(TAG, e.getLocalizedMessage());
                     }
                 });
     }
@@ -199,13 +245,13 @@ public class MainActivity extends AppCompatActivity {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            FirebaseUser user = _googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(user, _firestore, _db);
-                                            updateUI(user);
+                                            _user = _googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(_user, _firestore, _db);
+                                            updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.
                                             Log.w(TAG, "signInWithCredential:failure", task.getException());
-                                            updateUI(null);
+                                            updateUI();
                                         }
                                     }
                                 });

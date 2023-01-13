@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.net.URI;
 
@@ -8,19 +10,32 @@ import java.net.URI;
 // Images retrieved from the API that have null width or height will be set to 0.
 
 public class PhotoUrl implements Serializable {
+    private final String url;
+    private double width;
+    private double height;
 
-    private final URI url;
-    private final double width;
-    private final double height;
+    private final static String TAG = "PhotoUrl.java";
 
-    public PhotoUrl(URI url, double width, double height) {
+    public PhotoUrl(String url, double width, double height) {
         this.url = url;
         this.width = width;
         this.height = height;
     }
 
-    public URI getUrl() {
-        return url;
+    public PhotoUrl(String url, String width, String height) {
+        this.url = url;
+        validateDimensions(width, height);
+    }
+
+    private void validateDimensions(String strWidth, String strHeight) {
+        if (strWidth == null || strHeight == null) {
+            Log.w(TAG, String.format("Width or Height of image was null. Setting Width and Height to 0 for image: %s", url));
+            width = 0;
+            height = 0;
+            return;
+        }
+        width = Double.parseDouble(strWidth);
+        height = Double.parseDouble(strHeight);
     }
 
     public double getWidth() {
@@ -29,5 +44,9 @@ public class PhotoUrl implements Serializable {
 
     public double getHeight() {
         return height;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

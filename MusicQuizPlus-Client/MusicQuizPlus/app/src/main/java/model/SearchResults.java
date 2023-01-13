@@ -6,7 +6,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +13,7 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.AlbumType;
 
 // SUMMARY
 // The Search Results model maintains lists of items models retrieved from the Spotify API
@@ -27,7 +27,7 @@ public class SearchResults {
     private List<Playlist> playlists;
     private List<Track> tracks;
 
-    final private String TAG = "SearchResults.java";
+    final private static String TAG = "SearchResults.java";
 
     public SearchResults(JsonObject json, Gson gson) {
         this.gson = gson;
@@ -52,14 +52,14 @@ public class SearchResults {
 
     // Retrieve All Search Results
     private void Init(JsonObject json) {
-        InitAlbums(json);
-        InitArtists(json);
-        InitPlaylists(json);
-        InitTracks(json);
+        extractAlbums(json);
+        extractArtists(json);
+        extractPlaylists(json);
+        extractTracks(json);
     }
 
     // Retrieve Album Search Results
-    private void InitAlbums(JsonObject json) {
+    private void extractAlbums(JsonObject json) {
         albums = new ArrayList<>();
 
         // Loop through and store all the albums
@@ -71,7 +71,7 @@ public class SearchResults {
             JsonArray imageJsonArray = jsonObject.getAsJsonObject("coverArt").getAsJsonArray("sources");
             List<PhotoUrl> photoUrls = new ArrayList<>();
             for (int j = 0; j < imageJsonArray.size(); j++) {
-                photoUrls.add(new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
+                photoUrls.add(new PhotoUrl(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString(),
                         imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
                         imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble()));
             }
@@ -89,13 +89,13 @@ public class SearchResults {
             // Add to collection
             albums.add(new Album(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    photoUrls, artistNames, artistIds));
+                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null));
         }
-        Log.d(TAG, "Albums initialized.");
+        Log.i(TAG, "Album results extracted from JsonObject.");
     }
 
     // Retrieve Artist Search Results
-    private void InitArtists(JsonObject json) {
+    private void extractArtists(JsonObject json) {
         artists = new ArrayList<>();
 
         // Loop through and store all the artists
@@ -118,7 +118,7 @@ public class SearchResults {
             // Create an inner loop to get preview images
             List<PhotoUrl> photoUrls = new ArrayList<>();
             for (int j = 0; j < imageJsonArraySize; j++) {
-                photoUrls.add(new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
+                photoUrls.add(new PhotoUrl(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString(),
                         imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
                         imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble()));
             }
@@ -127,14 +127,12 @@ public class SearchResults {
             artists.add(new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
                     photoUrls));
-
-            imageJsonArray = null;
         }
-        Log.d(TAG, "Artists initialized.");
+        Log.i(TAG, "Artist results extracted from JsonObject.");
     }
 
     // Retrieve Playlist Search Results
-    private void InitPlaylists(JsonObject json) {
+    private void extractPlaylists(JsonObject json) {
         playlists = new ArrayList<>();
 
         // Loop through and store all the playlists
@@ -158,22 +156,20 @@ public class SearchResults {
                             : sourcesJsonArray.get(0).getAsJsonObject().get("height").getAsDouble();
 
             photoUrls.add(new PhotoUrl(
-                    URI.create(
-                            sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString()
-                    ), width, height));
+                    sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString(), width, height));
 
             // Add to collection
             playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString(), null));
+                    jsonObject.get("description").getAsString(), false));
 
         }
-        Log.d(TAG, "Playlists initialized.");
+        Log.i(TAG, "Playlist results extracted from JsonObject.");
     }
 
     // Retrieve Track Search Results
-    private void InitTracks(JsonObject json) {
+    private void extractTracks(JsonObject json) {
         tracks = new ArrayList<>();
 
         // Loop through and store all the tracks
@@ -184,22 +180,10 @@ public class SearchResults {
             // JsonObject to retrieve album information, image array is nested inside.
             JsonObject albumOfTrack = jsonObject.getAsJsonObject("albumOfTrack");
 
-            // Create an inner loop to get preview images
-            JsonArray imageJsonArray = albumOfTrack.getAsJsonObject("coverArt").getAsJsonArray("sources");
-            List<PhotoUrl> photoUrls = new ArrayList<>();
-            for (int j = 0; j < imageJsonArray.size(); j++) {
-                photoUrls.add(new PhotoUrl(URI.create(imageJsonArray.get(j).getAsJsonObject().get("url").getAsString()),
-                        imageJsonArray.get(j).getAsJsonObject().get("width").getAsDouble(),
-                        imageJsonArray.get(j).getAsJsonObject().get("height").getAsDouble()));
-            }
-
             // Create an inner loop to get artists
             JsonArray artistJsonArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
-            List<String> artistNames = new ArrayList<>();
             List<String> artistIds = new ArrayList<>();
             for (int j = 0; j < artistJsonArray.size(); j++) {
-                artistNames.add(artistJsonArray.get(j).getAsJsonObject().get("profile")
-                        .getAsJsonObject().get("name").getAsString());
                 artistIds.add(artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString());
             }
 
@@ -207,14 +191,13 @@ public class SearchResults {
             tracks.add(new Track(
                     jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
-                    photoUrls,
-                    albumOfTrack.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
-                    artistNames,
-                    artistIds));
+                    artistIds,
+                    (short) 0,
+                    false));
 
         }
-        Log.d(TAG, "Tracks initialized.");
+        Log.i(TAG, "Track results extracted from JsonObject.");
     }
 
 }
