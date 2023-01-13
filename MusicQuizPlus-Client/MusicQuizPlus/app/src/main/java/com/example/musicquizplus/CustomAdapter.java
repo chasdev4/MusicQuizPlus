@@ -58,8 +58,8 @@ public class CustomAdapter extends ArrayAdapter<Playlist> {
         // get the item using the position param
         Playlist item = items_list.get(position);
 
-        String url = item.get_url();
-        String title = item.get_name();
+        String url = item.getPhotoUrl().get(0).getUrl();
+        String title = item.getName();
         new FetchImage(url, imageView, textView, title).start();
         return v;
     }

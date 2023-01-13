@@ -87,7 +87,19 @@ public class PlaylistsView extends AppCompatActivity {
                             }
                         }
                     }
-                    Playlist playlistToAdd = new Playlist(id, name, null, owner, description, photoUrl);
+
+                    String finalPhotoUrl = photoUrl;
+                    Playlist playlistToAdd = new Playlist(
+                            id,
+                            name,
+                            new ArrayList<>() {
+                                {
+                                    add(new PhotoUrl(finalPhotoUrl, 0, 0
+                                    ));
+                                }},
+                            owner,
+                            description,
+                            false);
                     itemsList.add(playlistToAdd);
                 }
                 customAdapter.notifyDataSetChanged();
