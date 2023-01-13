@@ -50,13 +50,13 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    private DatabaseReference _db;
-    private FirebaseFirestore _firestore;
-    private FirebaseUser _user;
-    private GoogleSignIn _googleSignIn;
-    private Button _signInWithGoogleButton;
-    private boolean _showOneTapUI;
-    private SpotifyService _spotifyService;
+    private DatabaseReference db;
+    private FirebaseFirestore firestore;
+    private FirebaseUser firebaseUser;
+    private GoogleSignIn googleSignIn;
+    private Button signInWithGoogleButton;
+    private boolean showOneTapUI;
+    private SpotifyService spotifyService;
 
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
@@ -109,15 +109,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        _googleSignIn = new GoogleSignIn();
-        _firestore = FirebaseFirestore.getInstance();
-        _db = FirebaseDatabase.getInstance().getReference();
-        _spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+        googleSignIn = new GoogleSignIn();
+        firestore = FirebaseFirestore.getInstance();
+        db = FirebaseDatabase.getInstance().getReference();
+        spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
 
         // Find the view of the button and set the on click listener to begin signing in
-        _signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
-        _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
+        signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signInWithGoogle(view);
@@ -131,17 +131,17 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        _user = _googleSignIn.getAuth().getCurrentUser();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
         updateUI();
     }
 
     private void updateUI() {
         // TODO: Update the state of app depending if the user is logged in or not
-        if (_user != null) {
+        if (firebaseUser != null) {
             // User is signed in
-            _signInWithGoogleButton.setVisibility(View.GONE);
-            Log.d(TAG, _user.getDisplayName());
-            Log.d(TAG, _user.getEmail());
+            signInWithGoogleButton.setVisibility(View.GONE);
+            Log.d(TAG, firebaseUser.getDisplayName());
+            Log.d(TAG, firebaseUser.getEmail());
 
 //            new Thread(new Runnable() {
 //                public void run() {
@@ -174,14 +174,14 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             // No user is signed in
-            _signInWithGoogleButton.setVisibility(View.VISIBLE);
+            signInWithGoogleButton.setVisibility(View.VISIBLE);
         }
     }
 
     private void signInWithGoogle(View view) {
         // Configuration of Google Sign In
-        _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
+        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
+        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                 .build());
 
         // Begin the Sign In Request
-        _googleSignIn.getOneTapClient().beginSignIn(_googleSignIn.getSignUpRequest())
+        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
                 .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
                     @Override
                     public void onSuccess(BeginSignInResult result) {
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
             case REQ_ONE_TAP:
                 try {
                     // Create an account with a Google ID token
-                    SignInCredential credential = _googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
+                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
                         // Got an ID token from Google.
@@ -238,15 +238,15 @@ public class MainActivity extends AppCompatActivity {
                         // With the Google ID token, exchange it for a Firebase credential,
                         // and authenticate with Firebase using the Firebase credential
                         AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        _googleSignIn.getAuth().signInWithCredential(firebaseCredential)
+                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
                                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                     @Override
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            _user = _googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(_user, _firestore, _db);
+                                            firebaseUser = googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(firebaseUser, firestore, db);
                                             updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                         case CommonStatusCodes.CANCELED:
                             Log.d(TAG, "One-tap dialog was closed.");
                             // Don't re-prompt the user.
-                            _showOneTapUI = false;
+                            showOneTapUI = false;
                             break;
                         case CommonStatusCodes.NETWORK_ERROR:
                             Log.d(TAG, "One-tap encountered a network error.");
