@@ -41,12 +41,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-
 import model.GoogleSignIn;
-import model.PhotoUrl;
-import model.item.Album;
-import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -90,24 +85,23 @@ public class MainActivity extends AppCompatActivity {
 //                new Thread(new Runnable() {
 //                    public void run() {
 //                        final short limit = 30;
-//                        SearchResults searchResults = _spotifyService.Search("Morrissey", limit, 0);
-
-                        //#region Temporary Method to push Search Results to Realtime DB.
+//                        SearchResults searchResults = _spotifyService.search("Morrissey", limit, 0);
+//
+//
 //                        for (Artist artist : searchResults.getArtists()) {
-//                            _db.child("sample_artists").child(artist.get_id()).setValue(artist);
+//                            _db.child("sample_artists").child(artist.getId()).setValue(artist);
 //                        }
 //                        for (Album album : searchResults.getAlbums()) {
-//                            _db.child("sample_albums").child(album.get_id()).setValue(album);
+//                            _db.child("sample_albums").child(album.getId()).setValue(album);
 //                        }
 //                        for (Playlist playlist : searchResults.getPlaylists()) {
-//                            _db.child("sample_playlists").child(playlist.get_id()).setValue(playlist);
+//                            _db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
 //                        }
 //                        for (Track track : searchResults.getTracks()) {
-//                            _db.child("sample_tracks").child(track.get_id()).setValue(track);
+//                            _db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
 //
 //                        Log.d("TEMP", "Goodie goodie");
-////                        #endregion
 //
 //                    }
 //                }).start();
@@ -149,32 +143,32 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, _user.getDisplayName());
             Log.d(TAG, _user.getEmail());
 
-            new Thread(new Runnable() {
-                public void run() {
-                    FirebaseService.heartAlbum(_user, _db,
-                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
-                                    "Nirvana",
-                                    new ArrayList<PhotoUrl>() {{
-                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
-                                                300, 300));
-                                    }},
-                                    new ArrayList<String>() {
-                                        {
-                                            add("INNA");
-                                        }
-                                    },
-                                    new ArrayList<String>() {
-                                        {
-                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                                        }
-                                    },
-                                    AlbumType.ALBUM, new ArrayList<String>() {
-                                {
-                                    add("NULL");
-                                }
-                            }), _spotifyService);
-                }
-            }).start();
+//            new Thread(new Runnable() {
+//                public void run() {
+//                    FirebaseService.heartAlbum(_user, _db,
+//                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
+//                                    "Nirvana",
+//                                    new ArrayList<PhotoUrl>() {{
+//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
+//                                                300, 300));
+//                                    }},
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("INNA");
+//                                        }
+//                                    },
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                                        }
+//                                    },
+//                                    AlbumType.ALBUM, new ArrayList<String>() {
+//                                {
+//                                    add("NULL");
+//                                }
+//                            }), _spotifyService);
+//                }
+//            }).start();
 
 
 
