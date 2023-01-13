@@ -202,6 +202,8 @@ public class FirebaseService {
             db.child("playlists").child(playlist.getId()).setValue(jsonPlaylist);
         }
 
+        db.child("users").child(firebaseUser.getUid()).child("playlists").child(playlist.getId()).setValue(playlist.getId());
+
     }
 
     // When the user "hearts" an album
