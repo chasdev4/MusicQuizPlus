@@ -164,7 +164,6 @@ public class SearchResults {
                     photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
                     jsonObject.get("description").getAsString(), false));
 
-
         }
         Log.i(TAG, "Playlist results extracted from JsonObject.");
     }

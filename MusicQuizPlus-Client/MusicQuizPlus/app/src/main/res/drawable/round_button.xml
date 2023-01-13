@@ -10,7 +10,7 @@
     </item>
     <item android:state_pressed = "true">
         <shape android:shape="oval">
-            <solid android:color="#fff000" />
+            <solid android:color="#2D87FD" />
             <stroke
                 android:width="2dp"
                 android:color="#2D87FD" />
