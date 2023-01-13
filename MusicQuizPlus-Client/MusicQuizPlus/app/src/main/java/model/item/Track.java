@@ -2,8 +2,6 @@ package model.item;
 
 import java.util.List;
 
-import model.PhotoUrl;
-
 // SUMMARY
 // The Track model stores track information
 
@@ -13,12 +11,16 @@ public class Track {
     private final String name;
     private final String albumId;
     private final List<String> artistIds;
+    private short popularity;
+    private boolean isPopularityKnown;
 
-    public Track(String id, String name, String albumId, List<String> artistIds) {
+    public Track(String id, String name, String albumId, List<String> artistIds, short popularity, boolean isPopularityKnown) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
         this.artistIds = artistIds;
+        this.popularity = popularity;
+        this.isPopularityKnown = isPopularityKnown;
     }
 
     public String getAlbumId() {
@@ -35,5 +37,18 @@ public class Track {
 
     public String getName() {
         return name;
+    }
+
+    public short getPopularity() {
+        return popularity;
+    }
+
+    public void setPopularity(short popularity) {
+        isPopularityKnown = true;
+        this.popularity = popularity;
+    }
+
+    public boolean isPopularitySet() {
+        return isPopularityKnown;
     }
 }

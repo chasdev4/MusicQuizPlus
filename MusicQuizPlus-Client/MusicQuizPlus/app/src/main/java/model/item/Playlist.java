@@ -1,30 +1,78 @@
 package model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import model.Item;
 import model.PhotoUrl;
 
 // SUMMARY
-// The Playlist item model stores playlist information
+// The Playlist model stores playlist information
 
-public class Playlist extends Item {
+public class Playlist {
+    private String id;
+    private String name;
+    private List<PhotoUrl> photoUrl;
+    private String owner;
+    private String description;
+    private boolean isPopulated;
+    private List<String> trackIds;
 
-    private final String _owner;
+    // Dropped Fields from Database
+    private List<Track> tracks;
 
-    private final String _description;
 
-    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
-        super(id, name, photoUrl);
-        _owner = owner;
-        _description = description;
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, boolean isPopulated) {
+        this.id = id;
+        this.name = name;
+        this.photoUrl = photoUrl;
+        this.owner = owner;
+        this.description = description;
+        this.isPopulated = isPopulated;
+        trackIds = new ArrayList<>();
+        tracks = new ArrayList<>();
     }
 
-    public String get_description() {
-        return _description;
+    public String getDescription() {
+        return description;
     }
 
-    public String get_owner() {
-        return _owner;
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<PhotoUrl> getPhotoUrl() {
+        return photoUrl;
+    }
+
+    public List<String> getTrackIds() {
+        return trackIds;
+    }
+
+    public void addTrackId(String trackId) {
+        trackIds.add(trackId);
+    }
+
+    public boolean isPopulated() {
+        return isPopulated;
+    }
+
+    public void setPopulated(boolean populated) {
+        isPopulated = populated;
+    }
+
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void addTrack(Track track) {
+        tracks.add(track);
     }
 }

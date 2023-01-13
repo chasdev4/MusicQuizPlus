@@ -162,7 +162,7 @@ public class SearchResults {
             playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString()));
+                    jsonObject.get("description").getAsString(), false));
 
 
         }
@@ -193,7 +193,9 @@ public class SearchResults {
                     jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
-                    artistIds));
+                    artistIds,
+                    (short) 0,
+                    false));
 
         }
         Log.i(TAG, "Track results extracted from JsonObject.");
