@@ -33,6 +33,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
@@ -41,7 +42,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import model.GoogleSignIn;
+import model.PhotoUrl;
+import model.User;
+import model.item.Album;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -50,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
+    private User user;
     private DatabaseReference db;
     private FirebaseFirestore firestore;
     private FirebaseUser firebaseUser;
@@ -143,32 +151,45 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, firebaseUser.getDisplayName());
             Log.d(TAG, firebaseUser.getEmail());
 
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    FirebaseService.heartAlbum(_user, _db,
-//                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
-//                                    "Nirvana",
-//                                    new ArrayList<PhotoUrl>() {{
-//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
-//                                                300, 300));
-//                                    }},
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("INNA");
-//                                        }
-//                                    },
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-//                                        }
-//                                    },
-//                                    AlbumType.ALBUM, new ArrayList<String>() {
-//                                {
-//                                    add("NULL");
-//                                }
-//                            }), _spotifyService);
-//                }
-//            }).start();
+            db.child("users").child(firebaseUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DataSnapshot> task) {
+                    if (!task.isSuccessful()) {
+                        Log.e(TAG, "Error getting data", task.getException());
+                    }
+                    else {
+                        user = task.getResult().getValue(User.class);
+                        Log.d(TAG, String.valueOf(task.getResult().getValue()));
+
+                        new Thread(new Runnable() {
+                            public void run() {
+                                FirebaseService.heartAlbum(user, firebaseUser, db,
+                                        new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
+                                                "Nirvana",
+                                                new ArrayList<PhotoUrl>() {{
+                                                    add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
+                                                            300, 300));
+                                                }},
+                                                new ArrayList<String>() {
+                                                    {
+                                                        add("INNA");
+                                                    }
+                                                },
+                                                new ArrayList<String>() {
+                                                    {
+                                                        add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                                                    }
+                                                },
+                                                AlbumType.ALBUM, new ArrayList<String>() {
+                                            {
+                                                add("NULL");
+                                            }
+                                        }), spotifyService);
+                            }
+                        }).start();
+                    }
+                }
+            });
 
 
 

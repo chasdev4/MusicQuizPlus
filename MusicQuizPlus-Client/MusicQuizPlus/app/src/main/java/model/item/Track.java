@@ -11,10 +11,10 @@ public class Track {
     private final String name;
     private final String albumId;
     private final List<String> artistIds;
-    private short popularity;
+    private int popularity;
     private boolean isPopularityKnown;
 
-    public Track(String id, String name, String albumId, List<String> artistIds, short popularity, boolean isPopularityKnown) {
+    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean isPopularityKnown) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
@@ -39,7 +39,7 @@ public class Track {
         return name;
     }
 
-    public short getPopularity() {
+    public int getPopularity() {
         return popularity;
     }
 

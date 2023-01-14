@@ -31,16 +31,25 @@ public class User implements Serializable {
         return albumIds;
     }
 
-    public void addAlbumId(String albumId) {
+    public boolean addAlbumId(String albumId) {
+        if (albumIds.contains(albumId)) {
+            return false;
+        }
+
         albumIds.add(albumId);
+        return true;
     }
 
     public List<String> getArtistIds() {
         return artistIds;
     }
 
-    public void addArtistId(String artistId) {
+    public boolean addArtistId(String artistId) {
+        if (artistIds.contains(artistId)) {
+            return false;
+        }
         artistIds.add(artistId);
+        return true;
     }
 
     public List<String> getPlaylistIds() {

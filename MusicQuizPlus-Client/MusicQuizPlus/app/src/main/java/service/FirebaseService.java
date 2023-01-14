@@ -1,5 +1,6 @@
 package service;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,9 +9,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -19,8 +23,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import model.PhotoUrl;
+import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
@@ -206,59 +216,123 @@ public class FirebaseService {
     }
 
     // When the user "hearts" an album
-    public static void heartAlbum(FirebaseUser firebaseUser, DatabaseReference db, Album album,
+    public static void heartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
+        //#region Null checking
+        if (user == null) {
+            Log.e(TAG,"User provided to heartAlbum was null.");
+            return;
+        }
+        if (firebaseUser == null) {
+            Log.e(TAG, "FirebaseUser provided to heartAlbum was null.");
+            return;
+        }
+        if (db == null) {
+            Log.e(TAG, "DatabaseReference provided to heartAlbum was null.");
+            return;
+        }
+        if (album == null) {
+            Log.e(TAG, "Album provided to heartAlbum was null.");
+            return;
+        }
+        if (spotifyService == null) {
+            Log.e(TAG, "SpotifyService provided to heartAlbum was null.");
+            return;
+        }
+        //#endregion
 
-        final boolean[] artistExists = {false};
+        // Add the albumId to the user
+        boolean result = user.addAlbumId(album.getId());
+
+        // If the album wasn't added, return
+        if (!result) {
+            Log.w(TAG, String.format("%s already exists in albumIds list.", album.getId()));
+            return;
+        }
+
+        // Save the albumId to the db user
+        db.child("users")
+                .child(firebaseUser.getUid())
+                .child("albumIds")
+                .child(String.valueOf(user.getAlbumIds().size() - 1))
+                .setValue(album.getId());
+
+        // Add the artistId to the user
         String artistId = album.getArtistIds().get(0);
+        result = user.addArtistId(artistId);
+
+        // If the artist was added, add it to the db user
+        if (result) {
+            db.child("users")
+                    .child(firebaseUser.getUid())
+                    .child("artistIds")
+                    .child(String.valueOf(user.getArtistIds().size() - 1))
+                    .setValue(artistId);
+            Log.i(TAG, String.format("%s added to the artistIds list.", artistId));
+        }
+        else {
+            Log.i(TAG, String.format("%s already exists in the artistIds list.", artistId));
+        }
+
 
         // Check to see if the artist exists
         // If the artist exists, then there is no need to save their discography
-        db.child("artists").child(artistId).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        CountDownLatch done = new CountDownLatch(1);
+        final boolean artistExists[] = {false};
+        db.child("artists").child(artistId).addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (!task.isSuccessful()) {
-                    Log.e(TAG, "Error getting data", task.getException());
-                }
-                else {
-                    artistExists[0] = true;
-                    Log.d(TAG, String.valueOf(task.getResult().getValue()));
-                }
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                artistExists[0] = dataSnapshot.getValue() != null;
+//                Log.d(TAG, dataSnapshot.getValue().toString());
+                done.countDown();
             }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, error.getMessage());
+            }
+
+
         });
 
-        // If the artist doesn't exist
-        if (!artistExists[0])
-        {
-            Log.i(TAG, "Fetching artist overview for " + artistId);
+        try {
+            done.await();
 
-            // Get the artist overview from the Spotify API
-            Artist artist = spotifyService.artistOverview(artistId);
-            Log.i(TAG, String.format("Artist Overview for \"%s\" %s retrieved.",
-                    artist.getName(),artist.getId()));
-
-
-            // Save the artist to the database
-            saveArtist(artist, db);
-            Log.i(TAG, String.format("%s saved to database child \"artists\"", artist.getId()));
-
-            // Save each album to the database
-            createAlbums(artist.getAlbums(), db, spotifyService);
-            createAlbums(artist.getSingles(), db, spotifyService);
-            createAlbums(artist.getCompilations(), db, spotifyService);
-
-            // Save the hearted album's tracks to the database
-            saveAlbumTracks(album, db, spotifyService);
-            Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
-
+            if (artistExists[0]) {
+                Log.i(TAG, String.format("%s already exists in database.", artistId));
+                return;
+            }
+        } catch(InterruptedException e) {
+            e.printStackTrace();
         }
 
-        DatabaseReference userRef = db.child("users").child(firebaseUser.getUid());
+        if (!artistExists[0]) {
+            Log.i(TAG, "DataSnapshot returned null, saving artist overview...");
+            saveDiscography(artistId, album, db, spotifyService);
+        }
+    }
 
-        userRef.child("albumIds").child(album.getId()).setValue(album.getArtistIds().get(0));
-        Log.i(TAG, String.format("Album ID %s saved to database child \"\\users\\albums\"", album.getId()));
-        userRef.child("artistIds").child(album.getArtistIds().get(0)).setValue(album.getArtistIds().get(0));
-        Log.i(TAG, String.format("Artist ID %s saved to database child \"\\users\\artists\"", album.getArtistIds().get(0)));
+    private static void saveDiscography(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
+        Log.i(TAG, "Fetching artist overview for " + artistId);
+
+        // Get the artist overview from the Spotify API
+        Artist artist = spotifyService.artistOverview(artistId);
+        Log.i(TAG, String.format("Artist Overview for \"%s\" %s retrieved.",
+                artist.getName(),artist.getId()));
+
+        // Save the artist to the database
+        saveArtist(artist, db);
+        Log.i(TAG, String.format("%s saved to database child \"artists\"", artist.getId()));
+
+        // Save each album to the database
+        createAlbums(artist.getAlbums(), db, spotifyService);
+        createAlbums(artist.getSingles(), db, spotifyService);
+        createAlbums(artist.getCompilations(), db, spotifyService);
+
+        // Save the hearted album's tracks to the database
+        saveAlbumTracks(album, db, spotifyService);
+        Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
     }
 
     private static void createAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
@@ -284,7 +358,7 @@ public class FirebaseService {
                     jsonTrack.get("name").getAsString(),
                     album.getId(),
                     album.getArtistIds(),
-                    (short)0,
+                    0,
                     false);
             db.child("tracks").child(track.getId()).setValue(track);
         }
