@@ -1,5 +1,6 @@
 package model.item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // SUMMARY
@@ -21,6 +22,18 @@ public class Track {
         this.artistIds = artistIds;
         this.popularity = popularity;
         this.isPopularityKnown = isPopularityKnown;
+    }
+
+    public Track(String trackId) {
+        this.id = trackId;
+        name = "NULL";
+        albumId = "NULL";
+        artistIds = new ArrayList<>() {
+            {
+                add("NULL");
+                add("NULL");
+            }
+        };
     }
 
     public String getAlbumId() {

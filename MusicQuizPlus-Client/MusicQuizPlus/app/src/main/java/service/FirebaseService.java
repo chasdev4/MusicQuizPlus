@@ -23,11 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import model.PhotoUrl;
 import model.User;
@@ -185,33 +181,83 @@ public class FirebaseService {
     }
 
     // When the user "hearts" an playlist
-    public static void heartPlaylist(FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
+    public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                   SpotifyService spotifyService) {
-        final boolean[] playlistExists = {false};
+        //#region Null checking
+        if (user == null) {
+            Log.e(TAG,"User provided to heartPlaylist was null.");
+            return;
+        }
+        if (firebaseUser == null) {
+            Log.e(TAG, "FirebaseUser provided to heartPlaylist was null.");
+            return;
+        }
+        if (db == null) {
+            Log.e(TAG, "DatabaseReference provided to heartPlaylist was null.");
+            return;
+        }
+        if (playlist == null) {
+            Log.e(TAG, "Playlist provided to heartPlaylist was null.");
+            return;
+        }
+        if (spotifyService == null) {
+            Log.e(TAG, "SpotifyService provided to heartPlaylist was null.");
+            return;
+        }
+        //#endregion
 
-        // Check to see if the playlist exists
-        // If the playlist exists, no need to re-save, just add it to the user
-        db.child("playlists").child(playlist.getId()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (!task.isSuccessful()) {
-                    Log.e(TAG, "Error getting data", task.getException());
-                }
-                else {
-                    playlistExists[0] = true;
-                    Log.d(TAG, String.valueOf(task.getResult().getValue()));
-                }
-            }
-        });
-        // If the playlist doesn't exist
-        if (!playlistExists[0])
-        {
-            JsonObject jsonPlaylist = spotifyService.getGson().toJsonTree(playlist).getAsJsonObject();
-            jsonPlaylist.remove("tracks");
-            db.child("playlists").child(playlist.getId()).setValue(jsonPlaylist);
+        // Add the playlistId to the user
+        boolean result = user.addPlaylistId(playlist.getId());
+
+        // If the playlist wasn't added, return
+        if (!result) {
+            Log.w(TAG, String.format("%s already exists in playlistIds list.", playlist.getId()));
+           // return;
         }
 
-        db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(playlist.getId()).setValue(playlist.getId());
+        // Save the playlistId to the db user
+        db.child("users")
+                .child(firebaseUser.getUid())
+                .child("playlistIds")
+                .child(String.valueOf(user.getPlaylistIds().size() - 1))
+                .setValue(playlist.getId());
+
+        // Check to see if the playlist exists in the database
+        // If the playlist exists, then there is no need to save it
+        CountDownLatch done = new CountDownLatch(1);
+        final boolean playlistExists[] = {false};
+        db.child("playlists").child(playlist.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                playlistExists[0] = dataSnapshot.getValue() != null;
+                done.countDown();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, error.getMessage());
+            }
+
+
+        });
+
+        try {
+            done.await();
+
+            if (playlistExists[0]) {
+                Log.i(TAG, String.format("%s already exists in database.", playlist.getId()));
+                return;
+            }
+        } catch(InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (!playlistExists[0]) {
+            Log.i(TAG, "DataSnapshot returned null, saving playlist...");
+            db.child("playlists").child(playlist.getId()).setValue(playlist);
+            Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
+        }
 
     }
 
@@ -275,7 +321,7 @@ public class FirebaseService {
         }
 
 
-        // Check to see if the artist exists
+        // Check to see if the artist exists in the database
         // If the artist exists, then there is no need to save their discography
         CountDownLatch done = new CountDownLatch(1);
         final boolean artistExists[] = {false};

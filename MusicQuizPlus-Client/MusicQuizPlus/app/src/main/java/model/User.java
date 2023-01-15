@@ -56,8 +56,13 @@ public class User implements Serializable {
         return playlistIds;
     }
 
-    public void addPlaylistId(String playlistId) {
+    public boolean addPlaylistId(String playlistId) {
+        if (playlistIds.contains(playlistId)) {
+            return false;
+        }
+
         playlistIds.add(playlistId);
+        return true;
     }
 
     public int getLevel() {
