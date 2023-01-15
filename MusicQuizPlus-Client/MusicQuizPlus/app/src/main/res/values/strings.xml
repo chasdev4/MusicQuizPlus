@@ -18,4 +18,6 @@
     <string name="link_google_to">Link your Google account to:</string>
     <string name="benefits_of_account">\t\tSave your favorite albums\n\t\tSave your favorite playlists\n\t\tAccess track history\n\t\tEarn experience points and badges</string>
     <string name="no_thanks"><u>No Thanks</u></string>
+    <string name="history">History</string>
+    <string name="guestUserHistory">Discover Your Jam on MusicQuiz+</string>
 </resources>

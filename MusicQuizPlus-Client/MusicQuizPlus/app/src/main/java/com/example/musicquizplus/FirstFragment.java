@@ -34,7 +34,7 @@ public class FirstFragment extends Fragment {
             public void onClick(View view) {
                 //NavHostFragment.findNavController(FirstFragment.this)
                         //.navigate(R.id.action_FirstFragment_to_SecondFragment);
-                Intent intent = new Intent(getActivity(), ArtistsView.class);
+                Intent intent = new Intent(getActivity(), HistoryView.class);
                 startActivity(intent);
             }
         });
