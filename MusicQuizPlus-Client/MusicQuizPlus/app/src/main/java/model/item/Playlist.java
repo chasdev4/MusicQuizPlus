@@ -1,5 +1,8 @@
 package model.item;
 
+import com.google.firebase.database.Exclude;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +11,7 @@ import model.PhotoUrl;
 // SUMMARY
 // The Playlist model stores playlist information
 
-public class Playlist {
+public class Playlist implements Serializable {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
@@ -17,9 +20,24 @@ public class Playlist {
     private boolean isPopulated;
     private List<String> trackIds;
 
-    // Dropped Fields from Database
+    // Excluded from Database
     private List<Track> tracks;
 
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, List<String> trackIds) {
+        this.id = id;
+        this.name = name;
+        this.photoUrl = photoUrl;
+        this.owner = owner;
+        this.description = description;
+        isPopulated = true;
+        this.trackIds = trackIds;
+        tracks = new ArrayList<>();
+
+        int i = 0;
+        for (String trackId : trackIds) {
+            tracks.add(new Track(trackId));
+        }
+    }
 
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, boolean isPopulated) {
         this.id = id;
@@ -68,6 +86,7 @@ public class Playlist {
         isPopulated = populated;
     }
 
+    @Exclude
     public List<Track> getTracks() {
         return tracks;
     }
