@@ -42,6 +42,7 @@
                 android:textColor="@color/mqWhite"
                 android:text="@string/link_google_to"
                 android:textSize="18sp"
+                android:fontFamily="@font/commissioner"
                 />
 
             <TextView
@@ -51,6 +52,7 @@
                 android:textColor="@color/mqWhite"
                 android:text="@string/benefits_of_account"
                 android:textSize="18sp"
+                android:fontFamily="@font/commissioner"
                 />
 
         </RelativeLayout>
@@ -58,10 +60,27 @@
     </RelativeLayout>
 
     <include layout="@layout/button_sign_in_with_google"
+        android:id="@+id/googleSignInButton"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
         android:layout_below="@id/create_account_benefits"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/noThanksHyperLink"
+        android:layout_below="@id/googleSignInButton"
+        android:textColor="#ADD8E6"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/no_thanks"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="3dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        />
+
 
 </RelativeLayout>
