@@ -20,4 +20,11 @@
     <string name="no_thanks"><u>No Thanks</u></string>
     <string name="history">History</string>
     <string name="guestUserHistory">Discover Your Jam on MusicQuiz+</string>
+    <string name="sample_song_title">Sample Song Title</string>
+    <string name="sample_artist">Sample Artist</string>
+    <string name="middle_dot">·</string>
+    <string name="sample_album">Sample Album</string>
+    <string name="sample_year">1999</string>
+    <string name="share">Share</string>
+    <string name="view">View</string>
 </resources>
