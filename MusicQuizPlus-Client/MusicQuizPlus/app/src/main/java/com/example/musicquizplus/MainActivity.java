@@ -47,6 +47,7 @@ import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.User;
 import model.item.Album;
+import model.item.Playlist;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -176,9 +177,15 @@ public class MainActivity extends AppCompatActivity {
                                         add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
                                                 640, 640));
                                     }},
+                                                "Spotify",
+                                                "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI",
                                     new ArrayList<String>() {
                                         {
-                                            add("INNA");
+                                                add("NULL1");
+                                                add("NULL2");
+                                                add("NULL3");
+                                                add("NULL4");
+                                                add("NULL5");
                                         }
                                     },
                                     new ArrayList<String>() {
