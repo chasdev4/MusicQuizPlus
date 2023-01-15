@@ -355,13 +355,11 @@ public class FirebaseService {
 
     public static <T> T checkDatabase(DatabaseReference db, String child, String id, Class cls) {
         CountDownLatch done = new CountDownLatch(1);
-       // final boolean exists[] = {false};
         final User[] users = new User[1];
         final Album[] albums = new Album[1];
         final Artist[] artists = new Artist[1];
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
-        final Object[] objects = new Object[1];
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -387,8 +385,6 @@ public class FirebaseService {
                         Log.w(TAG, String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                         break;
                 }
- //               objects[0] = dataSnapshot.getValue(cls);
-//                Log.d(TAG, dataSnapshot.getValue().toString());
                 done.countDown();
             }
 
@@ -402,13 +398,6 @@ public class FirebaseService {
         try {
             done.await();
 
-            if (objects[0] != null) {
-                Log.i(TAG, String.format("%s already exists in database.", id));
-             //   return false;
-            }
-            else {
-            Log.v(TAG, "DataSnapshot returned null.");
-            }
 
         } catch(InterruptedException e) {
             e.printStackTrace();
@@ -433,7 +422,7 @@ public class FirebaseService {
         }
 
 
-        return (T) objects[0];
+        return null;
     }
 
     private static void saveArtistOverview(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
