@@ -33,7 +33,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
@@ -48,7 +47,6 @@ import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.User;
 import model.item.Album;
-import model.item.Playlist;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -152,42 +150,46 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, firebaseUser.getDisplayName());
             Log.d(TAG, firebaseUser.getEmail());
 
-            db.child("users").child(firebaseUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    if (!task.isSuccessful()) {
-                        Log.e(TAG, "Error getting data", task.getException());
-                    }
-                    else {
-                        user = task.getResult().getValue(User.class);
-                        Log.d(TAG, String.valueOf(task.getResult().getValue()));
 
-                        new Thread(new Runnable() {
-                            public void run() {
-                                FirebaseService.heartPlaylist(user, firebaseUser, db,
-                                        new Playlist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
-                                                "NKVT 2021",
-                                                new ArrayList<PhotoUrl>() {{
-                                                    add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
-                                                            0, 0));
-                                                }},
-                                                "Spotify",
-                                                "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI",
-                                                new ArrayList<String>() {
-                                            {
-                                                add("NULL1");
-                                                add("NULL2");
-                                                add("NULL3");
-                                                add("NULL4");
-                                                add("NULL5");
-                                            }
-                                        }), spotifyService);
-                            }
-                        }).start();
-                    }
+//            db.child("users").child(firebaseUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+//                @Override
+//                public void onComplete(@NonNull Task<DataSnapshot> task) {
+//                    if (!task.isSuccessful()) {
+//                        Log.e(TAG, "Error getting data", task.getException());
+//                    }
+//                    else {
+//                        user = task.getResult().getValue(User.class);
+//                        Log.d(TAG, String.valueOf(task.getResult().getValue()));
+//                    }
+//                }
+//            });
+
+            new Thread(new Runnable() {
+                public void run() {
+                    user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+
+
+                    FirebaseService.heartAlbum(user, firebaseUser, db,
+                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+                                    "Inna",
+                                    new ArrayList<PhotoUrl>() {{
+                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+                                                640, 640));
+                                    }},
+                                    new ArrayList<String>() {
+                                        {
+                                            add("INNA");
+                                        }
+                                    },
+                                    new ArrayList<String>() {
+                                        {
+                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                                        }
+                                    },
+                                    AlbumType.ALBUM, new ArrayList<String>(),
+                                    false, 0, false), spotifyService);
                 }
-            });
-
+            }).start();
 
 
         } else {

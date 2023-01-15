@@ -1,6 +1,5 @@
 package service;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -9,11 +8,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.JsonArray;
@@ -287,6 +286,8 @@ public class FirebaseService {
         }
         //#endregion
 
+        Map<String, Object> updates = new HashMap<>();
+
         // Add the albumId to the user
         boolean result = user.addAlbumId(album.getId());
 
@@ -296,12 +297,17 @@ public class FirebaseService {
             return;
         }
 
+
+
+
         // Save the albumId to the db user
         db.child("users")
                 .child(firebaseUser.getUid())
                 .child("albumIds")
                 .child(String.valueOf(user.getAlbumIds().size() - 1))
                 .setValue(album.getId());
+
+
 
         // Add the artistId to the user
         String artistId = album.getArtistIds().get(0);
@@ -323,13 +329,65 @@ public class FirebaseService {
 
         // Check to see if the artist exists in the database
         // If the artist exists, then there is no need to save their discography
+        Artist artist = checkDatabase(db, "artists", artistId, Artist.class);
+
+        if (artist == null) {
+            saveArtistOverview(artistId, album, db, spotifyService);
+        }
+
+        Album album1 = checkDatabase(db, "albums", album.getId(), Album.class);
+
+        if (!album1.isTrackIdsKnown()) {
+            // Save the hearted album's tracks to the database
+            saveAlbumTracks(album, db, spotifyService);
+            Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
+        }
+        else {
+            Log.i(TAG, String.format("Tracks from %s have previously been saved to database", album.getId()));
+        }
+        updates.put("albums/"+album.getId()+"/followers", ServerValue.increment(1));
+        if (!album1.isFollowersKnown()) {
+            updates.put("albums/"+album.getId()+"/followersKnown", true);
+        }
+        updates.put("artists/"+artistId+"/followers", ServerValue.increment(1));
+        db.updateChildren(updates);
+    }
+
+    public static <T> T checkDatabase(DatabaseReference db, String child, String id, Class cls) {
         CountDownLatch done = new CountDownLatch(1);
-        final boolean artistExists[] = {false};
-        db.child("artists").child(artistId).addListenerForSingleValueEvent(new ValueEventListener() {
+       // final boolean exists[] = {false};
+        final User[] users = new User[1];
+        final Album[] albums = new Album[1];
+        final Artist[] artists = new Artist[1];
+        final Playlist[] playlists = new Playlist[1];
+        final Track[] tracks = new Track[1];
+        final Object[] objects = new Object[1];
+        db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                artistExists[0] = dataSnapshot.getValue() != null;
+                Log.i(TAG, String.format("Attempting to retrieve /%s/%s from database.", child, id));
+                switch (cls.getSimpleName()) {
+                    case "User":
+                        users[0] = (User)dataSnapshot.getValue(cls);
+                        break;
+                    case "Album":
+                        albums[0] = (Album)dataSnapshot.getValue(cls);
+                        break;
+                    case "Artist":
+                        artists[0] = (Artist)dataSnapshot.getValue(cls);
+                        break;
+                    case "Playlist":
+                        playlists[0] = (Playlist)dataSnapshot.getValue(cls);
+                        break;
+                    case "Track":
+                        tracks[0] = (Track)dataSnapshot.getValue(cls);
+                        break;
+                    default:
+                        Log.w(TAG, String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
+                        break;
+                }
+ //               objects[0] = dataSnapshot.getValue(cls);
 //                Log.d(TAG, dataSnapshot.getValue().toString());
                 done.countDown();
             }
@@ -339,27 +397,46 @@ public class FirebaseService {
                 Log.e(TAG, error.getMessage());
             }
 
-
         });
 
         try {
             done.await();
 
-            if (artistExists[0]) {
-                Log.i(TAG, String.format("%s already exists in database.", artistId));
-                return;
+            if (objects[0] != null) {
+                Log.i(TAG, String.format("%s already exists in database.", id));
+             //   return false;
             }
+            else {
+            Log.v(TAG, "DataSnapshot returned null.");
+            }
+
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
 
-        if (!artistExists[0]) {
-            Log.i(TAG, "DataSnapshot returned null, saving artist overview...");
-            saveDiscography(artistId, album, db, spotifyService);
+
+        switch (cls.getSimpleName()) {
+            case "User":
+                return (T) users[0];
+
+            case "Album":
+                return (T) albums[0];
+            case "Artist":
+                return (T) artists[0];
+            case "Playlist":
+                return (T) playlists[0];
+            case "Track":
+                return (T) tracks[0];
+            default:
+                Log.w(TAG, String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
+                break;
         }
+
+
+        return (T) objects[0];
     }
 
-    private static void saveDiscography(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
+    private static void saveArtistOverview(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
         Log.i(TAG, "Fetching artist overview for " + artistId);
 
         // Get the artist overview from the Spotify API
@@ -368,17 +445,13 @@ public class FirebaseService {
                 artist.getName(),artist.getId()));
 
         // Save the artist to the database
-        saveArtist(artist, db);
+        db.child("artists").child(artist.getId()).setValue(artist);
         Log.i(TAG, String.format("%s saved to database child \"artists\"", artist.getId()));
 
         // Save each album to the database
         createAlbums(artist.getAlbums(), db, spotifyService);
         createAlbums(artist.getSingles(), db, spotifyService);
         createAlbums(artist.getCompilations(), db, spotifyService);
-
-        // Save the hearted album's tracks to the database
-        saveAlbumTracks(album, db, spotifyService);
-        Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
     }
 
     private static void createAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
@@ -406,35 +479,11 @@ public class FirebaseService {
                     album.getArtistIds(),
                     0,
                     false);
+            album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
-    }
-
-    private static void saveArtist(Artist artist, DatabaseReference db) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", artist.getId());
-        map.put("name", artist.getName());
-        map.put("photoUrl", artist.getPhotoUrl());
-        map.put("bio", artist.getBio());
-        map.put("externalLinks", artist.getExternalLinks());
-        map.put("latest", artist.getLatest());
-        List<String> singles = new ArrayList<>();
-        List<String> albums = new ArrayList<>();
-        List<String> compilations = new ArrayList<>();
-        for (Album a : artist.getSingles()) {
-            singles.add(a.getId());
-        }
-        for (Album a : artist.getAlbums()) {
-            albums.add(a.getId());
-        }
-        for (Album a : artist.getCompilations()) {
-            compilations.add(a.getId());
-        }
-
-        map.put("singles", singles);
-        map.put("albums", albums);
-        map.put("compilations", compilations);
-
-        db.child("artists").child(artist.getId()).setValue(map);
+        album.setTrackIdsKnown(true);
+        db.child("albums").child(album.getId()).child("trackIdsKnown").setValue(true);
+        db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 }

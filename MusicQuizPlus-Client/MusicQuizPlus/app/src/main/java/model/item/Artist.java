@@ -1,9 +1,8 @@
 package model.item;
 
 import android.text.Html;
-import android.util.Log;
 
-import com.google.gson.Gson;
+import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -24,18 +23,31 @@ public class Artist {
     private String bio;
     private List<ExternalLink> externalLinks;
     private String latest;
+    private List<String> singleIds;
+    private List<String> albumIds;
+    private List<String> compilationIds;
+
+
+    // Exlcuded from database
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
 
-    public Artist(String id, String name, List<PhotoUrl> photoUrl) {
+    public Artist(String id, String name, List<PhotoUrl> photoUrl, List<String> singleIds, List<String> albumIds, List<String> compilationIds) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
+        this.singleIds = singleIds;
+        this.albumIds = albumIds;
+        this.compilationIds = compilationIds;
     }
 
     public Artist(JsonObject jsonObject) {
         extractArtist(jsonObject);
+    }
+
+    public Artist() {
+
     }
 
     // Extract information from the Artist Overview JsonObject into the model
@@ -88,8 +100,11 @@ public class Artist {
         latest = discography.getAsJsonObject("latest").get("uri").getAsString();
 
         singles = new ArrayList<>();
+        singleIds = new ArrayList<>();
         albums = new ArrayList<>();
+        albumIds = new ArrayList<>();
         compilations = new ArrayList<>();
+        compilationIds = new ArrayList<>();
 
         List<String> discographyCollections = new ArrayList<>() {
             {
@@ -112,12 +127,15 @@ public class Artist {
                     case UNINITIALIZED:
                     case ALBUM:
                         albums.add(album);
+                        albumIds.add(album.getId());
                         break;
                     case SINGLE:
                         singles.add(album);
+                        singleIds.add(album.getId());
                         break;
                     case COMPILATION:
                         compilations.add(album);
+                        compilationIds.add(album.getId());
                         break;
 
                 }
@@ -161,7 +179,10 @@ public class Artist {
                 artistName,
                 artistId,
                 albumType,
-                null);
+                null,
+                false,
+                0,
+                false);
     }
 
     public List<PhotoUrl> getPhotoUrl() {
@@ -188,15 +209,30 @@ public class Artist {
         return latest;
     }
 
+    @Exclude
     public List<Album> getSingles() {
         return singles;
     }
 
+    @Exclude
     public List<Album> getAlbums() {
         return albums;
     }
 
+    @Exclude
     public List<Album> getCompilations() {
         return compilations;
+    }
+
+    public List<String> getSingleIds() {
+        return singleIds;
+    }
+
+    public List<String> getAlbumIds() {
+        return albumIds;
+    }
+
+    public List<String> getCompilationIds() {
+        return compilationIds;
     }
 }
