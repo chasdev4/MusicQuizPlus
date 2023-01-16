@@ -65,6 +65,14 @@ public class User implements Serializable {
         return true;
     }
 
+    public int removePlaylistId(String playlistId) {
+        int index = playlistIds.indexOf(playlistId);
+
+        playlistIds.remove(index);
+
+        return index;
+    }
+
     public int getLevel() {
         return level;
     }
