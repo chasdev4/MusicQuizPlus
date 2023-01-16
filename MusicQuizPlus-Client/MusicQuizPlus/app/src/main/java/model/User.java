@@ -2,16 +2,18 @@ package model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class User implements Serializable {
-    private List<String> albumIds;
-    private List<String> artistIds;
-    private List<String> playlistIds;
+    private Map<String, String> albumIds;
+    private Map<String, String>artistIds;
+    private Map<String, String> playlistIds;
     private int level;
     private int xp;
 
-    public User(List<String> albumIds, List<String> artistIds, List<String> playlistIds, int level, int xp) {
+    public User(Map<String, String> albumIds, Map<String, String> artistIds, Map<String, String> playlistIds, int level, int xp) {
         this.albumIds = albumIds;
         this.artistIds = artistIds;
         this.playlistIds = playlistIds;
@@ -20,57 +22,60 @@ public class User implements Serializable {
     }
 
     public User() {
-        albumIds = new ArrayList<>();
-        artistIds = new ArrayList<>();
-        playlistIds = new ArrayList<>();
+        albumIds = new HashMap<>();
+        artistIds = new HashMap<>();
+        playlistIds = new HashMap<>();
         level = 1;
         xp = 0;
     }
 
-    public List<String> getAlbumIds() {
+    public Map<String, String> getAlbumIds() {
         return albumIds;
     }
 
-    public boolean addAlbumId(String albumId) {
-        if (albumIds.contains(albumId)) {
+    public boolean addAlbumId(String key, String albumId) {
+        if (albumIds.containsValue(albumId)) {
             return false;
         }
 
-        albumIds.add(albumId);
+        albumIds.put(key, albumId);
         return true;
     }
 
-    public List<String> getArtistIds() {
+    public Map<String, String> getArtistIds() {
         return artistIds;
     }
 
-    public boolean addArtistId(String artistId) {
-        if (artistIds.contains(artistId)) {
+    public boolean addArtistId(String key, String artistId) {
+        if (artistIds.containsValue(artistId)) {
             return false;
         }
-        artistIds.add(artistId);
+        artistIds.put(key, artistId);
         return true;
     }
 
-    public List<String> getPlaylistIds() {
+    public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
 
-    public boolean addPlaylistId(String playlistId) {
-        if (playlistIds.contains(playlistId)) {
+    public boolean addPlaylistId(String key, String playlistId) {
+        if (playlistIds.containsValue(playlistId)) {
             return false;
         }
 
-        playlistIds.add(playlistId);
+        playlistIds.put(key, playlistId);
         return true;
     }
 
-    public int removePlaylistId(String playlistId) {
-        int index = playlistIds.indexOf(playlistId);
+    public String removePlaylistId(String playlistId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
+            if (entry.getValue() == playlistId) {
+                key = entry.getKey();
+            }
+        }
 
-        playlistIds.remove(index);
-
-        return index;
+        return playlistIds.remove(key);
     }
 
     public int getLevel() {

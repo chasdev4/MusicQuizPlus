@@ -191,7 +191,8 @@ public class FirebaseService {
         Map<String, Object> updates = new HashMap<>();
 
         // Add the albumId to the user
-        boolean result = user.addAlbumId(album.getId());
+        String key = db.child("users").child(firebaseUser.getUid()).child("albumIds").push().getKey();
+        boolean result = user.addAlbumId(key, album.getId());
 
         // If the album wasn't added, return
         if (!result) {
@@ -203,21 +204,20 @@ public class FirebaseService {
         db.child("users")
                 .child(firebaseUser.getUid())
                 .child("albumIds")
-                .child(String.valueOf(user.getAlbumIds().size() - 1))
+                .child(key)
                 .setValue(album.getId());
-
-
 
         // Add the artistId to the user
         String artistId = album.getArtistIds().get(0);
-        result = user.addArtistId(artistId);
+        key = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+        result = user.addArtistId(key, artistId);
 
         // If the artist was added, add it to the db user
         if (result) {
             db.child("users")
                     .child(firebaseUser.getUid())
                     .child("artistIds")
-                    .child(String.valueOf(user.getArtistIds().size() - 1))
+                    .child(key)
                     .setValue(artistId);
             Log.i(TAG, String.format("%s added to the artistIds list.", artistId));
         }
@@ -346,7 +346,8 @@ public class FirebaseService {
         }
 
         // Add the playlistId to the user
-        boolean result = user.addPlaylistId(playlist.getId());
+        String key = db.child("users").child(firebaseUser.getUid()).child("playlistIds").push().getKey();
+        boolean result = user.addPlaylistId(key, playlist.getId());
 
         // If the playlist wasn't added, return
         if (!result) {
@@ -358,7 +359,7 @@ public class FirebaseService {
         db.child("users")
                 .child(firebaseUser.getUid())
                 .child("playlistIds")
-                .child(String.valueOf(user.getPlaylistIds().size() - 1))
+                .child(key)
                 .setValue(playlist.getId());
 
 
@@ -370,7 +371,13 @@ public class FirebaseService {
             Log.i(TAG, "DataSnapshot returned null, saving playlist...");
             db.child("playlists").child(playlist.getId()).setValue(playlist);
             Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
+        } else {
+            if (!playlist1.isTrackIdsKnown()) {
+                FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+            }
         }
+
+
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
@@ -386,7 +393,7 @@ public class FirebaseService {
         DatabaseReference playlistRef = db.child("playlists").child(playlist.getId());
 
         // Playlist is already populated, do nothing
-        if (playlist.isTrackIdsKnown() && playlistRef.child("isPopulated").get().equals("true")) {
+        if (playlist.isTrackIdsKnown() && playlistRef.child("trackIdsKnown").get().equals("true")) {
             return playlist;
         }
 
@@ -427,13 +434,14 @@ public class FirebaseService {
 
         playlist.setTrackIdsKnown(true);
         db.child("playlists").child(playlist.getId()).child("trackIds").setValue(playlist.getTrackIds());
-        db.child("playlists").child(playlist.getId()).child("isPopulated").setValue(true);
+        db.child("playlists").child(playlist.getId()).child("trackIdsKnown").setValue(true);
 
         return playlist;
     }
 
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                         SpotifyService spotifyService) {
+        // Null check
         if (nullCheck(user, firebaseUser, db, spotifyService, "unheartPlaylist")) {
             return;
         }
@@ -442,26 +450,44 @@ public class FirebaseService {
             return;
         }
 
-        Map<String, Object> updates = new HashMap<>();
+        // Attempt to remove the playlist from the user
+        String key = user.removePlaylistId(playlist.getId());
 
-        boolean removePlaylistFromDatabase = false;
+        // If the playlist wasn't found, abort
+        if (key.isEmpty()) {
+            Log.w(TAG, "Playlist not previously saved to user. Aborting...");
+            return;
+        }
+
+        // Remove the playlist from the user
+        db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(key).removeValue();
+        Log.i(TAG, String.format("\"%s : %s\" removed from users/%s/playlistIds", key, playlist.getId(), firebaseUser.getUid()));
+
+        // If the playlist is on it's last follower or lower, remove it from the database
         if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
-            removePlaylistFromDatabase = true;
-        }
-        else {
-            updates.put("albums/"+playlist.getId()+"/followers", ServerValue.increment(-1));
-        }
 
-        if (removePlaylistFromDatabase) {
+            // If we know the trackIds associated with the playlist, remove them from the databse
             if (playlist.isTrackIdsKnown()) {
                 for (String trackId : playlist.getTrackIds()) {
                     db.child("tracks").child(trackId).removeValue();
                 }
+                Log.i(TAG, String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
             }
+
+            // Remove the playlist from the database
             db.child("playlists").child(playlist.getId()).removeValue();
+            Log.i(TAG, String.format("%s removed from /playlists", playlist.getId()));
+
+        }
+        // Else the playlist has enough followers to live
+        else {
+            // Decrement the follower count
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("albums/"+playlist.getId()+"/followers", ServerValue.increment(-1));
+            db.updateChildren(updates);
+            Log.i(TAG, String.format("%s follower count has decremented.", playlist.getId()));
         }
 
-        db.updateChildren(updates);
     }
 
     private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,

@@ -47,6 +47,7 @@ import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.User;
 import model.item.Album;
+import model.item.Playlist;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -169,25 +170,39 @@ public class MainActivity extends AppCompatActivity {
                     user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
 
-                    FirebaseService.heartAlbum(user, firebaseUser, db,
-                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-                                    "Inna",
+                    FirebaseService.heartPlaylist(user, firebaseUser, db,
+                            new Playlist(
+                                    "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
+                                    "NKVT 2021",
                                     new ArrayList<PhotoUrl>() {{
-                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-                                                640, 640));
+                                        add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
+                                                0, 0));
                                     }},
-                                    new ArrayList<String>() {
-                                        {
-                                            add("INNA");
-                                        }
-                                    },
-                                    new ArrayList<String>() {
-                                        {
-                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                                        }
-                                    },
-                                    AlbumType.ALBUM, new ArrayList<String>(),
-                                    false, 0, false), spotifyService);
+                                    "Spotify",
+                                    "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
+                            ),
+                            spotifyService
+                    );
+
+//                    FirebaseService.heartAlbum(user, firebaseUser, db,
+//                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+//                                    "Inna",
+//                                    new ArrayList<PhotoUrl>() {{
+//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+//                                                640, 640));
+//                                    }},
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("INNA");
+//                                        }
+//                                    },
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                                        }
+//                                    },
+//                                    AlbumType.ALBUM, new ArrayList<String>(),
+//                                    false, 0, false), spotifyService);
                 }
             }).start();
 

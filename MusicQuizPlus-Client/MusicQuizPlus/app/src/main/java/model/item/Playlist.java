@@ -25,16 +25,16 @@ public class Playlist implements Serializable {
     // Excluded from Database
     private List<Track> tracks;
 
-    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description,
-                    boolean trackIdsKnown, int followers, boolean followersKnown) {
+    // Followers
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.owner = owner;
         this.description = description;
-        this.trackIdsKnown = trackIdsKnown;
-        this.followers = followers;
-        this.followersKnown = followersKnown;
+        trackIdsKnown = false;
+        followers = 0;
+        followersKnown = false;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
     }

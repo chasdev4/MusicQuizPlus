@@ -164,10 +164,7 @@ public class SearchResults {
                     jsonObject.get("name").getAsString(),
                     photoUrls,
                     jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString(),
-                    false,
-                    0,
-                    false));
+                    jsonObject.get("description").getAsString()));
 
         }
         Log.i(TAG, "Playlist results extracted from JsonObject.");

@@ -98,10 +98,7 @@ public class PlaylistsView extends AppCompatActivity {
                                     ));
                                 }},
                             owner,
-                            description,
-                            false,
-                            0,
-                            false);
+                            description);
                     itemsList.add(playlistToAdd);
                 }
                 customAdapter.notifyDataSetChanged();
