@@ -109,4 +109,19 @@
         android:layout_marginBottom="15dp"
         android:layout_marginEnd="15dp"/>
 
+    <ImageButton
+        android:id="@+id/backToTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/mainSearchButton"
+        android:layout_alignParentEnd="true"
+        android:elevation="8dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="30dp"
+        android:src="@drawable/up_chevron"
+        android:background="@drawable/round_button_no_stroke"
+        android:visibility="gone"
+        />
+
+
 </RelativeLayout>
