@@ -33,7 +33,7 @@ public class Playlist implements Serializable {
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
     }
-    
+
     public Playlist() {
 
     }

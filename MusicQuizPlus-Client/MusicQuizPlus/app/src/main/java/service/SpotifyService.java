@@ -2,6 +2,7 @@ package service;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -76,7 +77,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+            JsonObject jsonObject = gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
             // Populate Artist model and return
             return new Artist(jsonObject);
@@ -112,7 +113,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            return gson.fromJson(json, JsonObject.class);
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -143,7 +144,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            return gson.fromJson(json, JsonObject.class).getAsJsonArray("items");
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject().getAsJsonArray("items");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,7 +169,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            return gson.fromJson(json, JsonObject.class).getAsJsonArray("public_playlists");
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject().getAsJsonArray("public_playlists");
 
         } catch (IOException e) {
             e.printStackTrace();
