@@ -193,8 +193,9 @@ public class SearchResults {
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
                     artistIds,
-                    (short) 0,
-                    false));
+                    0,
+                    false,
+                    null));
 
         }
         Log.i(TAG, "Track results extracted from JsonObject.");

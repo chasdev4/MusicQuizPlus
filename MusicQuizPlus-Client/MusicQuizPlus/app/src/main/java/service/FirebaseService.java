@@ -295,7 +295,8 @@ public class FirebaseService {
                     album.getId(),
                     album.getArtistIds(),
                     0,
-                    false);
+                    false,
+                    null);
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
@@ -428,8 +429,9 @@ public class FirebaseService {
                     jsonObject.getAsJsonObject("name").getAsString(),
                     jsonObject.getAsJsonObject("album").getAsJsonObject("uri").getAsString(),
                     artistIds,
-                    jsonObject.getAsJsonObject("popularity").getAsShort(),
-                    true
+                    jsonObject.getAsJsonObject("popularity").getAsInt(),
+                    true,
+                    jsonObject.getAsJsonObject("preview_url").getAsString()
             );
 
             // Save that track to the database

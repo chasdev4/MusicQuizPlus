@@ -23,22 +23,6 @@ public class Playlist implements Serializable {
     // Excluded from Database
     private List<Track> tracks;
 
-    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, List<String> trackIds) {
-        this.id = id;
-        this.name = name;
-        this.photoUrl = photoUrl;
-        this.owner = owner;
-        this.description = description;
-        isPopulated = true;
-        this.trackIds = trackIds;
-        tracks = new ArrayList<>();
-
-        int i = 0;
-        for (String trackId : trackIds) {
-            tracks.add(new Track(trackId));
-        }
-    }
-
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, boolean isPopulated) {
         this.id = id;
         this.name = name;
@@ -48,6 +32,10 @@ public class Playlist implements Serializable {
         this.isPopulated = isPopulated;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
+    }
+    
+    public Playlist() {
+
     }
 
     public String getDescription() {
