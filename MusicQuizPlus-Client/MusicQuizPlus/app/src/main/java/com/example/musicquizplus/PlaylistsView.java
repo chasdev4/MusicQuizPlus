@@ -99,6 +99,8 @@ public class PlaylistsView extends AppCompatActivity {
                                 }},
                             owner,
                             description,
+                            false,
+                            0,
                             false);
                     itemsList.add(playlistToAdd);
                 }

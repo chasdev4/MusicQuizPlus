@@ -188,7 +188,6 @@ public class FirebaseService {
             return;
         }
 
-
         Map<String, Object> updates = new HashMap<>();
 
         // Add the albumId to the user
@@ -331,13 +330,16 @@ public class FirebaseService {
         }
     }
 
-    // When the user "hearts" an playlist
+    // When the user "hearts" a playlist
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
 
+        // Return if any of these fields are null
         if (nullCheck(user, firebaseUser, db, spotifyService, "heartPlaylist")) {
             return;
         }
+
+        // Or if the playlist is null
         if (playlist == null) {
             Log.e(TAG, "Playlist provided to heartPlaylist was null.");
             return;
@@ -359,42 +361,23 @@ public class FirebaseService {
                 .child(String.valueOf(user.getPlaylistIds().size() - 1))
                 .setValue(playlist.getId());
 
+
         // Check to see if the playlist exists in the database
         // If the playlist exists, then there is no need to save it
-        CountDownLatch done = new CountDownLatch(1);
-        final boolean playlistExists[] = {false};
-        db.child("playlists").child(playlist.getId()).addListenerForSingleValueEvent(new ValueEventListener() {
+        Playlist playlist1 = checkDatabase(db, "playlists", playlist.getId(), Playlist.class);
 
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                playlistExists[0] = dataSnapshot.getValue() != null;
-                done.countDown();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, error.getMessage());
-            }
-
-
-        });
-
-        try {
-            done.await();
-
-            if (playlistExists[0]) {
-                Log.i(TAG, String.format("%s already exists in database.", playlist.getId()));
-                return;
-            }
-        } catch(InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if (!playlistExists[0]) {
+        if (playlist1 == null) {
             Log.i(TAG, "DataSnapshot returned null, saving playlist...");
             db.child("playlists").child(playlist.getId()).setValue(playlist);
             Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
         }
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
+        if (!playlist1.isFollowersKnown()) {
+            updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
+        }
+        db.updateChildren(updates);
 
     }
 
@@ -403,7 +386,7 @@ public class FirebaseService {
         DatabaseReference playlistRef = db.child("playlists").child(playlist.getId());
 
         // Playlist is already populated, do nothing
-        if (playlist.isPopulated() && playlistRef.child("isPopulated").get().equals("true")) {
+        if (playlist.isTrackIdsKnown() && playlistRef.child("isPopulated").get().equals("true")) {
             return playlist;
         }
 
@@ -442,7 +425,7 @@ public class FirebaseService {
         }
 
 
-        playlist.setPopulated(true);
+        playlist.setTrackIdsKnown(true);
         db.child("playlists").child(playlist.getId()).child("trackIds").setValue(playlist.getTrackIds());
         db.child("playlists").child(playlist.getId()).child("isPopulated").setValue(true);
 
@@ -459,7 +442,26 @@ public class FirebaseService {
             return;
         }
 
+        Map<String, Object> updates = new HashMap<>();
 
+        boolean removePlaylistFromDatabase = false;
+        if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
+            removePlaylistFromDatabase = true;
+        }
+        else {
+            updates.put("albums/"+playlist.getId()+"/followers", ServerValue.increment(-1));
+        }
+
+        if (removePlaylistFromDatabase) {
+            if (playlist.isTrackIdsKnown()) {
+                for (String trackId : playlist.getTrackIds()) {
+                    db.child("tracks").child(trackId).removeValue();
+                }
+            }
+            db.child("playlists").child(playlist.getId()).removeValue();
+        }
+
+        db.updateChildren(updates);
     }
 
     private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,

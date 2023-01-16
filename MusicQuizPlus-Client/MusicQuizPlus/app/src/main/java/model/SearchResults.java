@@ -159,10 +159,15 @@ public class SearchResults {
                     sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString(), width, height));
 
             // Add to collection
-            playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
+            playlists.add(new Playlist(
+                    jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
-                    photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString(), false));
+                    photoUrls,
+                    jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
+                    jsonObject.get("description").getAsString(),
+                    false,
+                    0,
+                    false));
 
         }
         Log.i(TAG, "Playlist results extracted from JsonObject.");

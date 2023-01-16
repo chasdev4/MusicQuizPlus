@@ -17,19 +17,24 @@ public class Playlist implements Serializable {
     private List<PhotoUrl> photoUrl;
     private String owner;
     private String description;
-    private boolean isPopulated;
     private List<String> trackIds;
+    private boolean trackIdsKnown;
+    private int followers;
+    private boolean followersKnown;
 
     // Excluded from Database
     private List<Track> tracks;
 
-    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, boolean isPopulated) {
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description,
+                    boolean trackIdsKnown, int followers, boolean followersKnown) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.owner = owner;
         this.description = description;
-        this.isPopulated = isPopulated;
+        this.trackIdsKnown = trackIdsKnown;
+        this.followers = followers;
+        this.followersKnown = followersKnown;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
     }
@@ -66,12 +71,12 @@ public class Playlist implements Serializable {
         trackIds.add(trackId);
     }
 
-    public boolean isPopulated() {
-        return isPopulated;
+    public boolean isTrackIdsKnown() {
+        return trackIdsKnown;
     }
 
-    public void setPopulated(boolean populated) {
-        isPopulated = populated;
+    public void setTrackIdsKnown(boolean trackIdsKnown) {
+        this.trackIdsKnown = trackIdsKnown;
     }
 
     @Exclude
@@ -81,5 +86,21 @@ public class Playlist implements Serializable {
 
     public void addTrack(Track track) {
         tracks.add(track);
+    }
+
+    public int getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(int followers) {
+        this.followers = followers;
+    }
+
+    public boolean isFollowersKnown() {
+        return followersKnown;
+    }
+
+    public void setFollowersKnown(boolean followersKnown) {
+        this.followersKnown = followersKnown;
     }
 }
