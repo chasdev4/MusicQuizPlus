@@ -179,28 +179,15 @@ public class FirebaseService {
     // When the user "hearts" an album
     public static void heartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
-        //#region Null checking
-        if (user == null) {
-            Log.e(TAG,"User provided to heartAlbum was null.");
-            return;
-        }
-        if (firebaseUser == null) {
-            Log.e(TAG, "FirebaseUser provided to heartAlbum was null.");
-            return;
-        }
-        if (db == null) {
-            Log.e(TAG, "DatabaseReference provided to heartAlbum was null.");
+
+        if (nullCheck(user, firebaseUser, db, spotifyService, "heartAlbum")) {
             return;
         }
         if (album == null) {
             Log.e(TAG, "Album provided to heartAlbum was null.");
             return;
         }
-        if (spotifyService == null) {
-            Log.e(TAG, "SpotifyService provided to heartAlbum was null.");
-            return;
-        }
-        //#endregion
+
 
         Map<String, Object> updates = new HashMap<>();
 
@@ -346,28 +333,14 @@ public class FirebaseService {
     // When the user "hearts" an playlist
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
-        //#region Null checking
-        if (user == null) {
-            Log.e(TAG,"User provided to heartPlaylist was null.");
-            return;
-        }
-        if (firebaseUser == null) {
-            Log.e(TAG, "FirebaseUser provided to heartPlaylist was null.");
-            return;
-        }
-        if (db == null) {
-            Log.e(TAG, "DatabaseReference provided to heartPlaylist was null.");
+
+        if (nullCheck(user, firebaseUser, db, spotifyService, "heartPlaylist")) {
             return;
         }
         if (playlist == null) {
             Log.e(TAG, "Playlist provided to heartPlaylist was null.");
             return;
         }
-        if (spotifyService == null) {
-            Log.e(TAG, "SpotifyService provided to heartPlaylist was null.");
-            return;
-        }
-        //#endregion
 
         // Add the playlistId to the user
         boolean result = user.addPlaylistId(playlist.getId());
@@ -472,5 +445,39 @@ public class FirebaseService {
         db.child("playlists").child(playlist.getId()).child("isPopulated").setValue(true);
 
         return playlist;
+    }
+
+    public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
+                                        SpotifyService spotifyService) {
+        if (nullCheck(user, firebaseUser, db, spotifyService, "unheartPlaylist")) {
+            return;
+        }
+        if (playlist == null) {
+            Log.e(TAG, "Playlist provided to unheartPlaylist was null.");
+            return;
+        }
+
+
+    }
+
+    private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,
+                                  SpotifyService spotifyService, String methodName) {
+        if (user == null) {
+            Log.e(TAG, String.format("User provided to %s was null.", methodName));
+            return true;
+        }
+        if (firebaseUser == null) {
+            Log.e(TAG, String.format("FirebaseUser provided to %s was null.", methodName));
+            return true;
+        }
+        if (db == null) {
+            Log.e(TAG, String.format("DatabaseReference provided to %s was null.", methodName));
+            return true;
+        }
+        if (spotifyService == null) {
+            Log.e(TAG, String.format("SpotifyService provided to %s was null.", methodName));
+            return true;
+        }
+        return false;
     }
 }
