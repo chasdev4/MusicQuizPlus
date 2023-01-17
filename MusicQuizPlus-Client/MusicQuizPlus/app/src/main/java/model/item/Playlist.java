@@ -18,25 +18,24 @@ public class Playlist implements Serializable {
     private String owner;
     private String description;
     private List<String> trackIds;
-    private boolean trackIdsKnown;
     private int followers;
     private boolean followersKnown;
 
     // Excluded from Database
     private List<Track> tracks;
+    private boolean trackIdsKnown;
 
-    // Followers
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.owner = owner;
         this.description = description;
-        trackIdsKnown = false;
         followers = 0;
         followersKnown = false;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
+        trackIdsKnown = false;
     }
 
     public Playlist() {
@@ -71,6 +70,7 @@ public class Playlist implements Serializable {
         trackIds.add(trackId);
     }
 
+    @Exclude
     public boolean isTrackIdsKnown() {
         return trackIdsKnown;
     }

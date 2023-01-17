@@ -16,6 +16,7 @@ import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -295,7 +296,8 @@ public class FirebaseService {
                     album.getArtistIds(),
                     0,
                     false,
-                    null);
+                    null,
+                    true);
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
@@ -330,10 +332,91 @@ public class FirebaseService {
         }
     }
 
+    // Used when a playlists tracks have not been populated yet, like from the search results
+    public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
+        // Playlist is already populated, do nothing
+        if (playlist.isTrackIdsKnown()) {
+            return playlist;
+        }
+
+        // Check the database for the playlist
+        Playlist playlist1 = checkDatabase(db, "playlists", playlist.getId(), Playlist.class);
+
+        // The playlist doesn't exist
+        if (playlist1 == null) {
+            Log.i(TAG, "DataSnapshot returned null, retrieving playlist tracks...");
+        }
+        // It exists, the tracks should be known
+        else if (playlist1.isTrackIdsKnown()) {
+            Log.i(TAG, "Playlist exists in database, returning playlist...");
+            return playlist1;
+        }
+
+        // Use the spotify service class to get playlist's tracks
+        JsonArray items = spotifyService.playlistTracks(playlist.getId());
+
+        // Loop thru and extract each track
+        for (int i = 0; i < items.size(); i++) {
+            // Get the JsonObject from the items array
+            String jsonString = items.get(i).getAsJsonObject().get("track").toString();
+            if (!jsonString.equals("null")) {
+                JsonObject jsonObject = spotifyService.getGson().fromJson(jsonString, JsonElement.class).getAsJsonObject();
+
+                // Grabbing the trackId
+                String trackId = jsonObject.get("uri").getAsString();
+
+                // Add the trackId to the playlist
+                playlist.addTrackId(trackId);
+
+                // Check the database to see if the track exists
+                Track track = checkDatabase(db, "tracks", trackId, Track.class);
+
+                // If the track doesn't exist
+                if (track == null) {
+                    // Extract track's artist info
+                    JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
+                    List<String> artistIds = new ArrayList<>();
+                    for (int j = 0; j < artistsArray.size(); j++) {
+                        artistIds.add(artistsArray.get(j).getAsJsonObject().get("uri").toString());
+                    }
+
+                    // Build a new track
+                    track = new Track(
+                            trackId,
+                            jsonObject.get("name").toString(),
+                            jsonObject.getAsJsonObject("album").get("uri").toString(),
+                            artistIds,
+                            jsonObject.get("popularity").getAsInt(),
+                            true,
+                            jsonObject.get("preview_url").toString(),
+                            false);
+                }
+
+
+                // Get a key to add the playlist Id to the track
+                DatabaseReference trackRef = db.child("tracks").child(trackId);
+                String key = trackRef.child("playlistIds").push().getKey();
+
+                // Try and add the playlistId to the track
+                boolean result = track.addPlaylistId(key, playlist.getId());
+                if (result) {
+                    // Add the track to the playlist
+                    playlist.addTrack(track);
+                }
+            }
+            else {
+                Log.i(TAG, String.format("Track #%s in items was null", String.valueOf(i)));
+            }
+
+        }
+
+        playlist.setTrackIdsKnown(true);
+        return playlist;
+    }
+
     // When the user "hearts" a playlist
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
-
         // Return if any of these fields are null
         if (nullCheck(user, firebaseUser, db, spotifyService, "heartPlaylist")) {
             return;
@@ -367,76 +450,43 @@ public class FirebaseService {
         // If the playlist exists, then there is no need to save it
         Playlist playlist1 = checkDatabase(db, "playlists", playlist.getId(), Playlist.class);
 
+        // Playlist doesn't exist in db yet
         if (playlist1 == null) {
             Log.i(TAG, "DataSnapshot returned null, saving playlist...");
-            db.child("playlists").child(playlist.getId()).setValue(playlist);
-            Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
-        } else {
-            if (!playlist1.isTrackIdsKnown()) {
-                FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
-            }
+        }
+        // Playlist exists but something really really unexpected happened
+        else if (!playlist.getId().equals(playlist1.getId())) {
+            Log.e(TAG, "Playlist retrieved but the ID's don't match. That was unexpected...");
+            return;
+        }
+        // Playlist exists and the followers are only known on the db
+        else if (playlist1.isFollowersKnown() && !playlist.isFollowersKnown()) {
+            playlist.setFollowersKnown(true);
+            playlist.setFollowers(playlist1.getFollowers());
         }
 
+        // Save the playlist to the db
+        db.child("playlists").child(playlist.getId()).setValue(playlist);
+        Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
 
-
+        // Increment the follower count
         Map<String, Object> updates = new HashMap<>();
         updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
-        if (!playlist1.isFollowersKnown()) {
-            updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
+        if (playlist1 != null) {
+            if (!playlist1.isFollowersKnown()) {
+                updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
+            }
         }
         db.updateChildren(updates);
 
-    }
-
-    // Used when a playlists tracks have not been populated yet, like from the search results
-    public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
-        DatabaseReference playlistRef = db.child("playlists").child(playlist.getId());
-
-        // Playlist is already populated, do nothing
-        if (playlist.isTrackIdsKnown() && playlistRef.child("trackIdsKnown").get().equals("true")) {
-            return playlist;
+        // Save each track to the database
+        for (Track t : playlist.getTracks()) {
+            db.child("tracks").child(t.getId()).setValue(t);
         }
 
-        // Use the spotify service class to get playlist's tracks
-        JsonArray items = spotifyService.playlistTracks(playlist.getId(), 200, 0);
+        // DEBUG: Uncomment me to create a sample_history table
+        // db.child("sample_history").setValue(playlist.getTrackIds());
 
-        // Loop thru and extract each tracks
-        for (int i = 0; i < items.size(); i++) {
-            JsonObject jsonObject = items.get(i).getAsJsonObject().getAsJsonObject("track");
-
-            JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
-            List<String> artistIds = new ArrayList<>();
-            for (int j = 0; j < artistsArray.size(); j++) {
-                artistIds.add(artistsArray.get(j).getAsJsonObject().getAsJsonObject("uri").getAsString());
-            }
-
-            // Add the trackId's to the playlist
-            playlist.addTrackId(jsonObject.getAsJsonObject("uri").getAsString());
-
-            // Build a new track
-            Track track = new Track(
-                    jsonObject.getAsJsonObject("uri").getAsString(),
-                    jsonObject.getAsJsonObject("name").getAsString(),
-                    jsonObject.getAsJsonObject("album").getAsJsonObject("uri").getAsString(),
-                    artistIds,
-                    jsonObject.getAsJsonObject("popularity").getAsInt(),
-                    true,
-                    jsonObject.getAsJsonObject("preview_url").getAsString()
-            );
-
-            // Save that track to the database
-            db.child("tracks").child(track.getId()).setValue(track);
-
-            // Add the track to the playlist
-            playlist.addTrack(track);
-        }
-
-
-        playlist.setTrackIdsKnown(true);
-        db.child("playlists").child(playlist.getId()).child("trackIds").setValue(playlist.getTrackIds());
-        db.child("playlists").child(playlist.getId()).child("trackIdsKnown").setValue(true);
-
-        return playlist;
     }
 
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,

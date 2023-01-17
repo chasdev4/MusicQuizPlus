@@ -123,17 +123,13 @@ public class SpotifyService {
     }
 
     // Playlist Tracks endpoint
-    public JsonArray playlistTracks(String playlistId, int limit, int offset) {
+    public JsonArray playlistTracks(String playlistId) {
         String[] playlistIdArray = playlistId.split(":");
         // Create the client and request
         OkHttpClient client = new OkHttpClient();
         final Request request = new Request.Builder()
                 .url("https://spotify23.p.rapidapi.com/playlist_tracks/?id="
                         + playlistIdArray[2]
-                        + "&offset="
-                        + offset
-                        + "&limit="
-                        + limit
                 )
                 .get()
                 .addHeader("X-RapidAPI-Key", _key)
@@ -145,7 +141,6 @@ public class SpotifyService {
             // Use gson to get a JsonObject
             String json = response.body().string();
             return gson.fromJson(json, JsonElement.class).getAsJsonObject().getAsJsonArray("items");
-
         } catch (IOException e) {
             e.printStackTrace();
         }

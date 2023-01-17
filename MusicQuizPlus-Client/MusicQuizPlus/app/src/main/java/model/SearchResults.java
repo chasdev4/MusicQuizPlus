@@ -197,7 +197,8 @@ public class SearchResults {
                     artistIds,
                     0,
                     false,
-                    null));
+                    null,
+                    false));
 
         }
         Log.i(TAG, "Track results extracted from JsonObject.");
