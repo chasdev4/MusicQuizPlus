@@ -151,24 +151,13 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, firebaseUser.getDisplayName());
             Log.d(TAG, firebaseUser.getEmail());
 
-
-//            db.child("users").child(firebaseUser.getUid()).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-//                @Override
-//                public void onComplete(@NonNull Task<DataSnapshot> task) {
-//                    if (!task.isSuccessful()) {
-//                        Log.e(TAG, "Error getting data", task.getException());
-//                    }
-//                    else {
-//                        user = task.getResult().getValue(User.class);
-//                        Log.d(TAG, String.valueOf(task.getResult().getValue()));
-//                    }
-//                }
-//            });
-
             new Thread(new Runnable() {
                 public void run() {
                     user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
+                    Log.d(TAG, "WHAAAAT");
+
+                    // DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
 //                            "NKVT 2021",
@@ -181,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 //                    );
 //
 //                    if (!playlist.isTrackIdsKnown()) {
-//                        FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+//                       playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
 //                    }
 //
 //                    FirebaseService.heartPlaylist(user, firebaseUser, db,
@@ -189,25 +178,36 @@ public class MainActivity extends AppCompatActivity {
 //                            spotifyService
 //                    );
 
-                    FirebaseService.heartAlbum(user, firebaseUser, db,
-                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-                                    "Inna",
-                                    new ArrayList<PhotoUrl>() {{
-                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-                                                640, 640));
-                                    }},
-                                    new ArrayList<String>() {
-                                        {
-                                            add("INNA");
-                                        }
-                                    },
-                                    new ArrayList<String>() {
-                                        {
-                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                                        }
-                                    },
-                                    AlbumType.ALBUM, new ArrayList<String>(),
-                                    false, 0, false), spotifyService);
+                    // DEBUG: Uncomment me to test unheartPlaylist
+//                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
+//                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
+
+
+                    // DEBUG: Uncomment me to test heartAlbum
+//                    FirebaseService.heartAlbum(user, firebaseUser, db,
+//                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+//                                    "Inna",
+//                                    new ArrayList<PhotoUrl>() {{
+//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+//                                                640, 640));
+//                                    }},
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("INNA");
+//                                        }
+//                                    },
+//                                    new ArrayList<String>() {
+//                                        {
+//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                                        }
+//                                    },
+//                                    AlbumType.ALBUM, new ArrayList<String>(),
+//                                    false, 0, false), spotifyService);
+
+
+                    // DEBUG: Uncomment me to test unheartAlbum
+                    // TODO: Create and test unheartAlbum
+
                 }
             }).start();
 

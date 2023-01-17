@@ -472,11 +472,10 @@ public class FirebaseService {
         // Increment the follower count
         Map<String, Object> updates = new HashMap<>();
         updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
-        if (playlist1 != null) {
-            if (!playlist1.isFollowersKnown()) {
+        if (!playlist.isFollowersKnown()) {
                 updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
-            }
         }
+
         db.updateChildren(updates);
 
         // Save each track to the database
@@ -504,7 +503,7 @@ public class FirebaseService {
         String key = user.removePlaylistId(playlist.getId());
 
         // If the playlist wasn't found, abort
-        if (key.isEmpty()) {
+        if (key == null) {
             Log.w(TAG, "Playlist not previously saved to user. Aborting...");
             return;
         }
@@ -515,14 +514,10 @@ public class FirebaseService {
 
         // If the playlist is on it's last follower or lower, remove it from the database
         if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
-
-            // If we know the trackIds associated with the playlist, remove them from the databse
-            if (playlist.isTrackIdsKnown()) {
-                for (String trackId : playlist.getTrackIds()) {
-                    db.child("tracks").child(trackId).removeValue();
-                }
-                Log.i(TAG, String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
+            for (String trackId : playlist.getTrackIds()) {
+                db.child("tracks").child(trackId).removeValue();
             }
+            Log.i(TAG, String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 
             // Remove the playlist from the database
             db.child("playlists").child(playlist.getId()).removeValue();

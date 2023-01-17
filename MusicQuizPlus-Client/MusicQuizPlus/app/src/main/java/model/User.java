@@ -70,12 +70,13 @@ public class User implements Serializable {
     public String removePlaylistId(String playlistId) {
         String key = "";
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
-            if (entry.getValue() == playlistId) {
+            if (entry.getValue().equals(playlistId)) {
                 key = entry.getKey();
             }
         }
 
-        return playlistIds.remove(key);
+        playlistIds.remove(key);
+        return key;
     }
 
     public int getLevel() {
