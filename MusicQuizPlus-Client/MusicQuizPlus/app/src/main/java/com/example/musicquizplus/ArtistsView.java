@@ -96,7 +96,7 @@ public class ArtistsView extends AppCompatActivity {
                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ArtistsView.this);
                     // Set title, icon, can not cancel properties.
                     alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
-                    alertDialogBuilder.setIcon(null);
+                    alertDialogBuilder.setIcon(R.drawable.magicstar);
                     alertDialogBuilder.setCancelable(false);
 
                     // Init popup dialog view and it's ui controls.
