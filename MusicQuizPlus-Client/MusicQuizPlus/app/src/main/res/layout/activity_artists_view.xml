@@ -13,10 +13,11 @@
         android:layout_height="wrap_content">
 
         <include layout="@layout/user_avatar_layout"
+            android:id="@+id/artistsUserAvatar"
             android:layout_height="150dp"
             android:layout_width="150dp"
             android:layout_marginTop="-10dp"
-            android:layout_marginStart="-12dp"/>
+            android:layout_marginStart="-12dp" />
 
         <Button
             android:id="@+id/artistTitle"
