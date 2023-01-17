@@ -21,21 +21,10 @@ public class PlaylistsView extends AppCompatActivity {
 
         GridView gridView = findViewById(R.id.playlistGridView);
         TextView userLevel = findViewById(R.id.userLevel);
-        View noCurrentUser = findViewById(R.id.playlistNoCurrentUser);
         ImageButton backToTop = findViewById(R.id.backToTop);
 
-        if(Objects.equals(userLevel.getText(), "GUEST"))
-        {
-            gridView.setVisibility(View.GONE);
-            noCurrentUser.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            gridView.setVisibility(View.VISIBLE);
-            noCurrentUser.setVisibility(View.GONE);
-        }
 
-        if(Objects.equals(gridView.getVisibility(), View.VISIBLE)) {
+        if(Objects.equals(userLevel.getText(), "GUEST")) {
             FirebaseService.retrieveData(gridView, this, "sample_playlists");
         }
 
