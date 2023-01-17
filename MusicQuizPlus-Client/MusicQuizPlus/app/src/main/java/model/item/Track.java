@@ -1,6 +1,8 @@
 package model.item;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // SUMMARY
 // The Track model stores track information
@@ -10,16 +12,20 @@ public class Track {
     private String name;
     private String albumId;
     private List<String> artistIds;
+    private Map<String, String> playlistIds;
     private int popularity;
     private boolean popularityKnown;
     private String previewUrl;
     private boolean previewUrlKnown;
+    private boolean albumKnown;
 
-    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean popularityKnown, String previewUrl) {
+    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
         this.artistIds = artistIds;
+        this.albumKnown = albumKnown;
+        playlistIds = new HashMap<>();
         this.popularity = popularity;
         this.popularityKnown = popularityKnown;
         if (previewUrl == null) {
@@ -83,5 +89,21 @@ public class Track {
 
     public void setPreviewUrlKnown(boolean previewUrlKnown) {
         this.previewUrlKnown = previewUrlKnown;
+    }
+
+    public Map<String, String> getPlaylistIds() {
+        return playlistIds;
+    }
+
+    public boolean addPlaylistId(String key, String playlistId) {
+        if (playlistIds.containsValue(playlistId)) {
+            return false;
+        }
+        playlistIds.put(key, playlistId);
+        return true;
+    }
+
+    public boolean isAlbumKnown() {
+        return albumKnown;
     }
 }
