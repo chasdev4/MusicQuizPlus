@@ -1,5 +1,8 @@
 package model.item;
 
+import com.google.firebase.database.Exclude;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,28 +11,35 @@ import model.PhotoUrl;
 // SUMMARY
 // The Playlist model stores playlist information
 
-public class Playlist {
+public class Playlist implements Serializable {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
     private String owner;
     private String description;
-    private boolean isPopulated;
     private List<String> trackIds;
+    private int followers;
+    private boolean followersKnown;
 
-    // Dropped Fields from Database
+    // Excluded from Database
     private List<Track> tracks;
+    private boolean trackIdsKnown;
 
-
-    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description, boolean isPopulated) {
+    public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.owner = owner;
         this.description = description;
-        this.isPopulated = isPopulated;
+        followers = 0;
+        followersKnown = false;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
+        trackIdsKnown = false;
+    }
+
+    public Playlist() {
+
     }
 
     public String getDescription() {
@@ -60,19 +70,37 @@ public class Playlist {
         trackIds.add(trackId);
     }
 
-    public boolean isPopulated() {
-        return isPopulated;
+    @Exclude
+    public boolean isTrackIdsKnown() {
+        return trackIdsKnown;
     }
 
-    public void setPopulated(boolean populated) {
-        isPopulated = populated;
+    public void setTrackIdsKnown(boolean trackIdsKnown) {
+        this.trackIdsKnown = trackIdsKnown;
     }
 
+    @Exclude
     public List<Track> getTracks() {
         return tracks;
     }
 
     public void addTrack(Track track) {
         tracks.add(track);
+    }
+
+    public int getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(int followers) {
+        this.followers = followers;
+    }
+
+    public boolean isFollowersKnown() {
+        return followersKnown;
+    }
+
+    public void setFollowersKnown(boolean followersKnown) {
+        this.followersKnown = followersKnown;
     }
 }

@@ -18,6 +18,10 @@ public class ExternalLink {
         this.type = validateType(externalLinkType);
     }
 
+    public ExternalLink() {
+
+    }
+
     private ExternalLinkType validateType(String externalLinkType) {
         for (ExternalLinkType type : ExternalLinkType.values()) {
             if (externalLinkType.equals(type.toString())) {

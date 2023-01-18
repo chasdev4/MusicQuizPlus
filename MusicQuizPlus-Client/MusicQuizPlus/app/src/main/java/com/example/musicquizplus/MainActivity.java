@@ -41,7 +41,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import model.GoogleSignIn;
+import model.PhotoUrl;
+import model.User;
+import model.item.Album;
+import model.item.Playlist;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -50,13 +57,14 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
 
-    private DatabaseReference _db;
-    private FirebaseFirestore _firestore;
-    private FirebaseUser _user;
-    private GoogleSignIn _googleSignIn;
-    private Button _signInWithGoogleButton;
-    private boolean _showOneTapUI;
-    private SpotifyService _spotifyService;
+    private User user;
+    private DatabaseReference db;
+    private FirebaseFirestore firestore;
+    private FirebaseUser firebaseUser;
+    private GoogleSignIn googleSignIn;
+    private Button signInWithGoogleButton;
+    private boolean showOneTapUI;
+    private SpotifyService spotifyService;
 
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
@@ -109,15 +117,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        _googleSignIn = new GoogleSignIn();
-        _firestore = FirebaseFirestore.getInstance();
-        _db = FirebaseDatabase.getInstance().getReference();
-        _spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+        googleSignIn = new GoogleSignIn();
+        firestore = FirebaseFirestore.getInstance();
+        db = FirebaseDatabase.getInstance().getReference();
+        spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
 
         // Find the view of the button and set the on click listener to begin signing in
-        _signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
-        _signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
+        signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 signInWithGoogle(view);
@@ -131,26 +139,57 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-        _user = _googleSignIn.getAuth().getCurrentUser();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
         updateUI();
     }
 
     private void updateUI() {
         // TODO: Update the state of app depending if the user is logged in or not
-        if (_user != null) {
+        if (firebaseUser != null) {
             // User is signed in
-            _signInWithGoogleButton.setVisibility(View.GONE);
-            Log.d(TAG, _user.getDisplayName());
-            Log.d(TAG, _user.getEmail());
+            signInWithGoogleButton.setVisibility(View.GONE);
+            Log.d(TAG, firebaseUser.getDisplayName());
+            Log.d(TAG, firebaseUser.getEmail());
 
-//            new Thread(new Runnable() {
-//                public void run() {
-//                    FirebaseService.heartAlbum(_user, _db,
-//                            new Album("spotify:album:1A2pvHdbhlvaRMJ7o8I09m",
-//                                    "Nirvana",
+            new Thread(new Runnable() {
+                public void run() {
+                    user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+
+                    Log.d(TAG, "WHAAAAT");
+
+                    // DEBUG: Uncomment me to test heartPlaylist
+//                    Playlist playlist = new Playlist(
+//                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
+//                            "NKVT 2021",
+//                            new ArrayList<PhotoUrl>() {{
+//                                add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
+//                                        0, 0));
+//                            }},
+//                            "Spotify",
+//                            "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
+//                    );
+//
+//                    if (!playlist.isTrackIdsKnown()) {
+//                       playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+//                    }
+//
+//                    FirebaseService.heartPlaylist(user, firebaseUser, db,
+//                            playlist,
+//                            spotifyService
+//                    );
+
+                    // DEBUG: Uncomment me to test unheartPlaylist
+//                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
+//                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
+
+
+                    // DEBUG: Uncomment me to test heartAlbum
+//                    FirebaseService.heartAlbum(user, firebaseUser, db,
+//                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+//                                    "Inna",
 //                                    new ArrayList<PhotoUrl>() {{
-//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e0235140cdf490e8625b4a81e24",
-//                                                300, 300));
+//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+//                                                640, 640));
 //                                    }},
 //                                    new ArrayList<String>() {
 //                                        {
@@ -162,26 +201,27 @@ public class MainActivity extends AppCompatActivity {
 //                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                                        }
 //                                    },
-//                                    AlbumType.ALBUM, new ArrayList<String>() {
-//                                {
-//                                    add("NULL");
-//                                }
-//                            }), _spotifyService);
-//                }
-//            }).start();
+//                                    AlbumType.ALBUM, new ArrayList<String>(),
+//                                    false, 0, false), spotifyService);
 
+
+                    // DEBUG: Uncomment me to test unheartAlbum
+//                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
+//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
+                }
+            }).start();
 
 
         } else {
             // No user is signed in
-            _signInWithGoogleButton.setVisibility(View.VISIBLE);
+            signInWithGoogleButton.setVisibility(View.VISIBLE);
         }
     }
 
     private void signInWithGoogle(View view) {
         // Configuration of Google Sign In
-        _googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        _googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
+        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
+        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
                 .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
                         .setSupported(true)
                         // Your server's client ID, not your Android client ID.
@@ -192,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 .build());
 
         // Begin the Sign In Request
-        _googleSignIn.getOneTapClient().beginSignIn(_googleSignIn.getSignUpRequest())
+        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
                 .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
                     @Override
                     public void onSuccess(BeginSignInResult result) {
@@ -229,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
             case REQ_ONE_TAP:
                 try {
                     // Create an account with a Google ID token
-                    SignInCredential credential = _googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
+                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
                         // Got an ID token from Google.
@@ -238,15 +278,15 @@ public class MainActivity extends AppCompatActivity {
                         // With the Google ID token, exchange it for a Firebase credential,
                         // and authenticate with Firebase using the Firebase credential
                         AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        _googleSignIn.getAuth().signInWithCredential(firebaseCredential)
+                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
                                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                                     @Override
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
                                             Log.d(TAG, "signInWithCredential:success");
-                                            _user = _googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(_user, _firestore, _db);
+                                            firebaseUser = googleSignIn.getAuth().getCurrentUser();
+                                            FirebaseService.createUser(firebaseUser, firestore, db);
                                             updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.
@@ -261,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
                         case CommonStatusCodes.CANCELED:
                             Log.d(TAG, "One-tap dialog was closed.");
                             // Don't re-prompt the user.
-                            _showOneTapUI = false;
+                            showOneTapUI = false;
                             break;
                         case CommonStatusCodes.NETWORK_ERROR:
                             Log.d(TAG, "One-tap encountered a network error.");

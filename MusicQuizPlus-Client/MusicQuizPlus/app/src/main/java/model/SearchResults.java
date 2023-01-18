@@ -89,7 +89,7 @@ public class SearchResults {
             // Add to collection
             albums.add(new Album(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null));
+                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null, false, 0, false));
         }
         Log.i(TAG, "Album results extracted from JsonObject.");
     }
@@ -126,7 +126,7 @@ public class SearchResults {
             // Add to collection
             artists.add(new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
-                    photoUrls));
+                    photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0, false));
         }
         Log.i(TAG, "Artist results extracted from JsonObject.");
     }
@@ -159,10 +159,12 @@ public class SearchResults {
                     sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString(), width, height));
 
             // Add to collection
-            playlists.add(new Playlist(jsonObject.get("uri").getAsString(),
+            playlists.add(new Playlist(
+                    jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
-                    photoUrls, jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString(), false));
+                    photoUrls,
+                    jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
+                    jsonObject.get("description").getAsString()));
 
         }
         Log.i(TAG, "Playlist results extracted from JsonObject.");
@@ -193,7 +195,9 @@ public class SearchResults {
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
                     artistIds,
-                    (short) 0,
+                    0,
+                    false,
+                    null,
                     false));
 
         }
