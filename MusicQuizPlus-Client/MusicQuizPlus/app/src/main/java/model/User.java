@@ -42,6 +42,18 @@ public class User implements Serializable {
         return true;
     }
 
+    public String removeAlbumId(String albumId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : albumIds.entrySet()) {
+            if (entry.getValue().equals(albumId)) {
+                key = entry.getKey();
+            }
+        }
+
+        albumIds.remove(key);
+        return key;
+    }
+
     public Map<String, String> getArtistIds() {
         return artistIds;
     }
@@ -52,6 +64,18 @@ public class User implements Serializable {
         }
         artistIds.put(key, artistId);
         return true;
+    }
+
+    public String removeArtistId(String artistId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : artistIds.entrySet()) {
+            if (entry.getValue().equals(artistId)) {
+                key = entry.getKey();
+            }
+        }
+
+        artistIds.remove(key);
+        return key;
     }
 
     public Map<String, String> getPlaylistIds() {

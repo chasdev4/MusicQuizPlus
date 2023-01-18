@@ -126,7 +126,7 @@ public class SearchResults {
             // Add to collection
             artists.add(new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
-                    photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()));
+                    photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0, false));
         }
         Log.i(TAG, "Artist results extracted from JsonObject.");
     }

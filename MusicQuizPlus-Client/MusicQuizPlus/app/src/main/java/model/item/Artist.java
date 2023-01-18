@@ -26,20 +26,24 @@ public class Artist {
     private List<String> singleIds;
     private List<String> albumIds;
     private List<String> compilationIds;
-
+    private int followers;
+    private boolean followersKnown;
 
     // Exlcuded from database
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
 
-    public Artist(String id, String name, List<PhotoUrl> photoUrl, List<String> singleIds, List<String> albumIds, List<String> compilationIds) {
+    public Artist(String id, String name, List<PhotoUrl> photoUrl, List<String> singleIds,
+                  List<String> albumIds, List<String> compilationIds, int followers, boolean followersKnown) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
         this.singleIds = singleIds;
         this.albumIds = albumIds;
         this.compilationIds = compilationIds;
+        this.followers = followers;
+        this.followersKnown = followersKnown;
     }
 
     public Artist(JsonObject jsonObject) {
@@ -234,5 +238,21 @@ public class Artist {
 
     public List<String> getCompilationIds() {
         return compilationIds;
+    }
+
+    public int getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(int followers) {
+        this.followers = followers;
+    }
+
+    public boolean isFollowersKnown() {
+        return followersKnown;
+    }
+
+    public void setFollowersKnown(boolean followersKnown) {
+        this.followersKnown = followersKnown;
     }
 }

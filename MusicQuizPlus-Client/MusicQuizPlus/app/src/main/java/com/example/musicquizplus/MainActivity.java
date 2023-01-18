@@ -206,8 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                     // DEBUG: Uncomment me to test unheartAlbum
-                    // TODO: Create and test unheartAlbum
-
+//                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
+//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
                 }
             }).start();
 
