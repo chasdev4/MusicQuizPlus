@@ -3,36 +3,57 @@ package com.example.musicquizplus;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.text.Layout;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Objects;
 
 import service.FirebaseService;
 
-public class PlaylistsView extends AppCompatActivity {
+public class ArtistsView extends AppCompatActivity {
 
     private View popupSignUpView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_playlists_view);
+        setContentView(R.layout.activity_artists_view);
 
-        GridView gridView = findViewById(R.id.playlistGridView);
+        GridView gridView = findViewById(R.id.artistGridView);
         TextView userLevel = findViewById(R.id.userLevel);
+        View noUser = findViewById(R.id.artistNoCurrentUser);
         ImageButton backToTop = findViewById(R.id.backToTop);
-        View playlistUserAvatar = findViewById(R.id.playlistUserAvatar);
+        View artistsUserAvatar = findViewById(R.id.artistsUserAvatar);
 
 
-        if(Objects.equals(userLevel.getText(), "GUEST")) {
-            FirebaseService.retrieveData(gridView, this, "sample_playlists");
+        boolean guestAccount;
+
+        if(Objects.equals(userLevel.getText(), "GUEST"))
+        {
+            guestAccount = true;
+            gridView.setVisibility(View.GONE);
+            noUser.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            guestAccount = false;
+            gridView.setVisibility(View.VISIBLE);
+            noUser.setVisibility(View.GONE);
+        }
+
+        if(!guestAccount)
+        {
+            FirebaseService.retrieveData(gridView, this, "sample_artists");
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -44,7 +65,6 @@ public class PlaylistsView extends AppCompatActivity {
             @Override
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
 
-// <<<<<<< 17-artists-view
                 int scroll = gridView.getFirstVisiblePosition();
 
                 if(scroll > 0)
@@ -54,60 +74,6 @@ public class PlaylistsView extends AppCompatActivity {
                 else
                 {
                     backToTop.setVisibility(View.GONE);
-// =======
-                        if(Objects.equals(key, "_description"))
-                        {
-                            description = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_id"))
-                        {
-                            id = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_name"))
-                        {
-                            name = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_owner"))
-                        {
-                            owner = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_photoUrl"))
-                        {
-                            for (DataSnapshot photoUrlSnapshot : dss.getChildren())
-                            {
-                                String uriKey = photoUrlSnapshot.getKey();
-
-                                if(Objects.equals(uriKey, "0"))
-                                {
-                                    for (DataSnapshot urlSnapshot : photoUrlSnapshot.getChildren())
-                                    {
-                                        String UrlKey = urlSnapshot.getKey();
-
-                                        if(Objects.equals(UrlKey, "url"))
-                                        {
-                                            photoUrl = urlSnapshot.getValue().toString();
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    String finalPhotoUrl = photoUrl;
-                    Playlist playlistToAdd = new Playlist(
-                            id,
-                            name,
-                            new ArrayList<>() {
-                                {
-                                    add(new PhotoUrl(finalPhotoUrl, 0, 0
-                                    ));
-                                }},
-                            owner,
-                            description,
-                            false);
-                    itemsList.add(playlistToAdd);
-// >>>>>>> main
                 }
 
             }
@@ -121,13 +87,13 @@ public class PlaylistsView extends AppCompatActivity {
             }
         });
 
-        playlistUserAvatar.setOnClickListener(new View.OnClickListener() {
+        artistsUserAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(Objects.equals(userLevel.getText(), "GUEST")) {
 
                     // Create a AlertDialog Builder.
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(PlaylistsView.this);
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(ArtistsView.this);
                     // Set title, icon, can not cancel properties.
                     alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
                     alertDialogBuilder.setIcon(R.drawable.magicstar);
@@ -182,6 +148,5 @@ public class PlaylistsView extends AppCompatActivity {
                 }
             }
         });
-
     }
 }

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="80dp"
+    android:background="@color/mqPurple2"
+    android:layout_margin="1dp">
+
+    <ImageView
+        android:id="@+id/historyPreviewImage"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:src="@drawable/spotify_todays_hits"/>
+
+    <RelativeLayout
+        android:id="@+id/historyTrackInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/historyPreviewImage"
+        android:layout_centerVertical="true">
+
+        <TextView
+            android:id="@+id/historyTrackTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_song_title"
+            android:textColor="@color/mqWhite"
+            android:fontFamily="@font/concert_one"
+            android:textSize="24sp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="2dp"
+            />
+
+        <TextView
+            android:id="@+id/historyArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_artist"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/historyTrackTitle"
+            android:layout_marginStart="5dp"
+            android:textSize="12sp"
+            android:fontFamily="@font/commissioner"/>
+
+        <TextView
+            android:id="@+id/middleDotAfterArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/middle_dot"
+            android:layout_toEndOf="@id/historyArtist"
+            android:layout_below="@id/historyTrackTitle"
+            android:textColor="@color/mqWhite"
+            android:textStyle="bold"
+            android:layout_marginHorizontal="2dp"/>
+
+        <TextView
+            android:id="@+id/historyAlbum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_album"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/historyTrackTitle"
+            android:layout_toEndOf="@id/middleDotAfterArtist"
+            android:textSize="12sp"
+            android:fontFamily="@font/commissioner"/>
+
+        <TextView
+            android:id="@+id/middleDotAfterAlbum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/middle_dot"
+            android:layout_toEndOf="@id/historyAlbum"
+            android:layout_below="@id/historyTrackTitle"
+            android:textColor="@color/mqWhite"
+            android:textStyle="bold"
+            android:layout_marginHorizontal="2dp"/>
+
+        <TextView
+            android:id="@+id/historyYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_year"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/historyTrackTitle"
+            android:layout_toEndOf="@id/middleDotAfterAlbum"
+            android:textSize="12sp"
+            android:fontFamily="@font/commissioner"/>
+
+    </RelativeLayout>
+
+    <ImageButton
+        android:id="@+id/spotifyView"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_toEndOf="@id/historyTrackInfo"
+        android:layout_marginTop="4dp"
+        android:paddingTop="2dp"
+        android:paddingStart="8dp"
+        android:src="@drawable/spotify_logo_in_mqpurple2"
+        android:background="@null" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/view"
+        android:textSize="12sp"
+        android:textColor="@color/mqWhite"
+        android:layout_below="@id/spotifyView"
+        android:layout_marginTop="-14dp"
+        android:layout_toEndOf="@id/historyTrackInfo"
+        android:layout_marginStart="19dp"
+        android:fontFamily="@font/commissioner"/>
+
+    <ImageButton
+        android:id="@+id/shareTrack"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_toEndOf="@id/spotifyView"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="2dp"
+        android:src="@drawable/share_icon"
+        android:background="@null"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/share"
+        android:textSize="12sp"
+        android:textColor="@color/mqWhite"
+        android:layout_below="@id/shareTrack"
+        android:layout_marginTop="-14dp"
+        android:layout_toEndOf="@id/spotifyView"
+        android:layout_marginStart="14dp"
+        android:fontFamily="@font/commissioner"/>
+
+</RelativeLayout>

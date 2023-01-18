@@ -52,14 +52,20 @@ public class CustomAdapter extends ArrayAdapter<Playlist> {
         }
 
         // initializing the imageview and textview and setting data
-        ImageView imageView = v.findViewById(R.id.gridViewPlaylistCover);
-        TextView textView = v.findViewById(R.id.gridViewPlaylistName);
+        ImageView imageView = v.findViewById(R.id.gridViewCover);
+        TextView textView = v.findViewById(R.id.gridViewName);
 
         // get the item using the position param
         Playlist item = items_list.get(position);
 
-        String url = item.getPhotoUrl().get(0).getUrl();
-        String title = item.getName();
+        String url = item.get_url();
+        String title = item.get_name();
+
+        if(title.length() >= 19)
+        {
+            textView.setTextSize(16);
+        }
+
         new FetchImage(url, imageView, textView, title).start();
         return v;
     }

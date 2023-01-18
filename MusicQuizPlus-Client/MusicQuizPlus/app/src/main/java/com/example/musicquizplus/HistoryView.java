@@ -8,34 +8,50 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
-import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.Objects;
 
 import service.FirebaseService;
 
-public class PlaylistsView extends AppCompatActivity {
+public class HistoryView extends AppCompatActivity {
 
     private View popupSignUpView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_playlists_view);
+        setContentView(R.layout.activity_history_view);
 
-        GridView gridView = findViewById(R.id.playlistGridView);
+        ListView listView = findViewById(R.id.historyListView);
         TextView userLevel = findViewById(R.id.userLevel);
+        View noCurrentUser = findViewById(R.id.historyNoCurrentUser);
+        TextView noUserHeader = findViewById(R.id.logged_out_header);
         ImageButton backToTop = findViewById(R.id.backToTop);
-        View playlistUserAvatar = findViewById(R.id.playlistUserAvatar);
+        View historyUserAvatar = findViewById(R.id.historyUserAvatar);
 
-
-        if(Objects.equals(userLevel.getText(), "GUEST")) {
-            FirebaseService.retrieveData(gridView, this, "sample_playlists");
+        if(Objects.equals(userLevel.getText(), "GUEST"))
+        {
+            listView.setVisibility(View.GONE);
+            noUserHeader.setText(R.string.guestUserHistory);
+            noUserHeader.setTextSize(32);
+            noCurrentUser.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            listView.setVisibility(View.VISIBLE);
+            noCurrentUser.setVisibility(View.GONE);
         }
 
-        gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+        if(Objects.equals(listView.getVisibility(), View.VISIBLE)) {
+
+            //TODO: retreive history from firebase and populate listview
+
+        }
+
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView absListView, int i) {
 
@@ -44,8 +60,7 @@ public class PlaylistsView extends AppCompatActivity {
             @Override
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
 
-// <<<<<<< 17-artists-view
-                int scroll = gridView.getFirstVisiblePosition();
+                int scroll = listView.getFirstVisiblePosition();
 
                 if(scroll > 0)
                 {
@@ -54,60 +69,6 @@ public class PlaylistsView extends AppCompatActivity {
                 else
                 {
                     backToTop.setVisibility(View.GONE);
-// =======
-                        if(Objects.equals(key, "_description"))
-                        {
-                            description = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_id"))
-                        {
-                            id = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_name"))
-                        {
-                            name = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_owner"))
-                        {
-                            owner = dss.getValue().toString();
-                        }
-                        else if(Objects.equals(key, "_photoUrl"))
-                        {
-                            for (DataSnapshot photoUrlSnapshot : dss.getChildren())
-                            {
-                                String uriKey = photoUrlSnapshot.getKey();
-
-                                if(Objects.equals(uriKey, "0"))
-                                {
-                                    for (DataSnapshot urlSnapshot : photoUrlSnapshot.getChildren())
-                                    {
-                                        String UrlKey = urlSnapshot.getKey();
-
-                                        if(Objects.equals(UrlKey, "url"))
-                                        {
-                                            photoUrl = urlSnapshot.getValue().toString();
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    String finalPhotoUrl = photoUrl;
-                    Playlist playlistToAdd = new Playlist(
-                            id,
-                            name,
-                            new ArrayList<>() {
-                                {
-                                    add(new PhotoUrl(finalPhotoUrl, 0, 0
-                                    ));
-                                }},
-                            owner,
-                            description,
-                            false);
-                    itemsList.add(playlistToAdd);
-// >>>>>>> main
                 }
 
             }
@@ -116,18 +77,18 @@ public class PlaylistsView extends AppCompatActivity {
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                gridView.setSelection(0);
+                listView.setSelection(0);
                 backToTop.setVisibility(View.GONE);
             }
         });
 
-        playlistUserAvatar.setOnClickListener(new View.OnClickListener() {
+        historyUserAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(Objects.equals(userLevel.getText(), "GUEST")) {
 
                     // Create a AlertDialog Builder.
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(PlaylistsView.this);
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(HistoryView.this);
                     // Set title, icon, can not cancel properties.
                     alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
                     alertDialogBuilder.setIcon(R.drawable.magicstar);
