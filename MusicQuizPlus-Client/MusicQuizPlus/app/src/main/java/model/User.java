@@ -6,19 +6,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.type.Difficulty;
+
 public class User implements Serializable {
     private Map<String, String> albumIds;
     private Map<String, String>artistIds;
     private Map<String, String> playlistIds;
     private int level;
     private int xp;
+    private Difficulty difficulty;
 
-    public User(Map<String, String> albumIds, Map<String, String> artistIds, Map<String, String> playlistIds, int level, int xp) {
+    public User(Map<String, String> albumIds, Map<String, String> artistIds,
+                Map<String, String> playlistIds, int level, int xp, Difficulty difficulty) {
         this.albumIds = albumIds;
         this.artistIds = artistIds;
         this.playlistIds = playlistIds;
         this.level = level;
         this.xp = xp;
+        this.difficulty = difficulty;
     }
 
     public User() {
@@ -27,6 +32,7 @@ public class User implements Serializable {
         playlistIds = new HashMap<>();
         level = 1;
         xp = 0;
+        difficulty = Difficulty.EASY;
     }
 
     public Map<String, String> getAlbumIds() {
@@ -117,5 +123,13 @@ public class User implements Serializable {
 
     public void setXp(int xp) {
         this.xp = xp;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(Difficulty difficulty) {
+        this.difficulty = difficulty;
     }
 }
