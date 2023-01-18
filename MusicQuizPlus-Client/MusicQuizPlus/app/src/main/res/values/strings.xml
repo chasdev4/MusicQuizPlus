@@ -12,4 +12,20 @@
     <string name="top_hits">Today\'s Top Hits</string>
     <string name="playlists">Playlists</string>
     <string name="guest">GUEST</string>
+    <string name="artists">Artists</string>
+    <string name="SERVER_CLIENT_ID">123</string>
+    <string name="logged_out_artists">Save Your Favorite Albums With A MusicQuiz+ Account</string>
+    <string name="link_google_to">\tLink your Google account to:</string>
+    <string name="benefits_of_account">\t\tSave your favorite albums\n\t\tSave your favorite playlists\n\t\tAccess track history\n\t\tEarn experience points and badges</string>
+    <string name="no_thanks"><u>No Thanks</u></string>
+    <string name="history">History</string>
+    <string name="guestUserHistory">Discover Your Jam on MusicQuiz+</string>
+    <string name="sample_song_title">Sample Song Title</string>
+    <string name="sample_artist">Sample Artist</string>
+    <string name="middle_dot">·</string>
+    <string name="sample_album">Sample Album</string>
+    <string name="sample_year">1999</string>
+    <string name="share">Share</string>
+    <string name="view">View</string>
+    <string name="user_profile_signup_header">Become A Music Wiz on MusicQuiz+</string>
 </resources>

@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="200dp"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#2B1B6B"
-    android:paddingStart="0.5dp"
-    android:paddingEnd="0.5dp">
+    android:layout_marginEnd="1dp"
+    android:layout_marginStart="1dp"
+    android:layout_marginTop="1dp"
+    android:layout_marginBottom="1dp">
 
     <ImageView
-        android:id="@+id/gridViewPlaylistCover"
-        android:layout_width="225dp"
-        android:layout_height="225dp"
-        android:src="@drawable/spotify_todays_hits" />
+        android:id="@+id/gridViewCover"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"/>
 
     <TextView
-        android:id="@+id/gridViewPlaylistName"
-        android:layout_below="@id/gridViewPlaylistCover"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/top_hits"
-        android:textSize="24sp"
-        android:layout_centerHorizontal="true"
+        android:id="@+id/gridViewName"
+        android:layout_below="@id/gridViewCover"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:textSize="20sp"
         android:textColor="@color/white"
-        android:fontFamily="@font/concert_one"/>
+        android:fontFamily="@font/concert_one"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:textAlignment="center"/>
 
 </RelativeLayout>
