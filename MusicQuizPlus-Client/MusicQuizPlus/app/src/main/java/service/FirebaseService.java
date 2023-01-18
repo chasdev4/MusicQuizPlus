@@ -185,7 +185,15 @@ public class FirebaseService {
                             }
                         }
                     }
-                    Playlist playlistToAdd = new Playlist(id, name, null, owner, description, photoUrl);
+                    String finalPhotoUrl = photoUrl;
+                    Playlist playlistToAdd = new Playlist(
+                            id,
+                            name,
+                            new ArrayList<PhotoUrl>() {{
+                            add(new PhotoUrl(finalPhotoUrl, 0, 0));
+                        }},
+                            owner,
+                            description);
                     itemsList.add(playlistToAdd);
                 }
 
