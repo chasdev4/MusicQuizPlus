@@ -45,9 +45,12 @@ import java.util.ArrayList;
 
 import model.GoogleSignIn;
 import model.PhotoUrl;
+import model.SearchResults;
 import model.User;
 import model.item.Album;
+import model.item.Artist;
 import model.item.Playlist;
+import model.item.Track;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -93,20 +96,19 @@ public class MainActivity extends AppCompatActivity {
 //                new Thread(new Runnable() {
 //                    public void run() {
 //                        final short limit = 30;
-//                        SearchResults searchResults = _spotifyService.search("Morrissey", limit, 0);
-//
+//                        SearchResults searchResults = spotifyService.search("Morrissey", limit, 0);
 //
 //                        for (Artist artist : searchResults.getArtists()) {
-//                            _db.child("sample_artists").child(artist.getId()).setValue(artist);
+//                            db.child("sample_artists").child(artist.getId()).setValue(artist);
 //                        }
 //                        for (Album album : searchResults.getAlbums()) {
-//                            _db.child("sample_albums").child(album.getId()).setValue(album);
+//                            db.child("sample_albums").child(album.getId()).setValue(album);
 //                        }
 //                        for (Playlist playlist : searchResults.getPlaylists()) {
-//                            _db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
+//                            db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
 //                        }
 //                        for (Track track : searchResults.getTracks()) {
-//                            _db.child("sample_tracks").child(track.getId()).setValue(track);
+//                            db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
 //
 //                        Log.d("TEMP", "Goodie goodie");
