@@ -44,6 +44,7 @@ public class PlaylistsView extends AppCompatActivity {
             @Override
             public void onScroll(AbsListView absListView, int i, int i1, int i2) {
 
+// <<<<<<< 17-artists-view
                 int scroll = gridView.getFirstVisiblePosition();
 
                 if(scroll > 0)
@@ -53,6 +54,60 @@ public class PlaylistsView extends AppCompatActivity {
                 else
                 {
                     backToTop.setVisibility(View.GONE);
+// =======
+                        if(Objects.equals(key, "_description"))
+                        {
+                            description = dss.getValue().toString();
+                        }
+                        else if(Objects.equals(key, "_id"))
+                        {
+                            id = dss.getValue().toString();
+                        }
+                        else if(Objects.equals(key, "_name"))
+                        {
+                            name = dss.getValue().toString();
+                        }
+                        else if(Objects.equals(key, "_owner"))
+                        {
+                            owner = dss.getValue().toString();
+                        }
+                        else if(Objects.equals(key, "_photoUrl"))
+                        {
+                            for (DataSnapshot photoUrlSnapshot : dss.getChildren())
+                            {
+                                String uriKey = photoUrlSnapshot.getKey();
+
+                                if(Objects.equals(uriKey, "0"))
+                                {
+                                    for (DataSnapshot urlSnapshot : photoUrlSnapshot.getChildren())
+                                    {
+                                        String UrlKey = urlSnapshot.getKey();
+
+                                        if(Objects.equals(UrlKey, "url"))
+                                        {
+                                            photoUrl = urlSnapshot.getValue().toString();
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    String finalPhotoUrl = photoUrl;
+                    Playlist playlistToAdd = new Playlist(
+                            id,
+                            name,
+                            new ArrayList<>() {
+                                {
+                                    add(new PhotoUrl(finalPhotoUrl, 0, 0
+                                    ));
+                                }},
+                            owner,
+                            description,
+                            false);
+                    itemsList.add(playlistToAdd);
+// >>>>>>> main
                 }
 
             }
