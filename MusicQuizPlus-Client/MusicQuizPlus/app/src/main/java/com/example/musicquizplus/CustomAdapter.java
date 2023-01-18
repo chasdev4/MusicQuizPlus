@@ -1,10 +1,8 @@
 package com.example.musicquizplus;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,30 +13,32 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.w3c.dom.Text;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 
+import model.item.Artist;
 import model.item.Playlist;
+import model.item.Track;
 
 public class CustomAdapter extends ArrayAdapter<Playlist> {
 
     Handler mainHandler = new Handler();
 
-    List<Playlist> items_list;
+    List<Playlist> playlists;
+
     int custom_layout_id;
 
-    public CustomAdapter(@NonNull Context context, int resource, @NonNull List<Playlist> objects) {
-        super(context, resource, objects);
-        items_list = objects;
+    public CustomAdapter(@NonNull Context context, int resource, @NonNull List<Playlist> playlists) {
+        super(context, resource, playlists);
+        this.playlists = playlists;
         custom_layout_id = resource;
     }
 
+
     @Override public int getCount() {
-        return items_list.size();
+        return playlists.size();
     }
 
     @NonNull
@@ -56,7 +56,7 @@ public class CustomAdapter extends ArrayAdapter<Playlist> {
         TextView textView = v.findViewById(R.id.gridViewName);
 
         // get the item using the position param
-        Playlist item = items_list.get(position);
+        Playlist item = playlists.get(position);
 
         String url = item.getPhotoUrl().get(0).getUrl();
         String title = item.getName();

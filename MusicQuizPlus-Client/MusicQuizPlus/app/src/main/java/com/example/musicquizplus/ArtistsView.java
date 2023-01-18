@@ -3,21 +3,18 @@ package com.example.musicquizplus;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.Objects;
 
+import model.item.Artist;
 import service.FirebaseService;
 
 public class ArtistsView extends AppCompatActivity {
@@ -53,7 +50,7 @@ public class ArtistsView extends AppCompatActivity {
 
         if(!guestAccount)
         {
-            FirebaseService.retrieveData(gridView, this, "sample_artists");
+            FirebaseService.retrieveData(gridView, this, "sample_artists", Artist.class);
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {

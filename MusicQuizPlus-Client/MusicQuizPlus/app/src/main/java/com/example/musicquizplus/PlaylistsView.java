@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import java.util.Objects;
 
+import model.item.Playlist;
 import service.FirebaseService;
 
 public class PlaylistsView extends AppCompatActivity {
@@ -32,7 +33,7 @@ public class PlaylistsView extends AppCompatActivity {
 
 
         if(Objects.equals(userLevel.getText(), "GUEST")) {
-            FirebaseService.retrieveData(gridView, this, "sample_playlists");
+            FirebaseService.retrieveData(gridView, this, "playlists", Playlist.class);
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {

@@ -103,4 +103,16 @@ public class Playlist implements Serializable {
     public void setFollowersKnown(boolean followersKnown) {
         this.followersKnown = followersKnown;
     }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPhotoUrl(List<PhotoUrl> photoUrl) {
+        this.photoUrl = photoUrl;
+    }
 }

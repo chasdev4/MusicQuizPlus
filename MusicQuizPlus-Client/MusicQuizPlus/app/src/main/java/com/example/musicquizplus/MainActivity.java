@@ -155,8 +155,6 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
-                    Log.d(TAG, "WHAAAAT");
-
                     // DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
