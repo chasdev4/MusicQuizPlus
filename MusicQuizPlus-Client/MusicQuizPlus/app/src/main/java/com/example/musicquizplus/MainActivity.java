@@ -41,17 +41,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-
 import model.GoogleSignIn;
-import model.PhotoUrl;
-import model.SearchResults;
 import model.User;
-import model.item.Album;
-import model.item.Artist;
-import model.item.Playlist;
-import model.item.Track;
-import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 
