@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import java.util.Objects;
 
+import model.item.Artist;
 import service.FirebaseService;
 
 public class HistoryView extends AppCompatActivity {
@@ -32,8 +33,11 @@ public class HistoryView extends AppCompatActivity {
         ImageButton backToTop = findViewById(R.id.backToTop);
         View historyUserAvatar = findViewById(R.id.historyUserAvatar);
 
+        boolean guestAccount;
+
         if(Objects.equals(userLevel.getText(), "GUEST"))
         {
+            guestAccount = true;
             listView.setVisibility(View.GONE);
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);
@@ -41,11 +45,12 @@ public class HistoryView extends AppCompatActivity {
         }
         else
         {
+            guestAccount = false;
             listView.setVisibility(View.VISIBLE);
             noCurrentUser.setVisibility(View.GONE);
         }
 
-        if(Objects.equals(listView.getVisibility(), View.VISIBLE)) {
+        if(!guestAccount) {
 
             //TODO: retreive history from firebase and populate listview
 

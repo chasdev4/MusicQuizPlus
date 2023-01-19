@@ -3,17 +3,22 @@ package com.example.musicquizplus;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.util.List;
 import java.util.Objects;
 
+import model.PhotoUrl;
 import model.item.Playlist;
 import service.FirebaseService;
 
@@ -126,6 +131,18 @@ public class PlaylistsView extends AppCompatActivity {
                 {
                     //pull up user profile
                 }
+            }
+        });
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Adapter playlistAdapter = adapterView.getAdapter();
+                Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
+                Intent intent = new Intent(view.getContext(), QuizView.class);
+                intent.putExtra("currentPlaylist", clickedOnPlaylist);
+                startActivity(intent);
             }
         });
 

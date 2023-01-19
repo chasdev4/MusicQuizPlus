@@ -89,7 +89,9 @@
         android:numColumns="auto_fit"
         android:horizontalSpacing="25dp"
         android:verticalSpacing="25dp"
-        android:visibility="visible"/>
+        android:visibility="visible"
+        android:clickable="true"
+        android:focusable="true"/>
 
     <ImageButton
         android:id="@+id/mainSearchButton"

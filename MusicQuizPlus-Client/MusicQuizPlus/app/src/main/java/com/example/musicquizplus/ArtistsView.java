@@ -50,7 +50,7 @@ public class ArtistsView extends AppCompatActivity {
 
         if(!guestAccount)
         {
-            FirebaseService.retrieveData(gridView, this, "sample_artists", Artist.class);
+            FirebaseService.retrieveData(gridView, this, "artists", Artist.class);
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
