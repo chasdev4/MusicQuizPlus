@@ -77,5 +77,5 @@ Matthew Vladika
 * Front-end developer
 * Scrum Master
 
-Project Status
+# Project Status
 Alpha
