@@ -73,6 +73,7 @@ GNU General Public License v3.0
 Charles Holdren
 * Back-end developer
 * Product Owner
+
 Matthew Vladika
 * Front-end developer
 * Scrum Master
