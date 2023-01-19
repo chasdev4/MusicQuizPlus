@@ -16,7 +16,7 @@ import java.util.List;
 
 import model.item.Track;
 
-public class HistoryAdapter extends ArrayAdapter<Track> {
+public class PlaylistQuizAdapter extends ArrayAdapter<Track> {
 
     Handler mainHandler = new Handler();
 
@@ -24,7 +24,7 @@ public class HistoryAdapter extends ArrayAdapter<Track> {
 
     int custom_layout_id;
 
-    public HistoryAdapter(@NonNull Context context, int resource, @NonNull List<Track> tracks) {
+    public PlaylistQuizAdapter(@NonNull Context context, int resource, @NonNull List<Track> tracks) {
         super(context, resource, tracks);
         this.tracks = tracks;
         custom_layout_id = resource;
@@ -46,16 +46,22 @@ public class HistoryAdapter extends ArrayAdapter<Track> {
         }
 
         // initializing the imageview and textview and setting data
-        ImageView imageView = v.findViewById(R.id.gridViewCover);
-        TextView textView = v.findViewById(R.id.gridViewName);
+        ImageView imageView = v.findViewById(R.id.quizViewPreviewImage);
+        TextView textView = v.findViewById(R.id.quizViewTrackTitle);
+        TextView qvTrackArtist = v.findViewById(R.id.quizViewTrackArtist);
+        TextView qvTrackAlbum = v.findViewById(R.id.quizViewTrackAlbum);
+        TextView qvTrackYear = v.findViewById(R.id.quizViewTrackYear);
 
         // get the item using the position param
         Track item = tracks.get(position);
 
         // TODO: Get Image from Album
         //String url = item.getPhotoUrl().get(0).getUrl();
+        // TODO: Get album year
+        //qvTrackYear.setText(item.getYear());
         String title = item.getName();
-
+        qvTrackArtist.setText(item.getArtistIds().get(0));
+        qvTrackAlbum.setText(item.getAlbumId());
 
         if(title.length() >= 19)
         {

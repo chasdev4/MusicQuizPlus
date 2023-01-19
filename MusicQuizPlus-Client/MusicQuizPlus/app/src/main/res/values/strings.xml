@@ -27,5 +27,7 @@
     <string name="share">Share</string>
     <string name="view">View</string>
     <string name="user_profile_signup_header">Become A Music Wiz on MusicQuiz+</string>
-    <string name="playlist_by_spotify">Playlist by Spotify</string>
+    <string name="playlist_by_spotify">Spotify</string>
+    <string name="playlist_by">Playlist by </string>
+    <string name="start_quiz">Start Quiz</string>
 </resources>

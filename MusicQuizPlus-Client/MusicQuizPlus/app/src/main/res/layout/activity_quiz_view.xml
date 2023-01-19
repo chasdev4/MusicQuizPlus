@@ -11,7 +11,7 @@
         android:id="@+id/quizViewHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp">
+        android:layout_marginTop="5dp">
 
         <ImageButton
             android:id="@+id/quizViewBackButton"
@@ -36,21 +36,34 @@
             android:layout_toEndOf="@id/quizViewCoverImage"
             android:text="@string/sample_song_title"
             android:textColor="@color/mqWhite"
-            android:textSize="22sp"
+            android:textSize="20sp"
             android:fontFamily="@font/concert_one"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="18dp"
             android:layout_marginStart="5dp"/>
+
+        <TextView
+            android:id="@+id/playlistBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/quizViewTitle"
+            android:layout_toEndOf="@id/quizViewCoverImage"
+            android:text="@string/playlist_by"
+            android:textColor="@color/mqWhite"
+            android:fontFamily="@font/commissioner"
+            android:layout_marginStart="5dp"
+            android:textSize="12sp"/>
 
         <TextView
             android:id="@+id/quizViewOwner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/quizViewTitle"
-            android:layout_toEndOf="@id/quizViewCoverImage"
+            android:layout_toEndOf="@id/playlistBy"
             android:text="@string/playlist_by_spotify"
             android:textColor="@color/mqWhite"
             android:fontFamily="@font/commissioner"
-            android:layout_marginStart="5dp"/>
+            android:layout_marginStart="3dp"
+            android:textSize="12sp"/>
 
         <ImageButton
             android:id="@+id/quizViewHeartButton"
@@ -97,6 +110,32 @@
         android:layout_below="@id/quizViewHeader"
         android:layout_marginTop="5dp"/>
 
+    <Button
+        android:id="@+id/quizViewStartQuizButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/mqRed"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:text="@string/start_quiz"
+        android:paddingVertical="15dp"
+        android:fontFamily="@font/concert_one"
+        android:textSize="22sp"
+        android:elevation="8dp" />
 
+    <ImageButton
+        android:id="@+id/quizViewBackToTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="8dp"
+        android:layout_marginEnd="30dp"
+        android:src="@drawable/up_chevron"
+        android:background="@drawable/round_button_no_stroke"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="38dp"
+        />
 
 </RelativeLayout>

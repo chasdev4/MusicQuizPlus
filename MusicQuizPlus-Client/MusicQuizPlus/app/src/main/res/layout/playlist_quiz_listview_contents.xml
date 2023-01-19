@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="90dp"
+    android:background="@color/mqPurple2"
+    android:layout_margin="1dp">
+
+    <ImageView
+        android:id="@+id/quizViewPreviewImage"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:src="@drawable/spotify_todays_hits"/>
+
+    <RelativeLayout
+        android:id="@+id/quizViewTrackInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/quizViewPreviewImage"
+        android:layout_marginTop="2dp">
+
+        <TextView
+            android:id="@+id/quizViewTrackTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_song_title"
+            android:textColor="@color/mqWhite"
+            android:fontFamily="@font/concert_one"
+            android:textSize="24sp"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginTop="2dp"
+            />
+
+        <TextView
+            android:id="@+id/quizViewTrackArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_artist"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/quizViewTrackTitle"
+            android:layout_marginStart="5dp"
+            android:textSize="12sp"
+            android:fontFamily="@font/commissioner"/>
+
+        <TextView
+            android:id="@+id/quizViewTrackAlbum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_album"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/quizViewTrackArtist"
+            android:textSize="12sp"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/commissioner"/>
+
+        <TextView
+            android:id="@+id/quizViewTrackYear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sample_year"
+            android:textColor="@color/mqWhite"
+            android:layout_below="@id/quizViewTrackAlbum"
+            android:textSize="12sp"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/commissioner"/>
+
+    </RelativeLayout>
+
+    <ImageButton
+        android:id="@+id/playSampleAudio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/play_audio"
+        android:background="@null"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="20dp"/>
+
+</RelativeLayout>
