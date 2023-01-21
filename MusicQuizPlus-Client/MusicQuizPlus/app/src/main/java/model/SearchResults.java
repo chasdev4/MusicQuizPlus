@@ -87,9 +87,17 @@ public class SearchResults {
             }
 
             // Add to collection
-            albums.add(new Album(jsonObject.get("uri").getAsString(),
+            albums.add(new Album(
+                    jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null, false, 0, false));
+                    photoUrls,
+                    artistNames,
+                    artistIds,
+                    AlbumType.UNINITIALIZED,
+                    null,
+                    false, 0,
+                    false,
+                    jsonObject.getAsJsonObject("date").get("year").getAsString()));
         }
         Log.i(TAG, "Album results extracted from JsonObject.");
     }
@@ -198,7 +206,7 @@ public class SearchResults {
                     0,
                     false,
                     null,
-                    false));
+                    false, null));
 
         }
         Log.i(TAG, "Track results extracted from JsonObject.");
