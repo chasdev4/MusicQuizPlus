@@ -19,7 +19,7 @@ public class Track {
     private boolean previewUrlKnown;
     private boolean albumKnown;
 
-    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown) {
+    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown, String year) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;

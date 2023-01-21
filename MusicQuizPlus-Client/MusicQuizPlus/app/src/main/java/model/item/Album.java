@@ -20,9 +20,10 @@ public class Album {
     private boolean trackIdsKnown;
     private int followers;
     private boolean followersKnown;
+    private String year;
 
     public Album(String id, String name, List<PhotoUrl> photoUrl, List<String> artistNames,
-                 List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown, int followers, boolean followersKnown) {
+                 List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown, int followers, boolean followersKnown, String year) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
@@ -33,6 +34,7 @@ public class Album {
         this.trackIdsKnown = trackIdsKnown;
         this.followers = followers;
         this.followersKnown = followersKnown;
+        this.year = year;
     }
 
     public Album() {
@@ -89,5 +91,9 @@ public class Album {
 
     public void setTrackIdsKnown(boolean trackIdsKnown) {
         this.trackIdsKnown = trackIdsKnown;
+    }
+
+    public String getYear() {
+        return year;
     }
 }

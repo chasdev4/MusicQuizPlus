@@ -2,6 +2,7 @@ package model.item;
 
 import android.text.Html;
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -12,6 +13,7 @@ import java.util.List;
 import model.ExternalLink;
 import model.PhotoUrl;
 import model.type.AlbumType;
+import service.FirebaseService;
 
 // SUMMARY
 // The Artist model stores artist information
@@ -186,7 +188,8 @@ public class Artist {
                 null,
                 false,
                 0,
-                false);
+                false,
+                album.getAsJsonObject("date").get("year").getAsString());
     }
 
     public List<PhotoUrl> getPhotoUrl() {
@@ -254,5 +257,30 @@ public class Artist {
 
     public void setFollowersKnown(boolean followersKnown) {
         this.followersKnown = followersKnown;
+    }
+
+    public void initCollections(DatabaseReference db) {
+        initSingles(db);
+        initAlbums(db);
+        initCompilations(db);
+    }
+
+    private void initSingles(DatabaseReference db) {
+        singles = new ArrayList<>();
+        for (String albumId : singleIds) {
+            singles.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+        }
+    }
+    private void initAlbums(DatabaseReference db) {
+        albums = new ArrayList<>();
+        for (String albumId : albumIds) {
+            albums.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+        }
+    }
+    private void initCompilations(DatabaseReference db) {
+        compilations = new ArrayList<>();
+        for (String albumId : compilationIds) {
+            compilations.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+        }
     }
 }

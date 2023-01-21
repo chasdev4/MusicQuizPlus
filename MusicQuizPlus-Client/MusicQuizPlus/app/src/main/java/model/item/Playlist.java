@@ -20,6 +20,7 @@ public class Playlist implements Serializable {
     private List<String> trackIds;
     private int followers;
     private boolean followersKnown;
+    private int averagePopularity;
 
     // Excluded from Database
     private List<Track> tracks;
@@ -114,5 +115,13 @@ public class Playlist implements Serializable {
 
     public void setPhotoUrl(List<PhotoUrl> photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public int getAveragePopularity() {
+        return averagePopularity;
+    }
+
+    public void setAveragePopularity(int averagePopularity) {
+        this.averagePopularity = averagePopularity;
     }
 }
