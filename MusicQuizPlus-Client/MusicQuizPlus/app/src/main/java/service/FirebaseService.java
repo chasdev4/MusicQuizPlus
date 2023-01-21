@@ -33,6 +33,7 @@ import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
+import model.ValidationObject;
 import model.item.Playlist;
 
 import model.PhotoUrl;
@@ -40,6 +41,9 @@ import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Track;
+import model.type.Severity;
+import utils.FormatUtil;
+import utils.ValidationUtil;
 
 public class FirebaseService {
 
@@ -363,12 +367,20 @@ public class FirebaseService {
     // When the user "hearts" an album
     public static void heartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
+        // Null check
+        final String methodName = FormatUtil.formatMethodName("heartAlbum");
 
-        if (nullCheck(user, firebaseUser, db, spotifyService, "heartAlbum")) {
-            return;
-        }
-        if (album == null) {
-            Log.e(TAG, "Album provided to heartAlbum was null.");
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(album, Album.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -505,11 +517,19 @@ public class FirebaseService {
     public static void unheartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                     SpotifyService spotifyService) {
         // Null check
-        if (nullCheck(user, firebaseUser, db, spotifyService, "unheartAlbum")) {
-            return;
-        }
-        if (album == null) {
-            Log.e(TAG, "Album provided to unheartAlbum was null.");
+        final String methodName = FormatUtil.formatMethodName("unheartAlbum");
+
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(album, Album.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -724,13 +744,19 @@ public class FirebaseService {
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
         // Return if any of these fields are null
-        if (nullCheck(user, firebaseUser, db, spotifyService, "heartPlaylist")) {
-            return;
-        }
+        final String methodName = FormatUtil.formatMethodName("heartPlaylist");
 
-        // Or if the playlist is null
-        if (playlist == null) {
-            Log.e(TAG, "Playlist provided to heartPlaylist was null.");
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -797,11 +823,19 @@ public class FirebaseService {
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                         SpotifyService spotifyService) {
         // Null check
-        if (nullCheck(user, firebaseUser, db, spotifyService, "unheartPlaylist")) {
-            return;
-        }
-        if (playlist == null) {
-            Log.e(TAG, "Playlist provided to unheartPlaylist was null.");
+        final String methodName = FormatUtil.formatMethodName("unheartPlaylist");
+
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -849,27 +883,5 @@ public class FirebaseService {
             db.updateChildren(updates);
             Log.i(TAG, String.format("%s follower count has decremented.", playlist.getId()));
         }
-    }
-
-    // TODO: Delete and replace usages with the method from ValidationUtil
-    private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,
-                                  SpotifyService spotifyService, String methodName) {
-        if (user == null) {
-            Log.e(TAG, String.format("User provided to %s was null.", methodName));
-            return true;
-        }
-        if (firebaseUser == null) {
-            Log.e(TAG, String.format("FirebaseUser provided to %s was null.", methodName));
-            return true;
-        }
-        if (db == null) {
-            Log.e(TAG, String.format("DatabaseReference provided to %s was null.", methodName));
-            return true;
-        }
-        if (spotifyService == null) {
-            Log.e(TAG, String.format("SpotifyService provided to %s was null.", methodName));
-            return true;
-        }
-        return false;
     }
 }
