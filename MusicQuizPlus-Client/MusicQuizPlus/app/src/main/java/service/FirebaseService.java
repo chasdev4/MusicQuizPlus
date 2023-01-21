@@ -1,16 +1,12 @@
 package service;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.util.Log;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.example.musicquizplus.ArtistsAdapter;
-import com.example.musicquizplus.CustomAdapter;
 import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
@@ -37,15 +33,12 @@ import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
-import java.util.Objects;
-
 import model.item.Playlist;
 
 import model.PhotoUrl;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
 import model.item.Track;
 
 public class FirebaseService {
@@ -479,6 +472,10 @@ public class FirebaseService {
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
 
+        String year = null;
+
+        // TODO: Get the year from the album
+
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
             Track track = new Track(
@@ -489,7 +486,7 @@ public class FirebaseService {
                     0,
                     false,
                     null,
-                    true);
+                    true, year);
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
@@ -647,6 +644,9 @@ public class FirebaseService {
         // Use the spotify service class to get playlist's tracks
         JsonArray items = spotifyService.playlistTracks(playlist.getId());
 
+        int popularity = 0;
+        int numTracks = 0;
+
         // Loop thru and extract each track
         for (int i = 0; i < items.size(); i++) {
             // Get the JsonObject from the items array
@@ -672,6 +672,10 @@ public class FirebaseService {
                         artistIds.add(artistsArray.get(j).getAsJsonObject().get("uri").toString());
                     }
 
+                    String year = null;
+
+                    // TODO: Get the year from the album
+
                     // Build a new track
                     track = new Track(
                             trackId,
@@ -681,9 +685,11 @@ public class FirebaseService {
                             jsonObject.get("popularity").getAsInt(),
                             true,
                             jsonObject.get("preview_url").toString(),
-                            false);
+                            false, year);
                 }
 
+                popularity += track.getPopularity();
+                numTracks++;
 
                 // Get a key to add the playlist Id to the track
                 DatabaseReference trackRef = db.child("tracks").child(trackId);
@@ -702,6 +708,7 @@ public class FirebaseService {
 
         }
 
+        playlist.setAveragePopularity(popularity / numTracks);
         playlist.setTrackIdsKnown(true);
         return playlist;
     }
