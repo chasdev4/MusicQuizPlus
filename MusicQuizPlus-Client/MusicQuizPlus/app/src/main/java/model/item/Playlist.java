@@ -1,5 +1,6 @@
 package model.item;
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.PhotoUrl;
+import service.FirebaseService;
 
 // SUMMARY
 // The Playlist model stores playlist information
@@ -123,5 +125,16 @@ public class Playlist implements Serializable {
 
     public void setAveragePopularity(int averagePopularity) {
         this.averagePopularity = averagePopularity;
+    }
+
+    public void initCollection(DatabaseReference db) {
+        initTracks(db);
+    }
+
+    private void initTracks(DatabaseReference db) {
+        tracks = new ArrayList<>();
+        for (String trackId : trackIds) {
+            tracks.add(FirebaseService.checkDatabase(db, "tracks", trackId, Track.class));
+        }
     }
 }
