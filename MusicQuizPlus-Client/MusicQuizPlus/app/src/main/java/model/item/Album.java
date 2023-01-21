@@ -1,9 +1,14 @@
 package model.item;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import model.PhotoUrl;
 import model.type.AlbumType;
+import service.FirebaseService;
 
 // SUMMARY
 // The Album item model stores album information
@@ -21,6 +26,9 @@ public class Album {
     private int followers;
     private boolean followersKnown;
     private String year;
+
+    // Excluded from database
+    private List<Track> tracks;
 
     public Album(String id, String name, List<PhotoUrl> photoUrl, List<String> artistNames,
                  List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown, int followers, boolean followersKnown, String year) {
@@ -95,5 +103,25 @@ public class Album {
 
     public String getYear() {
         return year;
+    }
+
+    @Exclude
+    public List<Track> getTracks() {
+        return tracks;
+    }
+
+    public void setTracks(List<Track> tracks) {
+        this.tracks = tracks;
+    }
+
+    public void initCollection(DatabaseReference db) {
+        initTracks(db);
+    }
+
+    private void initTracks(DatabaseReference db) {
+        tracks = new ArrayList<>();
+        for (String trackId : trackIds) {
+            tracks.add(FirebaseService.checkDatabase(db, "Tracks", trackId, Track.class));
+        }
     }
 }

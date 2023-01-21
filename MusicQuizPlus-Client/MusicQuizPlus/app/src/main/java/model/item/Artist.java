@@ -12,6 +12,7 @@ import java.util.List;
 
 import model.ExternalLink;
 import model.PhotoUrl;
+import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
 
@@ -259,16 +260,21 @@ public class Artist {
         this.followersKnown = followersKnown;
     }
 
-    public void initCollections(DatabaseReference db) {
-        initSingles(db);
+    public void initCollections(DatabaseReference db, User user) {
+        initSingles(db, user);
         initAlbums(db);
         initCompilations(db);
     }
 
-    private void initSingles(DatabaseReference db) {
+    private void initSingles(DatabaseReference db, User user) {
         singles = new ArrayList<>();
         for (String albumId : singleIds) {
             singles.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+
+            // If the user has the album hearted, fetch the tracks
+            if (user.getAlbumIds().containsValue(albumId)) {
+                singles.get(singles.size() - 1).initCollection(db);
+            }
         }
     }
     private void initAlbums(DatabaseReference db) {

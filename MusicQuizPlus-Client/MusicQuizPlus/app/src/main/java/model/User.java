@@ -18,7 +18,7 @@ import service.FirebaseService;
 
 public class User implements Serializable {
     private Map<String, String> albumIds;
-    private Map<String, String>artistIds;
+    private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
     private Map<String, String> historyIds;
     private Map<String, QuizHistory> quizHistory;
@@ -27,8 +27,8 @@ public class User implements Serializable {
     private Difficulty difficulty;
 
     // Excluded from Database
+    private Map<String, Artist> artists;    // Albums are saved to the artist, tracks are saved to albums
     private Map<String, Playlist> playlists;
-    private Map<String, Artist> artists;
     private Map<String, Track> history;
 
     private final static String TAG = "User.java";
@@ -238,7 +238,7 @@ public class User implements Serializable {
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
             artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
-            artists.get(entry.getKey()).initCollections(db);
+            artists.get(entry.getKey()).initCollections(db, this);
         }
         Log.i(TAG, "Artists retrieved.");
     }
@@ -256,4 +256,6 @@ public class User implements Serializable {
         }
         Log.i(TAG, "History retrieved.");
     }
+
+
 }
