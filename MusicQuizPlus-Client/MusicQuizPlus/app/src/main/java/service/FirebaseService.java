@@ -476,17 +476,29 @@ public class FirebaseService {
 
         // TODO: Get the year from the album
 
+
+        JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
+        Map<String, String> artistsMap = new HashMap<>();
+        for (int j = 0; j < artistsArray.size(); j++) {
+            artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                    artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
+        }
+
+
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
             Track track = new Track(
                     jsonTrack.get("uri").getAsString(),
                     jsonTrack.get("name").getAsString(),
                     album.getId(),
-                    album.getArtistIds(),
+                    album.getName(),
+                    artistsMap,
                     0,
                     false,
                     null,
-                    true, year);
+                    true,
+                    year,
+                    jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
@@ -667,25 +679,30 @@ public class FirebaseService {
                 if (track == null) {
                     // Extract track's artist info
                     JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
-                    List<String> artistIds = new ArrayList<>();
+                    Map<String, String> artistsMap = new HashMap<>();
                     for (int j = 0; j < artistsArray.size(); j++) {
-                        artistIds.add(artistsArray.get(j).getAsJsonObject().get("uri").toString());
+                        artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                                artistsArray.get(j).getAsJsonObject().get("name").toString());
                     }
 
                     String year = null;
 
                     // TODO: Get the year from the album
 
+
                     // Build a new track
                     track = new Track(
                             trackId,
                             jsonObject.get("name").toString(),
                             jsonObject.getAsJsonObject("album").get("uri").toString(),
-                            artistIds,
+                            jsonObject.getAsJsonObject("album").get("name").toString(),
+                            artistsMap,
                             jsonObject.get("popularity").getAsInt(),
                             true,
                             jsonObject.get("preview_url").toString(),
-                            false, year);
+                            false,
+                            year,
+                            jsonObject.get("is_playable").getAsBoolean());
                 }
 
                 popularity += track.getPopularity();
@@ -844,6 +861,7 @@ public class FirebaseService {
         }
     }
 
+    // TODO: Delete and replace usages with the method from ValidationUtil
     private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,
                                   SpotifyService spotifyService, String methodName) {
         if (user == null) {

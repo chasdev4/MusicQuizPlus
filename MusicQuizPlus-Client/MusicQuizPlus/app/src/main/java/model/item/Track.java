@@ -11,20 +11,28 @@ public class Track {
     private String id;
     private String name;
     private String albumId;
-    private List<String> artistIds;
+    private String albumName;
+    private Map<String, String> artistsMap;
     private Map<String, String> playlistIds;
     private int popularity;
     private boolean popularityKnown;
     private String previewUrl;
     private boolean previewUrlKnown;
     private boolean albumKnown;
+    private String year;
+    private boolean playable;
 
-    public Track(String id, String name, String albumId, List<String> artistIds, int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown, String year) {
+    public Track(String id, String name, String albumId, String albumName, Map<String, String> artistsMap,
+                 int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown,
+                 String year, boolean playable) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
-        this.artistIds = artistIds;
+        this.albumName = albumName;
+        this.artistsMap = artistsMap;
         this.albumKnown = albumKnown;
+        this.year = year;
+        this.playable = playable;
         playlistIds = new HashMap<>();
         this.popularity = popularity;
         this.popularityKnown = popularityKnown;
@@ -44,10 +52,6 @@ public class Track {
 
     public String getAlbumId() {
         return albumId;
-    }
-
-    public List<String> getArtistIds() {
-        return artistIds;
     }
 
     public String getId() {
@@ -105,5 +109,21 @@ public class Track {
 
     public boolean isAlbumKnown() {
         return albumKnown;
+    }
+
+    public String getAlbumName() {
+        return albumName;
+    }
+
+    public boolean isPlayable() {
+        return playable;
+    }
+
+    public Map<String, String> getArtistsMap() {
+        return artistsMap;
+    }
+
+    public String getYear() {
+        return year;
     }
 }

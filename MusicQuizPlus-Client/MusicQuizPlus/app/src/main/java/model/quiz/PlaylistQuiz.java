@@ -109,13 +109,14 @@ public class PlaylistQuiz extends Quiz {
 
         // Gather data for answers
         for (Track track : playlist.getTracks()) {
-          //  Album album = getUser().getPlaylist(track.getAlbumId());
-            // TODO: Fix me, user has a map of artists, each artist should have a list of albums
-            Album album = null;
             trackNamePool.add(track.getName());
-            albumNamePool.add(album.getName());
-            artistNamePool.add(getUser().getArtist(track.getArtistIds().get(0)).getName());
-            yearPool.add(album.getYear());
+            albumNamePool.add(track.getAlbumName());
+            for (Map.Entry<String, String> entry : track.getArtistsMap().entrySet()) {
+                if (!artistNamePool.contains(entry.getValue())) {
+                    artistNamePool.add(entry.getValue());
+                }
+            }
+            yearPool.add(track.getYear());
         }
 
 

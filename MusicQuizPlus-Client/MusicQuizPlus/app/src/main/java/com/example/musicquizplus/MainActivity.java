@@ -151,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
-
                         // DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
