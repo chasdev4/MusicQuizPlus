@@ -148,7 +148,11 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
-                    // DEBUG: Uncomment me to test heartPlaylist
+                    if (user != null) {
+                        user.initCollections(db);
+
+
+                        // DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
 //                            "NKVT 2021",
@@ -169,12 +173,12 @@ public class MainActivity extends AppCompatActivity {
 //                            spotifyService
 //                    );
 
-                    // DEBUG: Uncomment me to test unheartPlaylist
+                        // DEBUG: Uncomment me to test unheartPlaylist
 //                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
 //                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
 
 
-                    // DEBUG: Uncomment me to test heartAlbum
+                        // DEBUG: Uncomment me to test heartAlbum
 //                    FirebaseService.heartAlbum(user, firebaseUser, db,
 //                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
 //                                    "Inna",
@@ -196,9 +200,11 @@ public class MainActivity extends AppCompatActivity {
 //                                    false, 0, false), spotifyService);
 
 
-                    // DEBUG: Uncomment me to test unheartAlbum
+                        // DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
-//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
+//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService)
+//                    ;
+                    }
                 }
             }).start();
 
