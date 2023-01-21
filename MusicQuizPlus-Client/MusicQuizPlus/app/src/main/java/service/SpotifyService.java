@@ -91,7 +91,7 @@ public class SpotifyService {
     }
 
     // Album Tracks endpoint
-    public JsonObject albumTracks(String albumId, int limit, int offset) {
+    public JsonObject albumTracks(String albumId) {
         String[] albumIdArray = albumId.split(":");
 
         // Create the client and request
@@ -99,10 +99,6 @@ public class SpotifyService {
         final Request request = new Request.Builder()
                 .url("https://spotify23.p.rapidapi.com/album_tracks/?id="
                         + albumIdArray[2]
-                        + "&offset="
-                        + offset
-                        + "&limit="
-                        + limit
                 )
                 .get()
                 .addHeader("X-RapidAPI-Key", _key)

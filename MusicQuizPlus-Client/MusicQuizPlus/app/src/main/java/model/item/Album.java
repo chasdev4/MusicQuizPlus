@@ -31,7 +31,8 @@ public class Album {
     private List<Track> tracks;
 
     public Album(String id, String name, List<PhotoUrl> photoUrl, List<String> artistNames,
-                 List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown, int followers, boolean followersKnown, String year) {
+                 List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown,
+                 int followers, boolean followersKnown, String year) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;

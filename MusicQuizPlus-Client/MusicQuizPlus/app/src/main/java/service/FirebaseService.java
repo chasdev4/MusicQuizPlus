@@ -465,17 +465,12 @@ public class FirebaseService {
     }
 
     private static void saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
-        JsonObject jsonObject = spotifyService.albumTracks(album.getId(), 300, 0);
+        JsonObject jsonObject = spotifyService.albumTracks(album.getId());
         JsonArray jsonArray = jsonObject
                 .getAsJsonObject("data")
                 .getAsJsonObject("album")
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
-
-        String year = null;
-
-        // TODO: Get the year from the album
-
 
         JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
         Map<String, String> artistsMap = new HashMap<>();
@@ -497,7 +492,7 @@ public class FirebaseService {
                     false,
                     null,
                     true,
-                    year,
+                    album.getYear(),
                     jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
@@ -685,11 +680,6 @@ public class FirebaseService {
                                 artistsArray.get(j).getAsJsonObject().get("name").toString());
                     }
 
-                    String year = null;
-
-                    // TODO: Get the year from the album
-
-
                     // Build a new track
                     track = new Track(
                             trackId,
@@ -701,7 +691,7 @@ public class FirebaseService {
                             true,
                             jsonObject.get("preview_url").toString(),
                             false,
-                            year,
+                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(0, 3),
                             jsonObject.get("is_playable").getAsBoolean());
                 }
 
