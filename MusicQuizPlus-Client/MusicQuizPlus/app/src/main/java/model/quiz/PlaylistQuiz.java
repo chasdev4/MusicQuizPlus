@@ -5,17 +5,17 @@ import android.util.Log;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import model.Answer;
 import model.Quiz;
 import model.User;
 import model.ValidationObject;
-import model.item.Album;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
 import utils.FormatUtil;
@@ -32,6 +32,202 @@ public class PlaylistQuiz extends Quiz {
     private final double GUESS_ALBUM_CHANCE = .15;
     private final double GUESS_ARTIST_CHANCE = .25;
     private final double GUESS_YEAR_CHANCE = .1;
+    private final Map<Integer, List<String>> WORDS = new HashMap<>() {
+        {
+            put(1, new ArrayList<>() {
+                {
+
+                }
+            });
+            put(2, new ArrayList<>() {
+                {
+                    add("an");
+                    add("as");
+                    add("at");
+                    add("be");
+                    add("by");
+                    add("do");
+                    add("he");
+                    add("if");
+                    add("in");
+                    add("is");
+                    add("it");
+                    add("my");
+                    add("no");
+                    add("of");
+                    add("on");
+                    add("or");
+                    add("so");
+                    add("to");
+                    add("up");
+                    add("us");
+                    add("we");
+                }
+            });
+            put(3, new ArrayList<>() {
+                {
+                    add("act");
+                    add("all");
+                    add("and");
+                    add("any");
+                    add("are");
+                    add("but");
+                    add("can");
+                    add("day");
+                    add("did");
+                    add("end");
+                    add("far");
+                    add("few");
+                    add("for");
+                    add("get");
+                    add("god");
+                    add("had");
+                    add("has");
+                    add("her");
+                    add("him");
+                    add("his");
+                    add("how");
+                    add("its");
+                    add("law");
+                    add("man");
+                    add("may");
+                    add("men");
+                    add("not");
+                    add("now");
+                    add("off");
+                    add("old");
+                    add("one");
+                    add("our");
+                    add("own");
+                    add("per");
+                    add("say");
+                    add("see");
+                    add("set");
+                    add("she");
+                    add("the");
+                    add("too");
+                    add("two");
+                    add("use");
+                    add("war");
+                    add("was");
+                    add("way");
+                    add("who");
+                    add("why");
+                    add("yet");
+                    add("you");
+                }
+            });
+            put(4, new ArrayList<>() {
+                {
+                    add("also");
+                    add("baby");
+                    add("back");
+                    add("been");
+                    add("both");
+                    add("case");
+                    add("does");
+                    add("down");
+                    add("each");
+                    add("even");
+                    add("from");
+                    add("good");
+                    add("have");
+                    add("here");
+                    add("into");
+                    add("just");
+                    add("life");
+                    add("like");
+                    add("long");
+                    add("made");
+                    add("make");
+                    add("many");
+                    add("more");
+                    add("most");
+                    add("much");
+                    add("must");
+                    add("only");
+                    add("over");
+                    add("part");
+                    add("said");
+                    add("same");
+                    add("some");
+                    add("such");
+                    add("than");
+                    add("that");
+                    add("them");
+                    add("then");
+                    add("they");
+                    add("this");
+                    add("time");
+                    add("upon");
+                    add("used");
+                    add("very");
+                    add("were");
+                    add("what");
+                    add("when");
+                    add("well");
+                    add("will");
+                    add("with");
+                    add("work");
+                    add("your");
+                }
+            });
+            put(5, new ArrayList<>() {
+                {
+                    add("about");
+                    add("above");
+                    add("after");
+                    add("again");
+                    add("among");
+                    add("being");
+                    add("could");
+                    add("early");
+                    add("every");
+                    add("first");
+                    add("found");
+                    add("given");
+                    add("great");
+                    add("group");
+                    add("house");
+                    add("human");
+                    add("large");
+                    add("later");
+                    add("means");
+                    add("might");
+                    add("never");
+                    add("often");
+                    add("order");
+                    add("other");
+                    add("place");
+                    add("point");
+                    add("power");
+                    add("right");
+                    add("shall");
+                    add("since");
+                    add("small");
+                    add("state");
+                    add("still");
+                    add("their");
+                    add("there");
+                    add("these");
+                    add("think");
+                    add("those");
+                    add("three");
+                    add("under");
+                    add("until");
+                    add("water");
+                    add("where");
+                    add("which");
+                    add("while");
+                    add("whole");
+                    add("women");
+                    add("world");
+                    add("would");
+                    add("years");
+                }
+            });
+        }
+    };
 
     public PlaylistQuiz(Playlist playlist, User user, FirebaseUser firebaseUser, QuizType type, String id, String queryId, int numQuestions) {
         super(user, firebaseUser, type, id, queryId, numQuestions);
@@ -41,10 +237,11 @@ public class PlaylistQuiz extends Quiz {
 
     // Generates the quiz
     private void init() {
+        //#region Null check
         // For logging
-        final String methodName = FormatUtil.formatMethodName("getQuestions");
+        final String methodName = FormatUtil.formatMethodName("init");
 
-        // Null check
+
         List<ValidationObject> validationObjects = new ArrayList<>() {
             {
                 add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
@@ -53,10 +250,11 @@ public class PlaylistQuiz extends Quiz {
         if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
+        //#endregion
 
         // Check to see if the trackId's are known, they absolutely should be
-        if (!playlist.isTrackIdsKnown()) {
-            Log.e(TAG, String.format("%s %s track Id's are unknown.", methodName, playlist.getId()));
+        if (playlist.getTracks().size() == 0) {
+            Log.e(TAG, String.format("%s %s tracks are unknown.", methodName, playlist.getId()));
             return;
         }
 
@@ -71,13 +269,12 @@ public class PlaylistQuiz extends Quiz {
 
         // Check the user's Quiz history to separate the old from the new
         // Prepare information for answers
-        Map<String, String> quizHistory = getUser().getQuizHistory().get(playlist.getId()).getTrackIds();
-        if (quizHistory != null && quizHistory.size() > 0) {
+        if (getUser().getQuizHistory() != null) {
+            Map<String, String> quizHistory = getUser().getQuizHistory().get(playlist.getId()).getTrackIds();
             for (Track track : playlist.getTracks()) {
                 if (quizHistory.containsValue(track.getId())) {
                     getOldTracks().add(track);
-                }
-                else {
+                } else {
                     getNewTracks().add(track);
                 }
             }
@@ -93,11 +290,10 @@ public class PlaylistQuiz extends Quiz {
         int guessAlbumCount = (int) (getNumQuestions() * GUESS_ALBUM_CHANCE);
         int guessArtistCount = (int) (getNumQuestions() * GUESS_ARTIST_CHANCE);
         int guessYearCount = (int) (getNumQuestions() * GUESS_YEAR_CHANCE);
-        int newTotal = guessTrackCount+guessAlbumCount+guessArtistCount+guessYearCount;
+        int newTotal = guessTrackCount + guessAlbumCount + guessArtistCount + guessYearCount;
         if (newTotal < total) {
             guessTrackCount += total - newTotal;
-        }
-        else if (newTotal > total) {
+        } else if (newTotal > total) {
             guessTrackCount -= newTotal - total;
         }
 
@@ -119,93 +315,109 @@ public class PlaylistQuiz extends Quiz {
             yearPool.add(track.getYear());
         }
 
-
-
         // Check to see if numTracks was reassigned or equal to numQuestions
         // If they're equal the user will be quizzed on the entire track set
-        if (numTracks == getNumQuestions()) {
-            Random rnd = new Random();
-            List<Track> playlistTracks = playlist.getTracks();
-            List<Track> currentTracks = new ArrayList<>();
-            // Loop through and generate the quiz
-            for (int i = 0; i < guessTrackCount; i++) {
-                // An array for answers
-                Answer[] answers = new Answer[4];
-                // Pick a random index for the correct answer
-                int answerIndex = rnd.nextInt(4);
-                // Pick a random index for choosing a playlist track
-                int randomTrackIndex = rnd.nextInt(playlistTracks.size());
 
-                // Assign the correct answer
-                answers[answerIndex] = new Answer(
-                        playlist.getTracks().get(randomTrackIndex).getName(),
-                        answerIndex
-                        );
-                // Remove the track from
-                playlistTracks.remove(randomTrackIndex);
 
-                for (int j = 0; j < 4; j++) {
-                    if (j == answerIndex) {
-                        j++;
+        Random rnd = new Random();
+        List<Track> playlistTracks = playlist.getTracks();
+
+
+        // Loop through and generate the questions
+        for (int i = 0; i < guessTrackCount; i++) {
+            Answer[] answers = new Answer[4];
+
+            // Pick a random index for the correct answer
+            int answerIndex = rnd.nextInt(4);
+
+            // Pick a random index for choosing a playlist track
+            int randomIndex = rnd.nextInt(playlistTracks.size());
+
+            // Assign the correct answer
+            answers[answerIndex] = new Answer(
+                    playlist.getTracks().get(randomIndex).getName(),
+                    answerIndex
+            );
+
+            // Remove the track from set
+            playlistTracks.remove(randomIndex);
+
+            // Assign the other 3 answers
+            for (int j = 0; j < 4; j++) {
+                // Skip the correct answer
+                if (j != answerIndex) {
+                    rnd = new Random();
+                    int randomIndex2 = rnd.nextInt(trackNamePool.size());
+                    String answerText = trackNamePool.get(randomIndex2);
+
+                    // Validate the new answer
+                    boolean tryAgain = false;
+                    for (int k = 0; k < 4; k++) {
+                        if (answerText != null && answers[k] != null) {
+                            if (namesMatch(answers[k].getText(), answerText)) {
+                                tryAgain = true;
+                            }
+                        }
                     }
-                    else {
-                    //    answers[j] =
+                    if (tryAgain) {
+                        j--;
+                    } else {
+                        answers[j] = new Answer(answerText, j);
+                    }
                 }
-
-          //      Question question = new Question(QuestionType.GUESS_TRACK, , answerIndex)
             }
+            getQuestions().add(new Question(QuestionType.GUESS_TRACK, answers, answerIndex));
+            Log.d("Debug", "Yipee");
+        }
+        Log.d("Debug", "Yipee");
 
+    }
 
+    private boolean namesMatch(String a, String b) {
+        // Return if they're equal
+        if (a.equals(b)) {
+            return true;
+        }
 
+        int count = 0;
+        char[] str1 = a.toCharArray();
+        char[] str2 = b.toCharArray();
+        boolean str1Longer = a.length() > a.length();
+        int length = (str1Longer) ? b.length() : a.length();
 
+        for (int i = 0; i < length; i++) {
+            if (str1[i] == str2[i]) {
+                count++;
+            } else {
+                break;
+            }
+        }
 
+        // Return if there were no matches
+        if (count == 0) {
+            return false;
+        } else if (count == length) {
+            return true;
+        }
 
+        String strResult = a.substring(0, count);
 
+        // Remove trailing spaces
+        if (str1[count - 1] == ' ') {
+            strResult = strResult.trim();
+        }
 
+        if (strResult.length() > 1 && strResult.length() <= 5) {
 
+            if (WORDS.get(strResult.length()).contains(strResult.toLowerCase())) {
+                return false;
+            }
+        }
 
+        if (count < 3 && count > length - 3) {
+            return true;
+        }
 
-
-
-
-
-
-//            for (int i = 0; i < numTracks; i++) {
-//                Question question = null;
-//                if (i <= guessTrackCount) {
-//                    question = new Question(QuestionType.GUESS_TRACK, );
-//                }
-//                else if (i <= guessAlbumCount) {
-//                   // question = new Question(QuestionType.GUESS_TRACK, );
-//                }
-//                else if (i <= guessArtistCount) {
-//                   // question = new Question(QuestionType.GUESS_TRACK, );
-//                }
-//                else if  (i <= guessYearCount) {
-//                  //  question = new Question(QuestionType.GUESS_TRACK, );
-//                }
-//
-//                Track track = playlist.getTracks().get(i);
-//                rnd.nextInt(i + 1);
-//                switch (getUser().getDifficulty()) {
-//                    case EASY:
-//                        if (track.getPopularity() >= popularityThreshold) {
-//
-//                        }
-//                        break;
-//                    case MEDIUM:
-//
-//                        break;
-//                    case HARD:
-//
-//                        break;
-//                }
-//
-//                // Create an inner loop to get 4 answers
-//                for (int j = 0; j < 4; j++) {
-//
-//                }
-//            }
-        }}
+        return false;
     }
 }

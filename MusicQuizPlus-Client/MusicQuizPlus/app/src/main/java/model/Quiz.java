@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.item.Track;
+import model.quiz.Question;
 import model.type.QuizType;
 
 public class Quiz {

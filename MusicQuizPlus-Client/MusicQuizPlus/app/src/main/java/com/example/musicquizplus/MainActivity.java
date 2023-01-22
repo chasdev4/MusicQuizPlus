@@ -41,8 +41,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import model.GoogleSignIn;
+import model.PhotoUrl;
 import model.User;
+import model.item.Album;
+import model.item.Playlist;
+import model.quiz.PlaylistQuiz;
+import model.type.QuizType;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -151,6 +158,16 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
+                        PlaylistQuiz quiz = new PlaylistQuiz(
+                                user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP"),
+                                user,
+                                firebaseUser,
+                                QuizType.PLAYLIST,
+                                null,
+                                null,
+                                10
+                        );
+
                         // DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
@@ -163,9 +180,9 @@ public class MainActivity extends AppCompatActivity {
 //                            "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
 //                    );
 //
-//                    if (!playlist.isTrackIdsKnown()) {
+//
 //                       playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
-//                    }
+//
 //
 //                    FirebaseService.heartPlaylist(user, firebaseUser, db,
 //                            playlist,
@@ -201,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
 
                         // DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
-//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService)
+//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
 //                    ;
                     }
                 }

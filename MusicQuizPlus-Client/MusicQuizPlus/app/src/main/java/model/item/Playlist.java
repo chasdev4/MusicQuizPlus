@@ -26,7 +26,6 @@ public class Playlist implements Serializable {
 
     // Excluded from Database
     private List<Track> tracks;
-    private boolean trackIdsKnown;
 
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
@@ -38,7 +37,6 @@ public class Playlist implements Serializable {
         followersKnown = false;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
-        trackIdsKnown = false;
     }
 
     public Playlist() {
@@ -71,15 +69,6 @@ public class Playlist implements Serializable {
 
     public void addTrackId(String trackId) {
         trackIds.add(trackId);
-    }
-
-    @Exclude
-    public boolean isTrackIdsKnown() {
-        return trackIdsKnown;
-    }
-
-    public void setTrackIdsKnown(boolean trackIdsKnown) {
-        this.trackIdsKnown = trackIdsKnown;
     }
 
     @Exclude
@@ -134,7 +123,8 @@ public class Playlist implements Serializable {
     private void initTracks(DatabaseReference db) {
         tracks = new ArrayList<>();
         for (String trackId : trackIds) {
-            tracks.add(FirebaseService.checkDatabase(db, "tracks", trackId, Track.class));
+            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+            tracks.add(track);
         }
     }
 }

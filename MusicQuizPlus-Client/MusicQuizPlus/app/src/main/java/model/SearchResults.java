@@ -195,6 +195,7 @@ public class SearchResults {
             // Create an inner loop to get artists
             JsonArray artistsArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
             Map<String, String> artistsMap = new HashMap<>();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
             for (int j = 0; j < artistsArray.size(); j++) {
                 artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
                         artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
@@ -206,6 +207,7 @@ public class SearchResults {
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
                     albumOfTrack.get("name").getAsString(),
+                    artistId,
                     artistsMap,
                     0,
                     false,

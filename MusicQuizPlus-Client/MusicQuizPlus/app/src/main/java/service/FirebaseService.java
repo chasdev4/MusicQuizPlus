@@ -485,6 +485,7 @@ public class FirebaseService {
                 .getAsJsonArray("items");
 
         JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
+        String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
         Map<String, String> artistsMap = new HashMap<>();
         for (int j = 0; j < artistsArray.size(); j++) {
             artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
@@ -499,6 +500,7 @@ public class FirebaseService {
                     jsonTrack.get("name").getAsString(),
                     album.getId(),
                     album.getName(),
+                    artistId,
                     artistsMap,
                     0,
                     false,
@@ -651,7 +653,7 @@ public class FirebaseService {
     // Used when a playlists tracks have not been populated yet, like from the search results
     public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
         // Playlist is already populated, do nothing
-        if (playlist.isTrackIdsKnown()) {
+        if (playlist.getTracks().size() > 0) {
             return playlist;
         }
 
@@ -663,7 +665,7 @@ public class FirebaseService {
             Log.i(TAG, "DataSnapshot returned null, retrieving playlist tracks...");
         }
         // It exists, the tracks should be known
-        else if (playlist1.isTrackIdsKnown()) {
+        else if (playlist1.getTrackIds().size() > 0) {
             Log.i(TAG, "Playlist exists in database, returning playlist...");
             return playlist1;
         }
@@ -695,7 +697,8 @@ public class FirebaseService {
                     // Extract track's artist info
                     JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
                     Map<String, String> artistsMap = new HashMap<>();
-                    for (int j = 0; j < artistsArray.size(); j++) {
+                    String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+                    for (int j = 0; j < 1; j++) {
                         artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
                                 artistsArray.get(j).getAsJsonObject().get("name").toString());
                     }
@@ -706,12 +709,13 @@ public class FirebaseService {
                             jsonObject.get("name").toString(),
                             jsonObject.getAsJsonObject("album").get("uri").toString(),
                             jsonObject.getAsJsonObject("album").get("name").toString(),
+                            artistId,
                             artistsMap,
                             jsonObject.get("popularity").getAsInt(),
                             true,
                             jsonObject.get("preview_url").toString(),
                             false,
-                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(0, 3),
+                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(0, 5),
                             jsonObject.get("is_playable").getAsBoolean());
                 }
 
@@ -736,7 +740,6 @@ public class FirebaseService {
         }
 
         playlist.setAveragePopularity(popularity / numTracks);
-        playlist.setTrackIdsKnown(true);
         return playlist;
     }
 

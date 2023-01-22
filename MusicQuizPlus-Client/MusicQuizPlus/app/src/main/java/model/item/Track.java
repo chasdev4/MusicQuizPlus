@@ -12,7 +12,8 @@ public class Track {
     private String name;
     private String albumId;
     private String albumName;
-    private Map<String, String> artistsMap;
+    private String artistId;                    // The primary artist
+    private Map<String, String> artistsMap;     // All artists
     private Map<String, String> playlistIds;
     private int popularity;
     private boolean popularityKnown;
@@ -22,13 +23,14 @@ public class Track {
     private String year;
     private boolean playable;
 
-    public Track(String id, String name, String albumId, String albumName, Map<String, String> artistsMap,
-                 int popularity, boolean popularityKnown, String previewUrl, boolean albumKnown,
-                 String year, boolean playable) {
+    public Track(String id, String name, String albumId, String albumName, String artistId,
+                 Map<String, String> artistsMap, int popularity, boolean popularityKnown,
+                 String previewUrl, boolean albumKnown, String year, boolean playable) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
         this.albumName = albumName;
+        this.artistId = artistId;
         this.artistsMap = artistsMap;
         this.albumKnown = albumKnown;
         this.year = year;
@@ -125,5 +127,13 @@ public class Track {
 
     public String getYear() {
         return year;
+    }
+
+    public String getArtistId() {
+        return artistId;
+    }
+
+    public void setArtistId(String artistId) {
+        this.artistId = artistId;
     }
 }
