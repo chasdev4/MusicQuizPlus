@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.HistoryFragment"
+    android:background="#231559">
+
+    <RelativeLayout
+        android:id="@+id/historyHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <include layout="@layout/user_avatar_layout"
+            android:id="@+id/historyUserAvatar"
+            android:layout_height="150dp"
+            android:layout_width="150dp"
+            android:layout_marginTop="-10dp"
+            android:layout_marginStart="-12dp"/>
+
+        <Button
+            android:id="@+id/historyTitle"
+            android:layout_width="310dp"
+            android:layout_height="260dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="-100dp"
+            android:layout_marginEnd="-65dp"
+            android:layout_marginBottom="-85dp"
+            android:background="@drawable/parallelogram_png"
+            android:clickable="false"
+            android:text="@string/history"
+            android:textColor="@color/white"
+            android:textSize="33sp"
+            android:paddingTop="30dp"
+            android:paddingStart="12dp"
+            android:fontFamily="@font/concert_one"/>
+
+        <ImageButton
+            android:id="@+id/embeddedHelp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/historyTitle"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:background="@drawable/round_button"
+            android:minWidth="50dp"
+            android:minHeight="50dp"
+            android:src="@drawable/question_mark_foreground" />
+
+        <ImageButton
+            android:id="@+id/embeddedSettings"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/round_button"
+            android:src="@drawable/settings_foreground"
+            android:minHeight="50dp"
+            android:minWidth="50dp"
+            android:layout_below="@id/historyTitle"
+            android:layout_toStartOf="@id/embeddedHelp"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"/>
+
+        <ImageButton
+            android:id="@+id/embeddedVolume"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_below="@id/historyTitle"
+            android:layout_marginStart="2dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="2dp"
+            android:layout_marginBottom="2dp"
+            android:layout_toStartOf="@id/embeddedSettings"
+            android:background="@drawable/round_button"
+            android:src="@drawable/volume_on_foreground" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/historyListView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/historyHeader"/>
+
+    <include layout="@layout/logged_out_message"
+        android:id="@+id/historyNoCurrentUser"
+        android:layout_marginTop="150dp"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:visibility="gone"/>
+
+    <ImageButton
+        android:id="@+id/mainSearchButton"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:background="@drawable/round_button_no_stroke"
+        android:src="@drawable/search"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:elevation="8dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginEnd="15dp"/>
+
+    <ImageButton
+        android:id="@+id/backToTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/mainSearchButton"
+        android:layout_alignParentEnd="true"
+        android:elevation="8dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="30dp"
+        android:src="@drawable/up_chevron"
+        android:background="@drawable/round_button_no_stroke"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>
