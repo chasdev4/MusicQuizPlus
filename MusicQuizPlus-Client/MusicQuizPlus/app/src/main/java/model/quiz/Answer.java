@@ -1,4 +1,4 @@
-package model;
+package model.quiz;
 
 public class Answer {
     private final String text;
@@ -7,5 +7,13 @@ public class Answer {
     public Answer(String text, int index) {
         this.text = text;
         this.index = index;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public int getIndex() {
+        return index;
     }
 }

@@ -1,5 +1,6 @@
-package model;
+package model.quiz;
 
+import model.quiz.Answer;
 import model.type.QuestionType;
 
 public class Question {
