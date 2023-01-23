@@ -93,10 +93,12 @@ public class Quiz {
         numCorrect++;
     }
 
-    private void nextQuestion(int lastSelection) {
+    private Question nextQuestion(int lastSelection) {
         if (lastSelection == getQuestions().get(getCurrentQuestionIndex()).getAnswerIndex()) {
             addToScore(BASE_SCORE);
         }
         incrementQuestionIndex();
+
+        return questions.get(currentQuestionIndex);
     }
 }
