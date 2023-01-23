@@ -3,14 +3,10 @@ package model.quiz;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.google.type.DateTime;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -384,10 +380,12 @@ public class PlaylistQuiz extends Quiz {
 
             // Assign the correct answer
             answers[answerIndex] = getAnswerText(type, randomIndex);
+            String previewUrl = playlistTracks.get(randomIndex).getPreviewUrl();
 
-            // Remove the track from set
+                    // Remove the track from set
             history.add(playlistTracks.get(randomIndex));
             playlistTracks.remove(randomIndex);
+
 
             if (type == QuestionType.GUESS_YEAR) {
                 int year = Integer.parseInt(answers[answerIndex]);
@@ -451,7 +449,7 @@ public class PlaylistQuiz extends Quiz {
                     }
                 }
             }
-            getQuestions().add(new Question(type, answers, answerIndex));
+            getQuestions().add(new Question(type, answers, answerIndex, previewUrl));
             Log.d("Debug", "Yipee");
         }
         Log.d("Debug", "Yipee");
