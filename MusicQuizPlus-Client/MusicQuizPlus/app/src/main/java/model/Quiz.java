@@ -89,13 +89,15 @@ public class Quiz {
         return numCorrect;
     }
 
-    public void incrementNumCorrect() {
-        numCorrect++;
+    // Returns a double which represents a percentage from 0 (0%) to 1 (100%)
+    public double getAccuracy() {
+        return numCorrect / numQuestions;
     }
 
     private Question nextQuestion(int lastSelection) {
         if (lastSelection == getQuestions().get(getCurrentQuestionIndex()).getAnswerIndex()) {
             addToScore(BASE_SCORE);
+            numCorrect++;
         }
         incrementQuestionIndex();
 
