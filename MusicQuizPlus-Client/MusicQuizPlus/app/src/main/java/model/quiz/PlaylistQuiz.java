@@ -282,7 +282,7 @@ public class PlaylistQuiz extends Quiz {
             ignoreDifficulty = false;
         }
 
-        // Get the number of tracks available
+        //  Get the number of tracks available
         int numTracks = playlist.getTracks().size();
 
         // If there are less tracks than questions available, update numQuestions
