@@ -715,7 +715,7 @@ public class FirebaseService {
                             true,
                             jsonObject.get("preview_url").toString(),
                             false,
-                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(0, 5),
+                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
                             jsonObject.get("is_playable").getAsBoolean());
                 }
 

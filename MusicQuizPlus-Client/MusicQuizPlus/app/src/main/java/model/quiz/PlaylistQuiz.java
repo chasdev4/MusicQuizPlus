@@ -3,8 +3,14 @@ package model.quiz;
 import android.util.Log;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.google.type.DateTime;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +34,7 @@ public class PlaylistQuiz extends Quiz {
     private int popularityThreshold;
     // A modifiable list of tracks
     private List<Track> playlistTracks = new ArrayList<>();
+    private List<Track> history = new ArrayList<>();
 
     private final String TAG = "PlaylistQuiz.java";
     private final double GUESS_TRACK_CHANCE = .6;
@@ -262,7 +269,6 @@ public class PlaylistQuiz extends Quiz {
         }
 
 
-
         // For random index selection
         Random rnd = new Random();
 
@@ -301,13 +307,12 @@ public class PlaylistQuiz extends Quiz {
         // Prepare information for answers
         if (insufficientData || ignoreDifficulty
                 || getUser().getQuizHistory() == null
-        || getUser().getQuizHistory().get(playlist.getId()) == null) {
+                || getUser().getQuizHistory().get(playlist.getId()) == null) {
             for (Track track : playlist.getTracks()) {
                 playlistTracks.add(track);
             }
 
-        }
-        else {
+        } else {
             List<Track> oldTracks = new ArrayList<>();
             List<Track> hardTracks = new ArrayList<>();
 
@@ -357,12 +362,19 @@ public class PlaylistQuiz extends Quiz {
 
         }
 
-        // Loop through and generate the questions
+        generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd);
+        generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd);
+        generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
+        generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd);
+        Collections.shuffle(getQuestions());
+        Log.d("Debug", "Yipee");
 
-        // Guess the Song
-        List<Track> history = new ArrayList<>();
-        for (int i = 0; i < guessTrackCount; i++) {
-            Answer[] answers = new Answer[4];
+    }
+
+    private void generateQuestions(QuestionType type, int count, Random rnd) {
+
+        for (int i = 0; i < count; i++) {
+            String[] answers = new String[4];
 
             // Pick a random index for the correct answer
             int answerIndex = rnd.nextInt(4);
@@ -371,44 +383,92 @@ public class PlaylistQuiz extends Quiz {
             int randomIndex = rnd.nextInt(playlistTracks.size());
 
             // Assign the correct answer
-            answers[answerIndex] = new Answer(
-                    playlist.getTracks().get(randomIndex).getName(),
-                    answerIndex
-            );
+            answers[answerIndex] = getAnswerText(type, randomIndex);
 
             // Remove the track from set
             history.add(playlistTracks.get(randomIndex));
             playlistTracks.remove(randomIndex);
 
-            // Assign the other 3 answers
-            for (int j = 0; j < 4; j++) {
-                // Skip the correct answer
-                if (j != answerIndex) {
-                    rnd = new Random();
-                    int randomIndex2 = rnd.nextInt(playlistTracks.size());
-                    String answerText = playlistTracks.get(randomIndex2).getName();
+            if (type == QuestionType.GUESS_YEAR) {
+                int year = Integer.parseInt(answers[answerIndex]);
 
-                    // Validate the new answer
-                    boolean tryAgain = false;
-                    for (int k = 0; k < 4; k++) {
-                        if (answerText != null && answers[k] != null) {
-                            if (namesMatch(answers[k].getText(), answerText)) {
-                                tryAgain = true;
+                int yearDifference = Calendar.getInstance().get(Calendar.YEAR) - year;
+                int yearUp = 0;
+                int yearDown = 0;
+                if (yearDifference > 16) {
+                    yearUp = rnd.nextInt(3) + 1;
+                    yearDown = 3 - yearUp;
+                } else if (yearDifference > 8) {
+                    yearUp = rnd.nextInt(2) + 1;
+                    yearDown = 3 - yearUp;
+                } else {
+                    yearDown = 3;
+                }
+                List<Integer> years = new ArrayList<>();
+                int tempYear = year;
+                for (int j = 0; j < yearUp; j++) {
+                    tempYear += rnd.nextInt(4) + 1;
+                    years.add(tempYear);
+                }
+                tempYear = year;
+                for (int j = 0; j < yearDown; j++) {
+                    tempYear -= rnd.nextInt(4) + 1;
+                    years.add(tempYear);
+                }
+
+                Collections.shuffle(years);
+                for (int j = 0; j < 4; j++) {
+                    if (j != answerIndex) {
+                        answers[j] = String.valueOf(years.get(0));
+                        years.remove(0);
+                    }
+                }
+
+            }
+            else {
+                // Assign the other 3 answers
+                for (int j = 0; j < 4; j++) {
+                    rnd = new Random();
+                    // Skip the correct answer
+                    if (j != answerIndex) {
+                        int randomIndex2 = rnd.nextInt(playlistTracks.size());
+                        String answerText = getAnswerText(type, randomIndex2);
+
+                        // Validate the new answer
+                        boolean tryAgain = false;
+                        for (int k = 0; k < 4; k++) {
+                            if (answerText != null && answers[k] != null) {
+                                if (namesMatch(answers[k], answerText)) {
+                                    tryAgain = true;
+                                }
                             }
                         }
-                    }
-                    if (tryAgain) {
-                        j--;
-                    } else {
-                        answers[j] = new Answer(answerText, j);
+                        if (tryAgain) {
+                            j--;
+                        } else {
+                            answers[j] = answerText;
+                        }
                     }
                 }
             }
-            getQuestions().add(new Question(QuestionType.GUESS_TRACK, answers, answerIndex));
+            getQuestions().add(new Question(type, answers, answerIndex));
             Log.d("Debug", "Yipee");
         }
         Log.d("Debug", "Yipee");
+    }
 
+    private String getAnswerText(QuestionType type, int randomIndex) {
+        switch (type) {
+            case GUESS_TRACK:
+                return playlistTracks.get(randomIndex).getName();
+            case GUESS_ALBUM:
+                return playlistTracks.get(randomIndex).getAlbumName();
+            case GUESS_ARTIST:
+                return playlistTracks.get(randomIndex).getArtistName();
+            case GUESS_YEAR:
+                return playlistTracks.get(randomIndex).getYear();
+        }
+        return null;
     }
 
     private boolean namesMatch(String a, String b) {
