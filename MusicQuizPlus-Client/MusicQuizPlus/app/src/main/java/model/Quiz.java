@@ -19,6 +19,7 @@ public class Quiz {
     private final String queryId;     // This id is used for the firebase query
     private final List<Question> questions;     // Note: Initialize this in PlaylistQuiz and ArtistQuiz to determine the number of tracks available first
     private int numQuestions;
+    private int currentQuestionIndex;
 
     public Quiz(User user, FirebaseUser firebaseUser, QuizType type, String id, String queryId, int numQuestions) {
         this.user = user;
@@ -28,6 +29,7 @@ public class Quiz {
         this.queryId = queryId;
         questions = new ArrayList<>();
         this.numQuestions = numQuestions;
+        currentQuestionIndex = 0;
     }
 
     public User getUser() {
@@ -60,6 +62,13 @@ public class Quiz {
 
     public void setNumQuestions(int numQuestions) {
         this.numQuestions = numQuestions;
+    }
+
+    public int getCurrentQuestionIndex() {
+        return currentQuestionIndex;
+    }
+    public void incrementQuestionIndex() {
+        currentQuestionIndex++;
     }
 
 }

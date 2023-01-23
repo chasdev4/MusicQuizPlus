@@ -14,6 +14,7 @@ public class Question {
         this.answers = answers;
         this.answerIndex = answerIndex;
         this.previewUrl = previewUrl;
+
     }
 
     public QuestionType getType() {
@@ -27,4 +28,12 @@ public class Question {
     public int getAnswerIndex() {
         return answerIndex;
     }
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+
+
+
 }
