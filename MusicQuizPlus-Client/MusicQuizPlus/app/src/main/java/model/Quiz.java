@@ -7,6 +7,7 @@ import java.util.List;
 
 import model.item.Track;
 import model.quiz.Question;
+import model.type.QuestionType;
 import model.type.QuizType;
 
 public class Quiz {
@@ -18,8 +19,6 @@ public class Quiz {
     private final String queryId;     // This id is used for the firebase query
     private final List<Question> questions;     // Note: Initialize this in PlaylistQuiz and ArtistQuiz to determine the number of tracks available first
     private int numQuestions;
-    private List<Track> newTracks;
-    private List<Track> oldTracks;
 
     public Quiz(User user, FirebaseUser firebaseUser, QuizType type, String id, String queryId, int numQuestions) {
         this.user = user;
@@ -29,8 +28,6 @@ public class Quiz {
         this.queryId = queryId;
         questions = new ArrayList<>();
         this.numQuestions = numQuestions;
-        newTracks = new ArrayList<>();
-        oldTracks = new ArrayList<>();
     }
 
     public User getUser() {
@@ -65,19 +62,4 @@ public class Quiz {
         this.numQuestions = numQuestions;
     }
 
-    public List<Track> getNewTracks() {
-        return newTracks;
-    }
-
-    public void setNewTracks(List<Track> newTracks) {
-        this.newTracks = newTracks;
-    }
-
-    public List<Track> getOldTracks() {
-        return oldTracks;
-    }
-
-    public void setOldTracks(List<Track> oldTracks) {
-        this.oldTracks = oldTracks;
-    }
 }

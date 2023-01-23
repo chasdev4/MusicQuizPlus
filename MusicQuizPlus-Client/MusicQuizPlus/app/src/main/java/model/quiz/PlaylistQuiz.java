@@ -15,6 +15,7 @@ import model.User;
 import model.ValidationObject;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.Difficulty;
 import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
@@ -25,13 +26,15 @@ public class PlaylistQuiz extends Quiz {
     private Playlist playlist;
 
     private int popularityThreshold;
+    // A modifiable list of tracks
+    private List<Track> playlistTracks = new ArrayList<>();
 
     private final String TAG = "PlaylistQuiz.java";
-    private final double MEDIUM_CHANCE = .5;
-    private final double GUESS_TRACK_CHANCE = .5;
-    private final double GUESS_ALBUM_CHANCE = .15;
-    private final double GUESS_ARTIST_CHANCE = .25;
+    private final double GUESS_TRACK_CHANCE = .6;
+    private final double GUESS_ALBUM_CHANCE = .1;
+    private final double GUESS_ARTIST_CHANCE = .2;
     private final double GUESS_YEAR_CHANCE = .1;
+    private final int BUFFER = 10;
     private final Map<Integer, List<String>> WORDS = new HashMap<>() {
         {
             put(1, new ArrayList<>() {
@@ -252,36 +255,34 @@ public class PlaylistQuiz extends Quiz {
         }
         //#endregion
 
-        // Check to see if the trackId's are known, they absolutely should be
+        // Check to see if the tracks are known, they absolutely should be
         if (playlist.getTracks().size() == 0) {
             Log.e(TAG, String.format("%s %s tracks are unknown.", methodName, playlist.getId()));
             return;
+        }
+
+
+
+        // For random index selection
+        Random rnd = new Random();
+
+        boolean ignoreDifficulty = true;
+        // Enough data for the quiz, but not enough to be picky
+        boolean insufficientData = false;
+
+        // Calculate the popularity threshold and update ignoreDifficulty
+        if (getUser().getDifficulty() != Difficulty.HARD) {
+            popularityThreshold = (int) (playlist.getAveragePopularity() * .6);
+            ignoreDifficulty = false;
         }
 
         // Get the number of tracks available
         int numTracks = playlist.getTracks().size();
 
         // If there are less tracks than questions available, update numQuestions
-        if (numTracks < getNumQuestions()) {
-            setNumQuestions(numTracks);
-        }
-
-
-        // Check the user's Quiz history to separate the old from the new
-        // Prepare information for answers
-        if (getUser().getQuizHistory() != null) {
-            Map<String, String> quizHistory = getUser().getQuizHistory().get(playlist.getId()).getTrackIds();
-            for (Track track : playlist.getTracks()) {
-                if (quizHistory.containsValue(track.getId())) {
-                    getOldTracks().add(track);
-                } else {
-                    getNewTracks().add(track);
-                }
-            }
-        }
-        // Else there is no history for this quiz
-        else {
-            setNewTracks(playlist.getTracks());
+        if (numTracks < getNumQuestions() + BUFFER) {
+            setNumQuestions(numTracks - BUFFER);
+            insufficientData = true;
         }
 
         // Calculate the number of each question type
@@ -297,33 +298,69 @@ public class PlaylistQuiz extends Quiz {
             guessTrackCount -= newTotal - total;
         }
 
-        // Data for answers
-        List<String> trackNamePool = new ArrayList<>();
-        List<String> albumNamePool = new ArrayList<>();
-        List<String> artistNamePool = new ArrayList<>();
-        List<String> yearPool = new ArrayList<>();
+        // Prepare information for answers
+        if (insufficientData || ignoreDifficulty
+                || getUser().getQuizHistory() == null
+        || getUser().getQuizHistory().get(playlist.getId()) == null) {
+            for (Track track : playlist.getTracks()) {
+                playlistTracks.add(track);
+            }
 
-        // Gather data for answers
-        for (Track track : playlist.getTracks()) {
-            trackNamePool.add(track.getName());
-            albumNamePool.add(track.getAlbumName());
-            for (Map.Entry<String, String> entry : track.getArtistsMap().entrySet()) {
-                if (!artistNamePool.contains(entry.getValue())) {
-                    artistNamePool.add(entry.getValue());
+        }
+        else {
+            List<Track> oldTracks = new ArrayList<>();
+            List<Track> hardTracks = new ArrayList<>();
+
+            Map<String, String> quizHistory = getUser().getQuizHistory().get(playlist.getId()).getTrackIds();
+            for (Track track : playlist.getTracks()) {
+                boolean skip = false;
+                if (!ignoreDifficulty) {
+                    if (track.getPopularity() < popularityThreshold) {
+                        if (getUser().getDifficulty() == Difficulty.EASY
+                                || (getUser().getDifficulty() == Difficulty.MEDIUM
+                                && rnd.nextInt(2) == 1))
+                            skip = true;
+                    }
+                }
+                if (!skip) {
+                    if (quizHistory.containsValue(track.getId())) {
+                        oldTracks.add(track);
+                    } else {
+                        playlistTracks.add(track);
+                    }
+                } else {
+                    hardTracks.add(track);
                 }
             }
-            yearPool.add(track.getYear());
+
+            // While there isn't enough tracks, add old tracks
+            int i = 0;
+            while (playlistTracks.size() < getNumQuestions() + BUFFER
+                    || i < oldTracks.size() - 1) {
+                playlistTracks.add(oldTracks.get(i));
+                i++;
+            }
+
+            // While there isn't enough tracks, add hard tracks
+            i = 0;
+            while (playlistTracks.size() < getNumQuestions() + BUFFER
+                    || i < hardTracks.size() - 1) {
+                playlistTracks.add(hardTracks.get(i));
+                i++;
+            }
+
+            // This code block shouldn't execute
+            if (playlistTracks.size() < getNumQuestions() + BUFFER) {
+                Log.e(TAG, "There isn't enough data for this quiz");
+                return;
+            }
+
         }
 
-        // Check to see if numTracks was reassigned or equal to numQuestions
-        // If they're equal the user will be quizzed on the entire track set
-
-
-        Random rnd = new Random();
-        List<Track> playlistTracks = playlist.getTracks();
-
-
         // Loop through and generate the questions
+
+        // Guess the Song
+        List<Track> history = new ArrayList<>();
         for (int i = 0; i < guessTrackCount; i++) {
             Answer[] answers = new Answer[4];
 
@@ -340,6 +377,7 @@ public class PlaylistQuiz extends Quiz {
             );
 
             // Remove the track from set
+            history.add(playlistTracks.get(randomIndex));
             playlistTracks.remove(randomIndex);
 
             // Assign the other 3 answers
@@ -347,8 +385,8 @@ public class PlaylistQuiz extends Quiz {
                 // Skip the correct answer
                 if (j != answerIndex) {
                     rnd = new Random();
-                    int randomIndex2 = rnd.nextInt(trackNamePool.size());
-                    String answerText = trackNamePool.get(randomIndex2);
+                    int randomIndex2 = rnd.nextInt(playlistTracks.size());
+                    String answerText = playlistTracks.get(randomIndex2).getName();
 
                     // Validate the new answer
                     boolean tryAgain = false;
@@ -408,7 +446,6 @@ public class PlaylistQuiz extends Quiz {
         }
 
         if (strResult.length() > 1 && strResult.length() <= 5) {
-
             if (WORDS.get(strResult.length()).contains(strResult.toLowerCase())) {
                 return false;
             }

@@ -136,4 +136,8 @@ public class Track {
     public void setArtistId(String artistId) {
         this.artistId = artistId;
     }
+
+    public String getArtistName() {
+        return artistsMap.get(artistId);
+    }
 }
