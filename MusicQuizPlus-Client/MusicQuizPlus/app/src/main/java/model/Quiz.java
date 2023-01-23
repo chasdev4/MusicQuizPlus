@@ -73,16 +73,9 @@ public class Quiz {
     public int getCurrentQuestionIndex() {
         return currentQuestionIndex;
     }
-    public void incrementQuestionIndex() {
-        currentQuestionIndex++;
-    }
 
     public int getScore() {
         return score;
-    }
-
-    public void addToScore(int score) {
-        this.score += score;
     }
 
     public int getNumCorrect() {
@@ -98,10 +91,10 @@ public class Quiz {
     // Returns the next question
     private Question nextQuestion(int answerIndex) {
         if (answerIndex == questions.get(getCurrentQuestionIndex()).getAnswerIndex()) {
-            addToScore(BASE_SCORE);
+            score += BASE_SCORE;
             numCorrect++;
         }
-        incrementQuestionIndex();
+        currentQuestionIndex++;
 
         return questions.get(currentQuestionIndex);
     }
