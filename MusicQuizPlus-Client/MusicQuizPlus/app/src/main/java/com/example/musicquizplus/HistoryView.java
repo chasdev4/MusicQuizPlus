@@ -14,135 +14,18 @@ import android.widget.TextView;
 
 import java.util.Objects;
 
+import model.item.Artist;
 import service.FirebaseService;
 
 public class HistoryView extends AppCompatActivity {
 
-    private View popupSignUpView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_view);
 
-        ListView listView = findViewById(R.id.historyListView);
-        TextView userLevel = findViewById(R.id.userLevel);
-        View noCurrentUser = findViewById(R.id.historyNoCurrentUser);
-        TextView noUserHeader = findViewById(R.id.logged_out_header);
-        ImageButton backToTop = findViewById(R.id.backToTop);
-        View historyUserAvatar = findViewById(R.id.historyUserAvatar);
 
-        if(Objects.equals(userLevel.getText(), "GUEST"))
-        {
-            listView.setVisibility(View.GONE);
-            noUserHeader.setText(R.string.guestUserHistory);
-            noUserHeader.setTextSize(32);
-            noCurrentUser.setVisibility(View.VISIBLE);
-        }
-        else
-        {
-            listView.setVisibility(View.VISIBLE);
-            noCurrentUser.setVisibility(View.GONE);
-        }
-
-        if(Objects.equals(listView.getVisibility(), View.VISIBLE)) {
-
-            //TODO: retreive history from firebase and populate listview
-
-        }
-
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView absListView, int i) {
-
-            }
-
-            @Override
-            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
-
-                int scroll = listView.getFirstVisiblePosition();
-
-                if(scroll > 0)
-                {
-                    backToTop.setVisibility(View.VISIBLE);
-                }
-                else
-                {
-                    backToTop.setVisibility(View.GONE);
-                }
-
-            }
-        });
-
-        backToTop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listView.setSelection(0);
-                backToTop.setVisibility(View.GONE);
-            }
-        });
-
-        historyUserAvatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(Objects.equals(userLevel.getText(), "GUEST")) {
-
-                    // Create a AlertDialog Builder.
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(HistoryView.this);
-                    // Set title, icon, can not cancel properties.
-                    alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
-                    alertDialogBuilder.setIcon(R.drawable.magicstar);
-                    alertDialogBuilder.setCancelable(false);
-
-                    // Init popup dialog view and it's ui controls.
-                    popupSignUpView = View.inflate(view.getContext(), R.layout.logged_out_message, null);
-                    // Set the inflated layout view object to the AlertDialog builder.
-                    alertDialogBuilder.setView(popupSignUpView);
-
-                    // Create AlertDialog and show.
-                    final AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
-
-                    ImageButton cancelPopUp = alertDialog.findViewById(R.id.closeDialogButton);
-                    TextView noThanksLink = alertDialog.findViewById(R.id.noThanksHyperLink);
-                    TextView signUpHeader = alertDialog.findViewById(R.id.logged_out_header);
-                    TextView linkGoogle = alertDialog.findViewById(R.id.link_google);
-                    TextView accountBenefits = alertDialog.findViewById(R.id.account_benefits);
-                    View entireGuestMessage = alertDialog.findViewById(R.id.entireGuestUserMessage);
-
-                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 1300);
-
-                    entireGuestMessage.setLayoutParams(params);
-                    alertDialog.getWindow().setLayout(1000, 1500); //Controlling width and height.
-
-                    noThanksLink.setVisibility(View.VISIBLE);
-                    noThanksLink.setPaintFlags(noThanksLink.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-                    cancelPopUp.setVisibility(View.VISIBLE);
-                    signUpHeader.setTextSize(22);
-                    signUpHeader.setText(R.string.user_profile_signup_header);
-                    linkGoogle.setTextSize(14);
-                    accountBenefits.setTextSize(14);
-
-                    noThanksLink.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            alertDialog.cancel();
-                        }
-                    });
-
-                    cancelPopUp.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            alertDialog.cancel();
-                        }
-                    });
-                }
-                else
-                {
-                    //pull up user profile
-                }
-            }
-        });
 
     }
 }
