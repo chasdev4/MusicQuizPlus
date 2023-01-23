@@ -94,8 +94,10 @@ public class Quiz {
         return numCorrect / numQuestions;
     }
 
-    private Question nextQuestion(int lastSelection) {
-        if (lastSelection == getQuestions().get(getCurrentQuestionIndex()).getAnswerIndex()) {
+    // Pass in the selected answer
+    // Returns the next question
+    private Question nextQuestion(int answerIndex) {
+        if (answerIndex == questions.get(getCurrentQuestionIndex()).getAnswerIndex()) {
             addToScore(BASE_SCORE);
             numCorrect++;
         }
