@@ -33,7 +33,6 @@ public class PlaylistQuiz extends Quiz {
     private List<Track> history = new ArrayList<>();
 
     private final String TAG = "PlaylistQuiz.java";
-    private final int BASE_SCORE = 100;
     private final double GUESS_TRACK_CHANCE = .6;
     private final double GUESS_ALBUM_CHANCE = .1;
     private final double GUESS_ARTIST_CHANCE = .2;
@@ -515,9 +514,5 @@ public class PlaylistQuiz extends Quiz {
         }
 
         return false;
-    }
-
-    private void nextQuestion() {
-
     }
 }

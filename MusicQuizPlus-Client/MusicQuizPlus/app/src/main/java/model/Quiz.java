@@ -20,6 +20,10 @@ public class Quiz {
     private final List<Question> questions;     // Note: Initialize this in PlaylistQuiz and ArtistQuiz to determine the number of tracks available first
     private int numQuestions;
     private int currentQuestionIndex;
+    private int score;
+    private int numCorrect;
+
+    private final int BASE_SCORE = 100;
 
     public Quiz(User user, FirebaseUser firebaseUser, QuizType type, String id, String queryId, int numQuestions) {
         this.user = user;
@@ -30,6 +34,8 @@ public class Quiz {
         questions = new ArrayList<>();
         this.numQuestions = numQuestions;
         currentQuestionIndex = 0;
+        score = 0;
+        numCorrect = 0;
     }
 
     public User getUser() {
@@ -71,4 +77,26 @@ public class Quiz {
         currentQuestionIndex++;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void addToScore(int score) {
+        this.score += score;
+    }
+
+    public int getNumCorrect() {
+        return numCorrect;
+    }
+
+    public void incrementNumCorrect() {
+        numCorrect++;
+    }
+
+    private void nextQuestion(int lastSelection) {
+        if (lastSelection == getQuestions().get(getCurrentQuestionIndex()).getAnswerIndex()) {
+            addToScore(BASE_SCORE);
+        }
+        incrementQuestionIndex();
+    }
 }
