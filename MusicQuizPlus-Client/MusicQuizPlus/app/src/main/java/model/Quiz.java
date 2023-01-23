@@ -78,13 +78,8 @@ public class Quiz {
         return score;
     }
 
-    public int getNumCorrect() {
-        return numCorrect;
-    }
-
-    // Returns a double which represents a percentage from 0 (0%) to 1 (100%)
-    public double getAccuracy() {
-        return numCorrect / numQuestions;
+    public String getAccuracy() {
+        return String.valueOf((numCorrect / numQuestions) * 100) + "%";
     }
 
     // Pass in the selected answer
