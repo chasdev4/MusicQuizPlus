@@ -1,5 +1,6 @@
 package model.item;
 
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
@@ -7,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.PhotoUrl;
+import service.FirebaseService;
 
 // SUMMARY
 // The Playlist model stores playlist information
@@ -20,10 +22,10 @@ public class Playlist implements Serializable {
     private List<String> trackIds;
     private int followers;
     private boolean followersKnown;
+    private int averagePopularity;
 
     // Excluded from Database
     private List<Track> tracks;
-    private boolean trackIdsKnown;
 
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
@@ -35,7 +37,6 @@ public class Playlist implements Serializable {
         followersKnown = false;
         trackIds = new ArrayList<>();
         tracks = new ArrayList<>();
-        trackIdsKnown = false;
     }
 
     public Playlist() {
@@ -68,15 +69,6 @@ public class Playlist implements Serializable {
 
     public void addTrackId(String trackId) {
         trackIds.add(trackId);
-    }
-
-    @Exclude
-    public boolean isTrackIdsKnown() {
-        return trackIdsKnown;
-    }
-
-    public void setTrackIdsKnown(boolean trackIdsKnown) {
-        this.trackIdsKnown = trackIdsKnown;
     }
 
     @Exclude
@@ -114,5 +106,25 @@ public class Playlist implements Serializable {
 
     public void setPhotoUrl(List<PhotoUrl> photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    public int getAveragePopularity() {
+        return averagePopularity;
+    }
+
+    public void setAveragePopularity(int averagePopularity) {
+        this.averagePopularity = averagePopularity;
+    }
+
+    public void initCollection(DatabaseReference db) {
+        initTracks(db);
+    }
+
+    private void initTracks(DatabaseReference db) {
+        tracks = new ArrayList<>();
+        for (String trackId : trackIds) {
+            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+            tracks.add(track);
+        }
     }
 }

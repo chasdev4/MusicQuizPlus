@@ -7,7 +7,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import model.item.Album;
 import model.item.Artist;
@@ -87,9 +89,17 @@ public class SearchResults {
             }
 
             // Add to collection
-            albums.add(new Album(jsonObject.get("uri").getAsString(),
+            albums.add(new Album(
+                    jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
-                    photoUrls, artistNames, artistIds, AlbumType.UNINITIALIZED, null, false, 0, false));
+                    photoUrls,
+                    artistNames,
+                    artistIds,
+                    AlbumType.UNINITIALIZED,
+                    null,
+                    false, 0,
+                    false,
+                    jsonObject.getAsJsonObject("date").get("year").getAsString()));
         }
         Log.i(TAG, "Album results extracted from JsonObject.");
     }
@@ -183,10 +193,12 @@ public class SearchResults {
             JsonObject albumOfTrack = jsonObject.getAsJsonObject("albumOfTrack");
 
             // Create an inner loop to get artists
-            JsonArray artistJsonArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
-            List<String> artistIds = new ArrayList<>();
-            for (int j = 0; j < artistJsonArray.size(); j++) {
-                artistIds.add(artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString());
+            JsonArray artistsArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
+            Map<String, String> artistsMap = new HashMap<>();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+            for (int j = 0; j < artistsArray.size(); j++) {
+                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
             }
 
             // Add to collection
@@ -194,11 +206,15 @@ public class SearchResults {
                     jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
-                    artistIds,
+                    albumOfTrack.get("name").getAsString(),
+                    artistId,
+                    artistsMap,
                     0,
                     false,
                     null,
-                    false));
+                    false,
+                    null,
+                    jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean()));
 
         }
         Log.i(TAG, "Track results extracted from JsonObject.");

@@ -1,16 +1,12 @@
 package service;
 
-import static android.content.ContentValues.TAG;
-
 import android.content.Context;
 import android.util.Log;
 import android.widget.GridView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.example.musicquizplus.ArtistsAdapter;
-import com.example.musicquizplus.CustomAdapter;
 import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
@@ -37,16 +33,17 @@ import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
-import java.util.Objects;
-
+import model.ValidationObject;
 import model.item.Playlist;
 
 import model.PhotoUrl;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
 import model.item.Track;
+import model.type.Severity;
+import utils.FormatUtil;
+import utils.ValidationUtil;
 
 public class FirebaseService {
 
@@ -370,12 +367,20 @@ public class FirebaseService {
     // When the user "hearts" an album
     public static void heartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
+        // Null check
+        final String methodName = FormatUtil.formatMethodName("heartAlbum");
 
-        if (nullCheck(user, firebaseUser, db, spotifyService, "heartAlbum")) {
-            return;
-        }
-        if (album == null) {
-            Log.e(TAG, "Album provided to heartAlbum was null.");
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(album, Album.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -472,12 +477,21 @@ public class FirebaseService {
     }
 
     private static void saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
-        JsonObject jsonObject = spotifyService.albumTracks(album.getId(), 300, 0);
+        JsonObject jsonObject = spotifyService.albumTracks(album.getId());
         JsonArray jsonArray = jsonObject
                 .getAsJsonObject("data")
                 .getAsJsonObject("album")
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
+
+        JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
+        String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+        Map<String, String> artistsMap = new HashMap<>();
+        for (int j = 0; j < artistsArray.size(); j++) {
+            artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                    artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
+        }
+
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
@@ -485,11 +499,15 @@ public class FirebaseService {
                     jsonTrack.get("uri").getAsString(),
                     jsonTrack.get("name").getAsString(),
                     album.getId(),
-                    album.getArtistIds(),
+                    album.getName(),
+                    artistId,
+                    artistsMap,
                     0,
                     false,
                     null,
-                    true);
+                    true,
+                    album.getYear(),
+                    jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
             album.getTrackIds().add(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
@@ -501,11 +519,19 @@ public class FirebaseService {
     public static void unheartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                     SpotifyService spotifyService) {
         // Null check
-        if (nullCheck(user, firebaseUser, db, spotifyService, "unheartAlbum")) {
-            return;
-        }
-        if (album == null) {
-            Log.e(TAG, "Album provided to unheartAlbum was null.");
+        final String methodName = FormatUtil.formatMethodName("unheartAlbum");
+
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(album, Album.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -627,7 +653,7 @@ public class FirebaseService {
     // Used when a playlists tracks have not been populated yet, like from the search results
     public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
         // Playlist is already populated, do nothing
-        if (playlist.isTrackIdsKnown()) {
+        if (playlist.getTracks().size() > 0) {
             return playlist;
         }
 
@@ -639,13 +665,16 @@ public class FirebaseService {
             Log.i(TAG, "DataSnapshot returned null, retrieving playlist tracks...");
         }
         // It exists, the tracks should be known
-        else if (playlist1.isTrackIdsKnown()) {
+        else if (playlist1.getTrackIds().size() > 0) {
             Log.i(TAG, "Playlist exists in database, returning playlist...");
             return playlist1;
         }
 
         // Use the spotify service class to get playlist's tracks
         JsonArray items = spotifyService.playlistTracks(playlist.getId());
+
+        int popularity = 0;
+        int numTracks = 0;
 
         // Loop thru and extract each track
         for (int i = 0; i < items.size(); i++) {
@@ -667,9 +696,11 @@ public class FirebaseService {
                 if (track == null) {
                     // Extract track's artist info
                     JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
-                    List<String> artistIds = new ArrayList<>();
-                    for (int j = 0; j < artistsArray.size(); j++) {
-                        artistIds.add(artistsArray.get(j).getAsJsonObject().get("uri").toString());
+                    Map<String, String> artistsMap = new HashMap<>();
+                    String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+                    for (int j = 0; j < 1; j++) {
+                        artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                                artistsArray.get(j).getAsJsonObject().get("name").toString());
                     }
 
                     // Build a new track
@@ -677,13 +708,19 @@ public class FirebaseService {
                             trackId,
                             jsonObject.get("name").toString(),
                             jsonObject.getAsJsonObject("album").get("uri").toString(),
-                            artistIds,
+                            jsonObject.getAsJsonObject("album").get("name").toString(),
+                            artistId,
+                            artistsMap,
                             jsonObject.get("popularity").getAsInt(),
                             true,
                             jsonObject.get("preview_url").toString(),
-                            false);
+                            false,
+                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
+                            jsonObject.get("is_playable").getAsBoolean());
                 }
 
+                popularity += track.getPopularity();
+                numTracks++;
 
                 // Get a key to add the playlist Id to the track
                 DatabaseReference trackRef = db.child("tracks").child(trackId);
@@ -702,7 +739,7 @@ public class FirebaseService {
 
         }
 
-        playlist.setTrackIdsKnown(true);
+        playlist.setAveragePopularity(popularity / numTracks);
         return playlist;
     }
 
@@ -710,13 +747,19 @@ public class FirebaseService {
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
         // Return if any of these fields are null
-        if (nullCheck(user, firebaseUser, db, spotifyService, "heartPlaylist")) {
-            return;
-        }
+        final String methodName = FormatUtil.formatMethodName("heartPlaylist");
 
-        // Or if the playlist is null
-        if (playlist == null) {
-            Log.e(TAG, "Playlist provided to heartPlaylist was null.");
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -783,11 +826,19 @@ public class FirebaseService {
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                         SpotifyService spotifyService) {
         // Null check
-        if (nullCheck(user, firebaseUser, db, spotifyService, "unheartPlaylist")) {
-            return;
-        }
-        if (playlist == null) {
-            Log.e(TAG, "Playlist provided to unheartPlaylist was null.");
+        final String methodName = FormatUtil.formatMethodName("unheartPlaylist");
+
+        // Null check
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(user, User.class, Severity.HIGH));
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
+                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
+            }
+        };
+        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
             return;
         }
 
@@ -835,26 +886,5 @@ public class FirebaseService {
             db.updateChildren(updates);
             Log.i(TAG, String.format("%s follower count has decremented.", playlist.getId()));
         }
-    }
-
-    private static boolean nullCheck(User user, FirebaseUser firebaseUser, DatabaseReference db,
-                                  SpotifyService spotifyService, String methodName) {
-        if (user == null) {
-            Log.e(TAG, String.format("User provided to %s was null.", methodName));
-            return true;
-        }
-        if (firebaseUser == null) {
-            Log.e(TAG, String.format("FirebaseUser provided to %s was null.", methodName));
-            return true;
-        }
-        if (db == null) {
-            Log.e(TAG, String.format("DatabaseReference provided to %s was null.", methodName));
-            return true;
-        }
-        if (spotifyService == null) {
-            Log.e(TAG, String.format("SpotifyService provided to %s was null.", methodName));
-            return true;
-        }
-        return false;
     }
 }
