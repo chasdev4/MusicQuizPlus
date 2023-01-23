@@ -172,7 +172,7 @@ public class FirebaseService {
                         case "Playlist":
                             Playlist playlist = (Playlist)dataSnapshot.getValue(cls);
                             playlists.add(playlist);
-                            finalPlaylistsAdapter.notifyDataSetChanged();
+                            //finalPlaylistsAdapter.notifyDataSetChanged();
                             break;
                         case "Track":
                             Track track = (Track)dataSnapshot.getValue(cls);
@@ -186,7 +186,7 @@ public class FirebaseService {
                         finalArtistsAdapter.notifyDataSetChanged();
                         break;
                     case "Playlist":
-                  //      finalPlaylistsAdapter.notifyDataSetChanged();
+                        finalPlaylistsAdapter.notifyDataSetChanged();
                         break;
                     case "Track":
                         finalHistoryAdapter.notifyDataSetChanged();

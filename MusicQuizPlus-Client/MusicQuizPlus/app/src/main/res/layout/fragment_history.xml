@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".PlaylistsView"
+    tools:context=".fragments.HistoryFragment"
     android:background="#231559">
 
     <RelativeLayout
-        android:id="@+id/playlistHeader"
+        android:id="@+id/historyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <include layout="@layout/user_avatar_layout"
-            android:id="@+id/playlistUserAvatar"
+            android:id="@+id/historyUserAvatar"
             android:layout_height="150dp"
             android:layout_width="150dp"
             android:layout_marginTop="-10dp"
             android:layout_marginStart="-12dp"/>
 
         <Button
-            android:id="@+id/playlistTitle"
+            android:id="@+id/historyTitle"
             android:layout_width="310dp"
             android:layout_height="260dp"
             android:layout_alignParentEnd="true"
@@ -29,7 +28,7 @@
             android:layout_marginBottom="-85dp"
             android:background="@drawable/parallelogram_png"
             android:clickable="false"
-            android:text="@string/playlists"
+            android:text="@string/history"
             android:textColor="@color/white"
             android:textSize="33sp"
             android:paddingTop="30dp"
@@ -40,7 +39,7 @@
             android:id="@+id/embeddedHelp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_below="@id/playlistTitle"
+            android:layout_below="@id/historyTitle"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="2dp"
             android:layout_marginTop="5dp"
@@ -59,7 +58,7 @@
             android:src="@drawable/settings_foreground"
             android:minHeight="50dp"
             android:minWidth="50dp"
-            android:layout_below="@id/playlistTitle"
+            android:layout_below="@id/historyTitle"
             android:layout_toStartOf="@id/embeddedHelp"
             android:layout_marginStart="2dp"
             android:layout_marginTop="5dp"
@@ -70,7 +69,7 @@
             android:id="@+id/embeddedVolume"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_below="@id/playlistTitle"
+            android:layout_below="@id/historyTitle"
             android:layout_marginStart="2dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="2dp"
@@ -81,17 +80,18 @@
 
     </RelativeLayout>
 
-    <GridView
-        android:id="@+id/playlistGridView"
-        android:layout_width="match_parent"
+    <ListView
+        android:id="@+id/historyListView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/playlistHeader"
-        android:numColumns="auto_fit"
-        android:horizontalSpacing="25dp"
-        android:verticalSpacing="25dp"
-        android:visibility="visible"
-        android:clickable="true"
-        android:focusable="true"/>
+        android:layout_below="@id/historyHeader"/>
+
+    <include layout="@layout/logged_out_message"
+        android:id="@+id/historyNoCurrentUser"
+        android:layout_marginTop="150dp"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:visibility="gone"/>
 
     <ImageButton
         android:id="@+id/mainSearchButton"
