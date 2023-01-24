@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ActiveQuiz"
+    android:background="@color/mqPurple3"
+    android:padding="20dp">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:id="@+id/quizImage"
+            android:src="@drawable/spotify_todays_hits"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/question"
+            android:layout_below="@id/quizImage"
+            android:textSize="24sp"
+            android:text="@string/guess_the_album"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/mqWhite"
+            android:layout_margin="20dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/allAnswers"
+            android:layout_below="@id/question"
+            android:orientation="vertical">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/answerA"
+                android:text="Answer A"
+                android:backgroundTint="@color/mqBlue"
+                android:layout_margin="5dp"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/answerB"
+                android:text="Answer B"
+                android:backgroundTint="@color/mqBlue"
+                android:layout_margin="5dp"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/answerC"
+                android:text="Answer C"
+                android:backgroundTint="@color/mqBlue"
+                android:layout_margin="5dp"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/answerD"
+                android:text="Answer D"
+                android:backgroundTint="@color/mqBlue"
+                android:layout_margin="5dp"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

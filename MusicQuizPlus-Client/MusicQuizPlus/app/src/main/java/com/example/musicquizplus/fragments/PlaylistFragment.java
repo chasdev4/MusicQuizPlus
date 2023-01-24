@@ -18,8 +18,7 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.example.musicquizplus.PlaylistsView;
-import com.example.musicquizplus.QuizView;
+import com.example.musicquizplus.PlaylistQuizView;
 import com.example.musicquizplus.R;
 
 import java.util.Objects;
@@ -46,7 +45,7 @@ public class PlaylistFragment extends Fragment {
 
 
         if(Objects.equals(userLevel.getText(), "GUEST")) {
-            FirebaseService.retrieveData(gridView, getContext(), "sample_playlists", Playlist.class);
+            FirebaseService.retrieveData(gridView, getContext(), "playlists", Playlist.class);
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -148,7 +147,7 @@ public class PlaylistFragment extends Fragment {
 
                 Adapter playlistAdapter = adapterView.getAdapter();
                 Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
-                Intent intent = new Intent(view.getContext(), QuizView.class);
+                Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
                 intent.putExtra("currentPlaylist", clickedOnPlaylist);
                 startActivity(intent);
             }
