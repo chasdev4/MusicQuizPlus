@@ -37,203 +37,6 @@ public class PlaylistQuiz extends Quiz {
     private final double GUESS_ALBUM_CHANCE = .1;
     private final double GUESS_ARTIST_CHANCE = .2;
     private final double GUESS_YEAR_CHANCE = .1;
-    private final int BUFFER = 10;
-    private final Map<Integer, List<String>> WORDS = new HashMap<>() {
-        {
-            put(1, new ArrayList<>() {
-                {
-
-                }
-            });
-            put(2, new ArrayList<>() {
-                {
-                    add("an");
-                    add("as");
-                    add("at");
-                    add("be");
-                    add("by");
-                    add("do");
-                    add("he");
-                    add("if");
-                    add("in");
-                    add("is");
-                    add("it");
-                    add("my");
-                    add("no");
-                    add("of");
-                    add("on");
-                    add("or");
-                    add("so");
-                    add("to");
-                    add("up");
-                    add("us");
-                    add("we");
-                }
-            });
-            put(3, new ArrayList<>() {
-                {
-                    add("act");
-                    add("all");
-                    add("and");
-                    add("any");
-                    add("are");
-                    add("but");
-                    add("can");
-                    add("day");
-                    add("did");
-                    add("end");
-                    add("far");
-                    add("few");
-                    add("for");
-                    add("get");
-                    add("god");
-                    add("had");
-                    add("has");
-                    add("her");
-                    add("him");
-                    add("his");
-                    add("how");
-                    add("its");
-                    add("law");
-                    add("man");
-                    add("may");
-                    add("men");
-                    add("not");
-                    add("now");
-                    add("off");
-                    add("old");
-                    add("one");
-                    add("our");
-                    add("own");
-                    add("per");
-                    add("say");
-                    add("see");
-                    add("set");
-                    add("she");
-                    add("the");
-                    add("too");
-                    add("two");
-                    add("use");
-                    add("war");
-                    add("was");
-                    add("way");
-                    add("who");
-                    add("why");
-                    add("yet");
-                    add("you");
-                }
-            });
-            put(4, new ArrayList<>() {
-                {
-                    add("also");
-                    add("baby");
-                    add("back");
-                    add("been");
-                    add("both");
-                    add("case");
-                    add("does");
-                    add("down");
-                    add("each");
-                    add("even");
-                    add("from");
-                    add("good");
-                    add("have");
-                    add("here");
-                    add("into");
-                    add("just");
-                    add("life");
-                    add("like");
-                    add("long");
-                    add("made");
-                    add("make");
-                    add("many");
-                    add("more");
-                    add("most");
-                    add("much");
-                    add("must");
-                    add("only");
-                    add("over");
-                    add("part");
-                    add("said");
-                    add("same");
-                    add("some");
-                    add("such");
-                    add("than");
-                    add("that");
-                    add("them");
-                    add("then");
-                    add("they");
-                    add("this");
-                    add("time");
-                    add("upon");
-                    add("used");
-                    add("very");
-                    add("were");
-                    add("what");
-                    add("when");
-                    add("well");
-                    add("will");
-                    add("with");
-                    add("work");
-                    add("your");
-                }
-            });
-            put(5, new ArrayList<>() {
-                {
-                    add("about");
-                    add("above");
-                    add("after");
-                    add("again");
-                    add("among");
-                    add("being");
-                    add("could");
-                    add("early");
-                    add("every");
-                    add("first");
-                    add("found");
-                    add("given");
-                    add("great");
-                    add("group");
-                    add("house");
-                    add("human");
-                    add("large");
-                    add("later");
-                    add("means");
-                    add("might");
-                    add("never");
-                    add("often");
-                    add("order");
-                    add("other");
-                    add("place");
-                    add("point");
-                    add("power");
-                    add("right");
-                    add("shall");
-                    add("since");
-                    add("small");
-                    add("state");
-                    add("still");
-                    add("their");
-                    add("there");
-                    add("these");
-                    add("think");
-                    add("those");
-                    add("three");
-                    add("under");
-                    add("until");
-                    add("water");
-                    add("where");
-                    add("which");
-                    add("while");
-                    add("whole");
-                    add("women");
-                    add("world");
-                    add("would");
-                    add("years");
-                }
-            });
-        }
-    };
 
     public PlaylistQuiz(Playlist playlist, User user, FirebaseUser firebaseUser, QuizType type, String id, String queryId, int numQuestions) {
         super(user, firebaseUser, type, id, queryId, numQuestions);
@@ -282,8 +85,8 @@ public class PlaylistQuiz extends Quiz {
         int numTracks = playlist.getTracks().size();
 
         // If there are less tracks than questions available, update numQuestions
-        if (numTracks < getNumQuestions() + BUFFER) {
-            setNumQuestions(numTracks - BUFFER);
+        if (numTracks < getNumQuestions() + getBUFFER()) {
+            setNumQuestions(numTracks - getBUFFER());
             insufficientData = true;
         }
 
@@ -336,7 +139,7 @@ public class PlaylistQuiz extends Quiz {
 
             // While there isn't enough tracks, add old tracks
             int i = 0;
-            while (playlistTracks.size() < getNumQuestions() + BUFFER
+            while (playlistTracks.size() < getNumQuestions() + getBUFFER()
                     || i < oldTracks.size() - 1) {
                 playlistTracks.add(oldTracks.get(i));
                 i++;
@@ -344,14 +147,14 @@ public class PlaylistQuiz extends Quiz {
 
             // While there isn't enough tracks, add hard tracks
             i = 0;
-            while (playlistTracks.size() < getNumQuestions() + BUFFER
+            while (playlistTracks.size() < getNumQuestions() + getBUFFER()
                     || i < hardTracks.size() - 1) {
                 playlistTracks.add(hardTracks.get(i));
                 i++;
             }
 
             // This code block shouldn't execute
-            if (playlistTracks.size() < getNumQuestions() + BUFFER) {
+            if (playlistTracks.size() < getNumQuestions() + getBUFFER()) {
                 Log.e(TAG, "There isn't enough data for this quiz");
                 return;
             }
@@ -504,7 +307,7 @@ public class PlaylistQuiz extends Quiz {
         }
 
         if (strResult.length() > 1 && strResult.length() <= 5) {
-            if (WORDS.get(strResult.length()).contains(strResult.toLowerCase())) {
+            if (getWORDS().get(strResult.length()).contains(strResult.toLowerCase())) {
                 return false;
             }
         }
