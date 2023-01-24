@@ -60,7 +60,7 @@ public class PlaylistQuizAdapter extends ArrayAdapter<Track> {
         // TODO: Get album year
         //qvTrackYear.setText(item.getYear());
         String title = item.getName();
-        qvTrackArtist.setText(item.getArtistIds().get(0));
+       // qvTrackArtist.setText(item.getArtistIds().get(0));
         qvTrackAlbum.setText(item.getAlbumId());
 
         if(title.length() >= 19)

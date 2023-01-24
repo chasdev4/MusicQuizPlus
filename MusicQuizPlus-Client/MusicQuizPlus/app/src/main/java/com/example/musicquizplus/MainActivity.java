@@ -41,13 +41,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-
 import model.GoogleSignIn;
-import model.PhotoUrl;
 import model.User;
-import model.item.Album;
-import model.item.Playlist;
 import model.quiz.PlaylistQuiz;
 import model.type.QuizType;
 import service.FirebaseService;
@@ -70,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-
+                // DEBUG: Uncomment me to create sample tables (please don't)
 //                new Thread(new Runnable() {
 //                    public void run() {
 //                        final short limit = 30;
@@ -157,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
 
                     if (user != null) {
                         user.initCollections(db);
+
+                        user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
 
                         PlaylistQuiz quiz = new PlaylistQuiz(
                                 user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP"),
