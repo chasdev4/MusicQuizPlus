@@ -1,17 +1,22 @@
 package model.quiz;
 
+import java.io.Serializable;
+
 import model.type.QuestionType;
 
-public class Question {
+public class Question implements Serializable {
 
     private final QuestionType type;
     private final String[] answers;
     private final int answerIndex;
+    private final String previewUrl;
 
-    public Question(QuestionType type, String[] answers, int answerIndex) {
+    public Question(QuestionType type, String[] answers, int answerIndex, String previewUrl) {
         this.type = type;
         this.answers = answers;
         this.answerIndex = answerIndex;
+        this.previewUrl = previewUrl;
+
     }
 
     public QuestionType getType() {
@@ -25,4 +30,12 @@ public class Question {
     public int getAnswerIndex() {
         return answerIndex;
     }
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+
+
+
 }

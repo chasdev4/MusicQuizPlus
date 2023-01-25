@@ -14,60 +14,47 @@ import android.widget.TextView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.User;
 import model.item.Playlist;
 import model.item.Track;
+import model.quiz.PlaylistQuiz;
+import model.type.QuizType;
+import service.FirebaseService;
 
-public class PlaylistQuizView extends AppCompatActivity {
+public class PlaylistQuizView extends AppCompatActivity implements Serializable {
+
+    ImageView coverImage;
+    TextView title;
+    TextView owner;
+    ListView quizListView;
+    Button startQuiz;
+    Playlist playlist;
+    PlaylistQuizAdapter playlistQuizAdapter;
+    Handler mainHandler = new Handler();
+    List<Track> playlistTracks = new ArrayList<>();
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
 
-        ImageView coverImage = findViewById(R.id.playlistQuizViewCoverImage);
-        TextView title = findViewById(R.id.playlistQuizViewTitle);
-        TextView owner = findViewById(R.id.playlistQuizViewOwner);
-        ListView quizListView = findViewById(R.id.playlistQuizViewListView);
-        Button startQuiz = findViewById(R.id.playlistQuizViewStartQuizButton);
-        Playlist playlist = null;
-        PlaylistQuizAdapter playlistQuizAdapter = null;
-        Handler mainHandler = new Handler();
-        List<Track> playlistTracks = new ArrayList<>();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        coverImage = findViewById(R.id.playlistQuizViewCoverImage);
+        title = findViewById(R.id.playlistQuizViewTitle);
+        owner = findViewById(R.id.playlistQuizViewOwner);
+        quizListView = findViewById(R.id.playlistQuizViewListView);
+        startQuiz = findViewById(R.id.playlistQuizViewStartQuizButton);
 
 
-        Bundle extras = getIntent().getExtras();
-        if (extras != null)
-        {
-            playlist = (Playlist) extras.getSerializable("currentPlaylist");
 
-            //playlist.initCollection(reference);
-            //playlist.getTrackIds();
-
-            if(playlist.getName().length() >= 19)
-            {
-                title.setTextSize(16);
-            }
-
-            title.setText(playlist.getName());
-            owner.setText(playlist.getOwner());
-            playlistTracks = playlist.getTracks();
-
-            new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
-        }
-
-        Playlist finalPlaylist = playlist;
-        startQuiz.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                intent.putExtra("currentPlaylist", finalPlaylist);
-                startActivity(intent);
-            }
-        });
 
 /*
         for (String track : playlist.getTrackIds())
@@ -125,4 +112,55 @@ public class PlaylistQuizView extends AppCompatActivity {
         quizListView.setAdapter(playlistQuizAdapter);
 */
     }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            playlist = (Playlist) extras.getSerializable("currentPlaylist");
+
+            if(playlist.getName().length() >= 19)
+            {
+                title.setTextSize(16);
+            }
+
+            title.setText(playlist.getName());
+            owner.setText(playlist.getOwner());
+            playlistTracks = playlist.getTracks();
+
+            new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
+        }
+
+        final PlaylistQuiz[] playlistQuiz = new PlaylistQuiz[1];
+        User user = new User();
+
+        new Thread(new Runnable() {
+            public void run() {
+
+                playlist.initCollection(reference);
+                playlistQuiz[0] = new PlaylistQuiz(playlist, user, null, QuizType.PLAYLIST, null, null, 10);
+
+            }
+        }).start();
+
+
+        Playlist finalPlaylist = playlist;
+
+        startQuiz.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
+                finalPlaylist.getTracks().clear();
+                //intent.putExtra("currentPlaylist", finalPlaylist);
+                intent.putExtra("playlistQuiz", playlistQuiz[0]);
+                startActivity(intent);
+            }
+        });
+
+    }
+
 }

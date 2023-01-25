@@ -20,6 +20,8 @@ import android.widget.TextView;
 
 import com.example.musicquizplus.PlaylistQuizView;
 import com.example.musicquizplus.R;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Objects;
 
@@ -31,6 +33,8 @@ public class PlaylistFragment extends Fragment {
 
 
     private View popupSignUpView = null;
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
