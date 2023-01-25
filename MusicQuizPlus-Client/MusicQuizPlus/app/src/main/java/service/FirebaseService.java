@@ -484,17 +484,18 @@ public class FirebaseService {
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
 
-        JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
-        String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
-        Map<String, String> artistsMap = new HashMap<>();
-        for (int j = 0; j < artistsArray.size(); j++) {
-            artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
-                    artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
-        }
-
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
+
+            JsonArray artistsArray = jsonTrack.get("artists").getAsJsonObject().get("items").getAsJsonArray();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+            Map<String, String> artistsMap = new HashMap<>();
+            for (int j = 0; j < artistsArray.size(); j++) {
+                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
+            }
+
             Track track = new Track(
                     jsonTrack.get("uri").getAsString(),
                     jsonTrack.get("name").getAsString(),
@@ -508,7 +509,7 @@ public class FirebaseService {
                     true,
                     album.getYear(),
                     jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
-            album.getTrackIds().add(track.getId());
+            album.addTrackId(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
         album.setTrackIdsKnown(true);

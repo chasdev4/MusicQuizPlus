@@ -1,4 +1,4 @@
-package model.quiz;
+package model;
 
 import model.type.QuestionType;
 

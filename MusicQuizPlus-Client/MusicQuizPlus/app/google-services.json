@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "527230771909-635h4oh7qv3dt59rgeg0k7t35hb9lqjs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.musicquizplus",
+            "certificate_hash": "c1cbb2c086ba316aff5bd4d0ac9b40858946539e"
+          }
+        },
+        {
           "client_id": "527230771909-8rbaqpq55trns8aj15s46522iticgga7.apps.googleusercontent.com",
           "client_type": 3
         }

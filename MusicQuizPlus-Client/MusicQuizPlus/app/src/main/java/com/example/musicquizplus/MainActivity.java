@@ -42,9 +42,9 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import model.GoogleSignIn;
+import model.Quiz;
 import model.User;
-import model.quiz.PlaylistQuiz;
-import model.type.QuizType;
+import model.item.Artist;
 import service.FirebaseService;
 import service.SpotifyService;
 
@@ -151,19 +151,13 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
-                        user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
+                //        user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        artist.initCollections(db, user);
 
-                        PlaylistQuiz quiz = new PlaylistQuiz(
-                                user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP"),
-                                user,
-                                firebaseUser,
-                                QuizType.PLAYLIST,
-                                null,
-                                null,
-                                10
-                        );
+                        Quiz quiz = new Quiz(artist, user);
 
-                        // DEBUG: Uncomment me to test heartPlaylist
+                        //#region DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(
 //                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
 //                            "NKVT 2021",
@@ -183,13 +177,14 @@ public class MainActivity extends AppCompatActivity {
 //                            playlist,
 //                            spotifyService
 //                    );
+                        //#endregion
 
-                        // DEBUG: Uncomment me to test unheartPlaylist
+                        //#region DEBUG: Uncomment me to test unheartPlaylist
 //                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
 //                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
+                        //#endregion
 
-
-                        // DEBUG: Uncomment me to test heartAlbum
+                        //#region DEBUG: Uncomment me to test heartAlbum
 //                    FirebaseService.heartAlbum(user, firebaseUser, db,
 //                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
 //                                    "Inna",
@@ -208,13 +203,29 @@ public class MainActivity extends AppCompatActivity {
 //                                        }
 //                                    },
 //                                    AlbumType.ALBUM, new ArrayList<String>(),
-//                                    false, 0, false), spotifyService);
+//                                    false, 0, false,
+//                                     "2015"), spotifyService);
+//
+//                        user.initCollections(db);
+//
+//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        artist.initCollections(db, user);
+
+                        // Be careful with this one, might be the cause of an error
+//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(0), spotifyService);
+
+//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
+//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
+                        //#endregion
 
 
-                        // DEBUG: Uncomment me to test unheartAlbum
+                        //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
 //                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
-//                    ;
+                        //#endregion
                     }
                 }
             }).start();
