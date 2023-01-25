@@ -192,4 +192,16 @@ public class Track {
     public void setId(String id) {
         this.id = id;
     }
+
+    public String getFeaturedArtistName() {
+        if (artistsMap.size() != 2) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : artistsMap.entrySet()) {
+            if (!entry.getKey().equals(artistId)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
 }

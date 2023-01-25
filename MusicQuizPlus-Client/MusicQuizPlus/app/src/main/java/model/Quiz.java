@@ -532,10 +532,6 @@ public class Quiz {
                              randomIndex2 = rnd.nextInt(tracks.size());
                         }
 
-                        if (type == QuestionType.GUESS_ARTIST) {
-                            Log.d("delete", "me");
-                        }
-
                         String answerText = getAnswerText(type, randomIndex2);
 
                         // Validate the new answer
@@ -562,16 +558,11 @@ public class Quiz {
     }
 
     private void getFeaturedArtistTracks(int guessArtistCount) {
-        List<String> names = new ArrayList<>();
         if (type == QuizType.ARTIST) {
+            boolean deleted = false;
             for (Track track : tracks) {
                 if (track.getArtistsMap().size() == 2) {
                     featuredArtistTracks.add(track);
-                    for (Map.Entry<String, String> entry : track.getArtistsMap().entrySet()) {
-                        if (artist.getId().equals(entry.getKey())) {
-                            featuredArtistsNames.remove(entry.getValue());
-                        }
-                    }
                 }
             }
             Random rnd = new Random();
@@ -581,6 +572,10 @@ public class Quiz {
                 temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
             }
             featuredArtistTracks = temp;
+
+            for (int i = 0; i < featuredArtistTracks.size(); i++) {
+                featuredArtistsNames.remove(featuredArtistsNames.indexOf(featuredArtistTracks.get(i).getFeaturedArtistName()));
+            }
 
             for (Track track : featuredArtistTracks) {
                 tracks.remove(track);
