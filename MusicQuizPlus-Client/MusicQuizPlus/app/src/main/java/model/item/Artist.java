@@ -7,8 +7,11 @@ import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.Serializable;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import model.ExternalLink;
 import model.PhotoUrl;
@@ -19,7 +22,7 @@ import service.FirebaseService;
 // SUMMARY
 // The Artist model stores artist information
 
-public class Artist {
+public class Artist implements Serializable {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
@@ -260,33 +263,47 @@ public class Artist {
         this.followersKnown = followersKnown;
     }
 
-    public void initCollections(DatabaseReference db, User user) {
-        initSingles(db, user);
-        initAlbums(db);
-        initCompilations(db);
+    @Exclude
+    public List<Track> getTracks() {
+        return getAllTracks();
     }
 
-    private void initSingles(DatabaseReference db, User user) {
-        singles = new ArrayList<>();
-        for (String albumId : singleIds) {
-            singles.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+    private List<Track> getAllTracks() {
+        List<Track> tracks = new ArrayList<>();
+
+        
+
+        return tracks;
+    }
+
+    public void initCollections(DatabaseReference db, User user) {
+        initCollection(db, user, AlbumType.SINGLE, singleIds);
+        initCollection(db, user, AlbumType.ALBUM, albumIds);
+        initCollection(db, user, AlbumType.COMPILATION, compilationIds);
+    }
+
+    private void initCollection(DatabaseReference db, User user, AlbumType type, List<String> albumIdList) {
+        List<Album> albumsList = new ArrayList<>();
+        for (String albumId : albumIdList) {
+            albumsList.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
 
             // If the user has the album hearted, fetch the tracks
             if (user.getAlbumIds().containsValue(albumId)) {
-                singles.get(singles.size() - 1).initCollection(db);
+                albumsList.get(singles.size() - 1).initCollection(db);
             }
         }
-    }
-    private void initAlbums(DatabaseReference db) {
-        albums = new ArrayList<>();
-        for (String albumId : albumIds) {
-            albums.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
+
+        switch (type) {
+            case SINGLE:
+                singles = albumsList;
+                break;
+            case ALBUM:
+                albums = albumsList;
+                break;
+            case COMPILATION:
+                compilations = albumsList;
+                break;
         }
-    }
-    private void initCompilations(DatabaseReference db) {
-        compilations = new ArrayList<>();
-        for (String albumId : compilationIds) {
-            compilations.add(FirebaseService.checkDatabase(db, "albums", albumId, Album.class));
-        }
+        albumsList = null;
     }
 }

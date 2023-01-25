@@ -1,5 +1,6 @@
 package model.item;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,13 +8,14 @@ import java.util.Map;
 // SUMMARY
 // The Track model stores track information
 
-public class Track {
+public class Track implements Serializable {
     private String id;
     private String name;
     private String albumId;
     private String albumName;
     private String artistId;                    // The primary artist
     private Map<String, String> artistsMap;     // All artists
+    private String artistName;
     private Map<String, String> playlistIds;
     private int popularity;
     private boolean popularityKnown;
@@ -24,7 +26,7 @@ public class Track {
     private boolean playable;
 
     public Track(String id, String name, String albumId, String albumName, String artistId,
-                 Map<String, String> artistsMap, int popularity, boolean popularityKnown,
+                 Map<String, String> artistsMap, String artistName, int popularity, boolean popularityKnown,
                  String previewUrl, boolean albumKnown, String year, boolean playable) {
         this.id = id;
         this.name = name;
@@ -32,6 +34,7 @@ public class Track {
         this.albumName = albumName;
         this.artistId = artistId;
         this.artistsMap = artistsMap;
+        this.artistName = artistName;
         this.albumKnown = albumKnown;
         this.year = year;
         this.playable = playable;
@@ -63,6 +66,13 @@ public class Track {
     public String getName() {
         return name;
     }
+
+    public String getArtistName() { return artistName; }
+
+    public void setArtistName(String artistName) {
+        this.artistName = artistName;
+    }
+
 
     public int getPopularity() {
         return popularity;
@@ -136,8 +146,10 @@ public class Track {
     public void setArtistId(String artistId) {
         this.artistId = artistId;
     }
-
+/*
     public String getArtistName() {
         return artistsMap.get(artistId);
     }
+
+ */
 }

@@ -158,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
+                        user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
+
                         PlaylistQuiz quiz = new PlaylistQuiz(
                                 user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP"),
                                 user,
