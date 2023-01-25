@@ -7,8 +7,6 @@ import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import java.io.Serializable;
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +20,7 @@ import service.FirebaseService;
 // SUMMARY
 // The Artist model stores artist information
 
-public class Artist implements Serializable {
+public class Artist {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
@@ -271,7 +269,27 @@ public class Artist implements Serializable {
     private List<Track> getAllTracks() {
         List<Track> tracks = new ArrayList<>();
 
-        
+        if (singles != null) {
+            for (Album album : singles) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (albums != null) {
+            for (Album album : albums) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (compilations != null) {
+            for (Album album : compilations) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
 
         return tracks;
     }
@@ -289,7 +307,7 @@ public class Artist implements Serializable {
 
             // If the user has the album hearted, fetch the tracks
             if (user.getAlbumIds().containsValue(albumId)) {
-                albumsList.get(singles.size() - 1).initCollection(db);
+                albumsList.get(albumsList.size() - 1).initCollection(db);
             }
         }
 
@@ -305,5 +323,31 @@ public class Artist implements Serializable {
                 break;
         }
         albumsList = null;
+    }
+
+    public int getAveragePopularity(List<Track> tracks) {
+        int averagePopularity = 0;
+
+        for (Track track : tracks) {
+            averagePopularity += track.getPopularity();
+        }
+
+        return averagePopularity / tracks.size();
+    }
+
+    public List<String> getFeaturedArtists(List<Track> trackList) {
+        List<String> featuredArtistNames = new ArrayList<>();
+
+        for (Track track : trackList) {
+            if (track.getArtistsMap().size() > 1) {
+                for (Map.Entry<String, String> feat : track.getArtistsMap().entrySet()) {
+                    if (!feat.getKey().equals(track.getArtistId()) && !featuredArtistNames.contains(feat.getValue())) {
+                        featuredArtistNames.add(feat.getValue());
+                    }
+                }
+            }
+        }
+
+        return featuredArtistNames;
     }
 }

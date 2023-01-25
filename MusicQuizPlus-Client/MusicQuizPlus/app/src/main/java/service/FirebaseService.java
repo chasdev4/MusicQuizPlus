@@ -484,17 +484,18 @@ public class FirebaseService {
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
 
-        JsonArray artistsArray = jsonObject.getAsJsonObject("artists").get("items").getAsJsonArray();
-        String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
-        Map<String, String> artistsMap = new HashMap<>();
-        for (int j = 0; j < artistsArray.size(); j++) {
-            artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
-                    artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
-        }
-
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
+
+            JsonArray artistsArray = jsonTrack.get("artists").getAsJsonObject().get("items").getAsJsonArray();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
+            Map<String, String> artistsMap = new HashMap<>();
+            for (int j = 0; j < artistsArray.size(); j++) {
+                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").getAsString());
+            }
+
             Track track = new Track(
                     jsonTrack.get("uri").getAsString(),
                     jsonTrack.get("name").getAsString(),
@@ -509,7 +510,7 @@ public class FirebaseService {
                     true,
                     album.getYear(),
                     jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
-            album.getTrackIds().add(track.getId());
+            album.addTrackId(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
         album.setTrackIdsKnown(true);
@@ -698,24 +699,24 @@ public class FirebaseService {
                     // Extract track's artist info
                     JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
                     Map<String, String> artistsMap = new HashMap<>();
-                    String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+                    String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
                     for (int j = 0; j < 1; j++) {
-                        artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
-                                artistsArray.get(j).getAsJsonObject().get("name").toString());
+                        artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                                artistsArray.get(j).getAsJsonObject().get("name").getAsString());
                     }
 
                     // Build a new track
                     track = new Track(
                             trackId,
-                            jsonObject.get("name").toString(),
-                            jsonObject.getAsJsonObject("album").get("uri").toString(),
-                            jsonObject.getAsJsonObject("album").get("name").toString(),
+                            jsonObject.get("name").getAsString(),
+                            jsonObject.getAsJsonObject("album").get("uri").getAsString(),
+                            jsonObject.getAsJsonObject("album").get("name").getAsString(),
                             artistId,
                             artistsMap,
                             null,
                             jsonObject.get("popularity").getAsInt(),
                             true,
-                            jsonObject.get("preview_url").toString(),
+                            jsonObject.get("preview_url").getAsString(),
                             false,
                             jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
                             jsonObject.get("is_playable").getAsBoolean());

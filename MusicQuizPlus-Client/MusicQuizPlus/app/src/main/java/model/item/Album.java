@@ -66,6 +66,17 @@ public class Album {
         return trackIds;
     }
 
+    public void addTrackId(String trackId) {
+        checkTrackIds();
+        trackIds.add(trackId);
+    }
+
+    private void checkTrackIds() {
+        if (trackIds == null) {
+            trackIds = new ArrayList<>();
+        }
+    }
+
     public int getFollowers() {
         return followers;
     }
@@ -122,7 +133,12 @@ public class Album {
     private void initTracks(DatabaseReference db) {
         tracks = new ArrayList<>();
         for (String trackId : trackIds) {
-            tracks.add(FirebaseService.checkDatabase(db, "Tracks", trackId, Track.class));
+            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+            tracks.add(track);
         }
+    }
+
+    public void setTrackIds(List<String> trackIds) {
+        this.trackIds = trackIds;
     }
 }
