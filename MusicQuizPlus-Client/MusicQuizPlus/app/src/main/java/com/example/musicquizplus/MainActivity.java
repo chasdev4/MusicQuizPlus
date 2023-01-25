@@ -41,6 +41,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+
 import model.GoogleSignIn;
 import model.Quiz;
 import model.User;
@@ -65,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                // DEBUG: Uncomment me to create sample tables (please don't)
+
 //                new Thread(new Runnable() {
 //                    public void run() {
 //                        final short limit = 30;

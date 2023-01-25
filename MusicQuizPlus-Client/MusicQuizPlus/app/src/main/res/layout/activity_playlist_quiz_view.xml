@@ -4,17 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".QuizView"
+    tools:context=".PlaylistQuizView"
     android:background="@color/mqPurple3">
 
     <RelativeLayout
-        android:id="@+id/quizViewHeader"
+        android:id="@+id/playlistQuizViewHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp">
 
         <ImageButton
-            android:id="@+id/quizViewBackButton"
+            android:id="@+id/playlistQuizViewBackButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/left_chevron"
@@ -23,17 +23,17 @@
             android:layout_marginHorizontal="3dp"/>
 
         <ImageView
-            android:id="@+id/quizViewCoverImage"
+            android:id="@+id/playlistQuizViewCoverImage"
             android:layout_width="90dp"
             android:layout_height="90dp"
             android:src="@drawable/spotify_todays_hits"
-            android:layout_toEndOf="@id/quizViewBackButton"/>
+            android:layout_toEndOf="@id/playlistQuizViewBackButton"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/quizViewTitle"
-            android:layout_toEndOf="@id/quizViewCoverImage"
+            android:id="@+id/playlistQuizViewTitle"
+            android:layout_toEndOf="@id/playlistQuizViewCoverImage"
             android:text="@string/sample_song_title"
             android:textColor="@color/mqWhite"
             android:textSize="20sp"
@@ -45,8 +45,8 @@
             android:id="@+id/playlistBy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/quizViewTitle"
-            android:layout_toEndOf="@id/quizViewCoverImage"
+            android:layout_below="@id/playlistQuizViewTitle"
+            android:layout_toEndOf="@id/playlistQuizViewCoverImage"
             android:text="@string/playlist_by"
             android:textColor="@color/mqWhite"
             android:fontFamily="@font/commissioner"
@@ -54,10 +54,10 @@
             android:textSize="12sp"/>
 
         <TextView
-            android:id="@+id/quizViewOwner"
+            android:id="@+id/playlistQuizViewOwner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/quizViewTitle"
+            android:layout_below="@id/playlistQuizViewTitle"
             android:layout_toEndOf="@id/playlistBy"
             android:text="@string/playlist_by_spotify"
             android:textColor="@color/mqWhite"
@@ -66,7 +66,7 @@
             android:textSize="12sp"/>
 
         <ImageButton
-            android:id="@+id/quizViewHeartButton"
+            android:id="@+id/playlistQuizViewHeartButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/empty_heart"
@@ -79,11 +79,11 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/quizViewCoverImage"
+            android:layout_below="@id/playlistQuizViewCoverImage"
             android:layout_marginTop="5dp">
 
             <ImageButton
-                android:id="@+id/quizViewSpotifyButton"
+                android:id="@+id/playlistQuizViewSpotifyButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/spotify_logo_in_mqpurple2"
@@ -91,12 +91,12 @@
                 android:layout_marginHorizontal="80dp"/>
 
             <ImageButton
-                android:id="@+id/quizViewShareButton"
+                android:id="@+id/playlistQuizViewShareButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/share_icon"
                 android:background="@null"
-                android:layout_toEndOf="@id/quizViewSpotifyButton"
+                android:layout_toEndOf="@id/playlistQuizViewSpotifyButton"
                 android:layout_marginHorizontal="80dp"/>
 
         </RelativeLayout>
@@ -106,12 +106,12 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/quizViewListView"
-        android:layout_below="@id/quizViewHeader"
+        android:id="@+id/playlistQuizViewListView"
+        android:layout_below="@id/playlistQuizViewHeader"
         android:layout_marginTop="5dp"/>
 
     <Button
-        android:id="@+id/quizViewStartQuizButton"
+        android:id="@+id/playlistQuizViewStartQuizButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/mqRed"
@@ -125,7 +125,7 @@
         android:elevation="8dp" />
 
     <ImageButton
-        android:id="@+id/quizViewBackToTop"
+        android:id="@+id/playlistQuizViewBackToTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:elevation="8dp"

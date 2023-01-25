@@ -238,6 +238,7 @@ public class User implements Serializable {
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
             artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
+            artists.get(entry.getKey()).initCollections(db, this);
         }
         Log.i(TAG, "Artists retrieved.");
     }
@@ -245,6 +246,7 @@ public class User implements Serializable {
         playlists = new HashMap<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
             playlists.put(entry.getKey(), FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class));
+            playlists.get(entry.getKey()).initCollection(db);
         }
         Log.i(TAG, "Playlists retrieved.");
     }

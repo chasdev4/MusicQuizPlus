@@ -60,7 +60,8 @@ public class PlaylistQuizAdapter extends ArrayAdapter<Track> {
         // TODO: Get album year
         //qvTrackYear.setText(item.getYear());
         String title = item.getName();
-       // qvTrackArtist.setText(item.getArtistIds().get(0));
+        // TODO: Commented out line of code below is broke
+        //qvTrackArtist.setText(item.getArtistIds().get(0));
         qvTrackAlbum.setText(item.getAlbumId());
 
         if(title.length() >= 19)
@@ -68,7 +69,9 @@ public class PlaylistQuizAdapter extends ArrayAdapter<Track> {
             textView.setTextSize(16);
         }
 
-        new FetchImage(null, imageView, textView, title, mainHandler).start();
+        textView.setText(title);
+
+        //new FetchImage(null, imageView, textView, title, mainHandler).start();
         return v;
     }
 

@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
+
 import model.type.QuestionType;
 
-public class Question {
+public class Question implements Serializable {
 
     private final QuestionType type;
     private final String[] answers;

@@ -13,6 +13,20 @@
         android:theme="@style/Theme.MusicQuizPlus"
         tools:targetApi="31">
         <activity
+            android:name=".QuizResults"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".ActiveQuiz"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".ParentOfFragments"
             android:exported="false">
             <meta-data
@@ -20,7 +34,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".QuizView"
+            android:name=".PlaylistQuizView"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
