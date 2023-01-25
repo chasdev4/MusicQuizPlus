@@ -7,6 +7,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -39,6 +40,7 @@ public class Quiz {
     private int numCorrect;
     private int popularityThreshold;
     private List<String> featuredArtistsNames;
+    private List<Track> featuredArtistTracks;
 
     // Constants
     private final String TAG = "Quiz.java";
@@ -276,6 +278,7 @@ public class Quiz {
         score = 0;
         numCorrect = 0;
         numQuestions = 10;
+        featuredArtistTracks = new ArrayList<>();
 
         // Local variables that are set depending on the quiz type.
         List<ValidationObject> validationObjects = new ArrayList<>();   // For null checking
@@ -383,10 +386,13 @@ public class Quiz {
                 || user.getQuizHistory() == null
                 || user.getQuizHistory().get(subjectId) == null) {
             tracks = rawTracks;
+            getFeaturedArtistTracks(guessArtistCount);
 
         } else {
             List<Track> oldTracks = new ArrayList<>();
             List<Track> hardTracks = new ArrayList<>();
+
+            getFeaturedArtistTracks(guessArtistCount);
 
             Map<String, String> quizHistory = user.getQuizHistory().get(subjectId).getTrackIds();
             for (Track track : rawTracks) {
@@ -444,23 +450,36 @@ public class Quiz {
     }
 
     private void generateQuestions(QuestionType type, int count, Random rnd) {
-
+        boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
         for (int i = 0; i < count; i++) {
             String[] answers = new String[4];
 
             // Pick a random index for the correct answer
             int answerIndex = rnd.nextInt(4);
+            int randomIndex = 0;
 
-            // Pick a random index for choosing a playlist track
-            int randomIndex = rnd.nextInt(tracks.size());
-
+            if (isFeaturedArtistQuestion) {
+                randomIndex = rnd.nextInt(featuredArtistTracks.size());
+            }
+            else {
+                randomIndex = rnd.nextInt(tracks.size());
+            }
             // Assign the correct answer
             answers[answerIndex] = getAnswerText(type, randomIndex);
-            String previewUrl = tracks.get(randomIndex).getPreviewUrl();
+            String previewUrl = null;
 
-            // Remove the track from set
-            history.add(tracks.get(randomIndex));
-            tracks.remove(randomIndex);
+            if (isFeaturedArtistQuestion) {
+                // Remove the track from set
+                previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
+                history.add(featuredArtistTracks.get(randomIndex));
+                featuredArtistTracks.remove(randomIndex);
+            }
+            else {
+                // Remove the track from set
+                previewUrl = tracks.get(randomIndex).getPreviewUrl();
+                history.add(tracks.get(randomIndex));
+                tracks.remove(randomIndex);
+            }
 
 
             if (type == QuestionType.GUESS_YEAR) {
@@ -505,19 +524,19 @@ public class Quiz {
                     rnd = new Random();
                     // Skip the correct answer
                     if (j != answerIndex) {
-                        String answerText = null;
                         int randomIndex2 = 0;
-
-                        if (this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST) {
-                            randomIndex2 = rnd.nextInt(featuredArtistsNames.size());
-                            answerText = featuredArtistsNames.get(randomIndex2);
-                            featuredArtistsNames.remove(randomIndex2);
+                        if (isFeaturedArtistQuestion) {
+                             randomIndex2 = rnd.nextInt(featuredArtistsNames.size());
                         }
                         else {
-                            randomIndex2 = rnd.nextInt(tracks.size());
-                            answerText = getAnswerText(type, randomIndex2);
+                             randomIndex2 = rnd.nextInt(tracks.size());
                         }
 
+                        if (type == QuestionType.GUESS_ARTIST) {
+                            Log.d("delete", "me");
+                        }
+
+                        String answerText = getAnswerText(type, randomIndex2);
 
                         // Validate the new answer
                         boolean tryAgain = false;
@@ -541,6 +560,34 @@ public class Quiz {
         }
         Log.d("Debug", "Yipee");
     }
+
+    private void getFeaturedArtistTracks(int guessArtistCount) {
+        List<String> names = new ArrayList<>();
+        if (type == QuizType.ARTIST) {
+            for (Track track : tracks) {
+                if (track.getArtistsMap().size() == 2) {
+                    featuredArtistTracks.add(track);
+                    for (Map.Entry<String, String> entry : track.getArtistsMap().entrySet()) {
+                        if (artist.getId().equals(entry.getKey())) {
+                            featuredArtistsNames.remove(entry.getValue());
+                        }
+                    }
+                }
+            }
+            Random rnd = new Random();
+            List<Track> temp = new ArrayList<>();
+
+            for (int i = 0; i < guessArtistCount; i++) {
+                temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
+            }
+            featuredArtistTracks = temp;
+
+            for (Track track : featuredArtistTracks) {
+                tracks.remove(track);
+            }
+        }
+    }
+
 
     private String getAnswerText(QuestionType type, int randomIndex) {
         switch (type) {
@@ -568,7 +615,12 @@ public class Quiz {
                 }
 
             case GUESS_ARTIST:
-                return tracks.get(randomIndex).getArtistName();
+                switch (this.type) {
+                    case PLAYLIST:
+                        return tracks.get(randomIndex).getArtistName();
+                    case ARTIST:
+                        return featuredArtistsNames.get(randomIndex);
+                }
             case GUESS_YEAR:
                 return tracks.get(randomIndex).getYear();
         }
@@ -585,7 +637,7 @@ public class Quiz {
         char[] str1 = a.toCharArray();
         char[] str2 = b.toCharArray();
         boolean str1Longer = a.length() > a.length();
-        int length = (str1Longer) ? b.length() : a.length();
+        int length = (!str1Longer) ? b.length() : a.length();
 
         for (int i = 0; i < length; i++) {
             if (str1[i] == str2[i]) {
@@ -637,15 +689,21 @@ public class Quiz {
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
-        updateTest(answerIndex);
+        if (!updateTest(answerIndex)) {
+            return null;
+        }
         return questions.get(currentQuestionIndex);
     }
 
-    private void updateTest(int answerIndex) {
+    private boolean updateTest(int answerIndex) {
         if (answerIndex == questions.get(currentQuestionIndex).getAnswerIndex()) {
             score += BASE_SCORE;
             numCorrect++;
         }
+        if (currentQuestionIndex == numQuestions) {
+            return false;
+        }
         currentQuestionIndex++;
+        return true;
     }
 }

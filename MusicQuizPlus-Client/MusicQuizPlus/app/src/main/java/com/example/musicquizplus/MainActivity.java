@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
-                //        user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
+                    //    user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
                         Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
                         artist.initCollections(db, user);
 
