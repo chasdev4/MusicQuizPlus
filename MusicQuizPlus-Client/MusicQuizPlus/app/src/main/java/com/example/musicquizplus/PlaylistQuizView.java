@@ -53,64 +53,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         quizListView = findViewById(R.id.playlistQuizViewListView);
         startQuiz = findViewById(R.id.playlistQuizViewStartQuizButton);
 
-
-
-
-/*
-        for (String track : playlist.getTrackIds())
-        {
-
-            Track trackOfPlaylist = FirebaseService.checkDatabase(reference, "tracks", track, Track.class);
-            playlistTracks.add(trackOfPlaylist);
-            //DatabaseReference dbReference =FirebaseDatabase.getInstance().getReference("tracks");
-
-
-            mDatabase.equalTo(track).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
-                        Object val = dataSnapshot.getValue();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-
-
-
-            List<Track> finalPlaylistTracks = playlistTracks;
-            dbReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                    {
-                        Track dbTrack = dataSnapshot.getValue(Track.class);
-                        if(Objects.equals(track, dbTrack.getId()))
-                        {
-                            finalPlaylistTracks.add(dbTrack);
-                        }
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-
-
-        }
-
-        playlistQuizAdapter = new PlaylistQuizAdapter(this, R.layout.playlist_quiz_listview_contents, playlistTracks);
-        quizListView.setAdapter(playlistQuizAdapter);
-*/
     }
 
 
@@ -146,7 +88,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             }
         }).start();
-
 
         Playlist finalPlaylist = playlist;
 
