@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Random;
 // SUMMARY
 // The Track model stores track information
 
-public class Track {
+public class Track implements Serializable {
     private String id;
     private String name;
     private String albumId;
