@@ -2,6 +2,7 @@ package model;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -21,7 +22,7 @@ import model.type.Severity;
 import utils.FormatUtil;
 import utils.ValidationUtil;
 
-public class Quiz {
+public class Quiz implements Serializable {
 
     // Final members
     private final User user;          // Difficulty, level and xp
@@ -681,6 +682,8 @@ public class Quiz {
         return String.valueOf((numCorrect / numQuestions) * 100) + "%";
     }
 
+
+
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
@@ -695,7 +698,7 @@ public class Quiz {
             score += BASE_SCORE;
             numCorrect++;
         }
-        if (currentQuestionIndex == numQuestions) {
+        if (currentQuestionIndex == (numQuestions-1)) {
             return false;
         }
         currentQuestionIndex++;

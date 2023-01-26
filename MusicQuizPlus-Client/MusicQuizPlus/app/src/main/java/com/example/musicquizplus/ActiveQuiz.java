@@ -18,10 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.Question;
+import model.Quiz;
 import model.item.Playlist;
 import model.item.Track;
-import model.quiz.PlaylistQuiz;
-import model.quiz.Question;
 import model.type.QuestionType;
 import model.type.QuizType;
 import service.FirebaseService;
@@ -32,17 +32,15 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
     TextView currentQuestion;
 
     //Playlist playlist;
-    PlaylistQuiz playlistQuiz;
-    List<Question> questions;
+    Quiz playlistQuiz;
     QuestionType type;
     String[] answers;
     int index;
-    int totalNumberOfQuestions;
     String audioURL;
     MediaPlayer mediaPlayer;
+    Question firstQuestion;
 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-    int currentQuestionIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,14 +67,13 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            playlistQuiz = (PlaylistQuiz) extras.getSerializable("playlistQuiz");
-            questions = playlistQuiz.getQuestions();
-            totalNumberOfQuestions = playlistQuiz.getQuestions().size();
+            playlistQuiz = (Quiz) extras.getSerializable("playlistQuiz");
+            firstQuestion = playlistQuiz.getFirstQuestion();
         }
 
-        type = questions.get(currentQuestionIndex).getType();
-        answers = questions.get(currentQuestionIndex).getAnswers();
-        audioURL = questions.get(currentQuestionIndex).getPreviewUrl();
+        type = firstQuestion.getType();
+        answers = firstQuestion.getAnswers();
+        audioURL = firstQuestion.getPreviewUrl();
 
         mediaPlayer = playAudio(audioURL);
 
@@ -111,15 +108,16 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             index = 3;
         }
 
-        if(currentQuestionIndex == totalNumberOfQuestions)
+        if(playlistQuiz.nextQuestion(index) == null)
         {
             Intent intent = new Intent(this, QuizResults.class);
+            intent.putExtra("quizScore", playlistQuiz.getScore());
+            intent.putExtra("quizAccuracy", playlistQuiz.getAccuracy());
             startActivity(intent);
         }
         else
         {
             Question nextQuestion = playlistQuiz.nextQuestion(index);
-            currentQuestionIndex++;
 
             type = nextQuestion.getType();
             answers = nextQuestion.getAnswers();

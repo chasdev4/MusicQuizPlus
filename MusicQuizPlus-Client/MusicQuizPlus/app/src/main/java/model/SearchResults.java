@@ -209,7 +209,6 @@ public class SearchResults {
                     albumOfTrack.get("name").getAsString(),
                     artistId,
                     artistsMap,
-                    null,
                     0,
                     false,
                     null,

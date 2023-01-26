@@ -20,10 +20,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.Quiz;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
-import model.quiz.PlaylistQuiz;
 import model.type.QuizType;
 import service.FirebaseService;
 
@@ -135,14 +135,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
 
-        final PlaylistQuiz[] playlistQuiz = new PlaylistQuiz[1];
+        final Quiz[] playlistQuiz = new Quiz[1];
         User user = new User();
 
         new Thread(new Runnable() {
             public void run() {
 
                 playlist.initCollection(reference);
-                playlistQuiz[0] = new PlaylistQuiz(playlist, user, null, QuizType.PLAYLIST, null, null, 10);
+                playlistQuiz[0] = new Quiz(playlist, user);
 
             }
         }).start();

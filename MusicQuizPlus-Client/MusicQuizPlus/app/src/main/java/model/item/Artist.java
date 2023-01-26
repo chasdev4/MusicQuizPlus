@@ -7,6 +7,7 @@ import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ import service.FirebaseService;
 // SUMMARY
 // The Artist model stores artist information
 
-public class Artist {
+public class Artist implements Serializable {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
