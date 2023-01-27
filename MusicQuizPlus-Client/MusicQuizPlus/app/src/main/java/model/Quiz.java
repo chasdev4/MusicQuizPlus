@@ -441,6 +441,7 @@ public class Quiz implements Serializable {
 
         }
 
+
         generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd);
         generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd);
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
@@ -452,6 +453,9 @@ public class Quiz implements Serializable {
 
     private void generateQuestions(QuestionType type, int count, Random rnd) {
         boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
+        if (count < 1) {
+            return;
+        }
         for (int i = 0; i < count; i++) {
             String[] answers = new String[4];
 
@@ -465,17 +469,21 @@ public class Quiz implements Serializable {
             else {
                 randomIndex = rnd.nextInt(tracks.size());
             }
-            // Assign the correct answer
-            answers[answerIndex] = getAnswerText(type, randomIndex);
+
             String previewUrl = null;
 
             if (isFeaturedArtistQuestion) {
+                answers[answerIndex] = featuredArtistTracks.get(randomIndex).getFeaturedArtistName();
+
                 // Remove the track from set
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
                 history.add(featuredArtistTracks.get(randomIndex));
                 featuredArtistTracks.remove(randomIndex);
             }
             else {
+                // Assign the correct answer
+                answers[answerIndex] = getAnswerText(type, randomIndex);
+
                 // Remove the track from set
                 previewUrl = tracks.get(randomIndex).getPreviewUrl();
                 history.add(tracks.get(randomIndex));
@@ -553,9 +561,7 @@ public class Quiz implements Serializable {
                 }
             }
             questions.add(new Question(type, answers, answerIndex, previewUrl));
-            Log.d("Debug", "Yipee");
         }
-        Log.d("Debug", "Yipee");
     }
 
     private void getFeaturedArtistTracks(int guessArtistCount) {
@@ -636,11 +642,18 @@ public class Quiz implements Serializable {
         int length = (!str1Longer) ? b.length() : a.length();
 
         for (int i = 0; i < length; i++) {
-            if (str1[i] == str2[i]) {
-                count++;
-            } else {
-                break;
+            // TODO: Add a breakpoint to the catch block if it doesn't exist. Solve why the if statement throws an ArrayIndexOutOfBoundsException
+            try {
+                if (str1[i] == str2[i]) {
+                    count++;
+                } else {
+                    break;
+                }
             }
+            catch (Exception e) {
+                Log.d("Quiz", "Tricky bug");
+            }
+
         }
 
         // Return if there were no matches
