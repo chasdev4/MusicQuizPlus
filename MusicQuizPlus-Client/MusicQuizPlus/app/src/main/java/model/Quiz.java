@@ -270,7 +270,7 @@ public class Quiz implements Serializable {
     private void generateQuiz() {
         // For logging
         LogUtil log = new LogUtil(TAG, "generateQuiz");
-
+        log.v(String.format("Creating a%s quiz.", (this.type == QuizType.PLAYLIST) ? " playlist" : "n artist"));
         // Initialize non-final members
         currentQuestionIndex = 0;
         score = 0;
@@ -297,6 +297,7 @@ public class Quiz implements Serializable {
                 subjectId = playlist.getId();
                 averagePopularity = playlist.getAveragePopularity();
                 isPlaylistQuiz = true;
+                log.v("Playlist members initialized.");
                 break;
             case ARTIST:
                 cls = Artist.class;
@@ -306,6 +307,7 @@ public class Quiz implements Serializable {
                 averagePopularity = artist.getAveragePopularity(rawTracks);
                 guessAlbumChance = GUESS_ARTIST_ALBUM_CHANCE;
                 featuredArtistsNames = artist.getFeaturedArtists(rawTracks);
+                log.v("Artist members initialized.");
                 break;
         }
 
@@ -367,9 +369,6 @@ public class Quiz implements Serializable {
         int guessYearCount = (int) (numQuestions * GUESS_YEAR_CHANCE);
         int newTotal = guessTrackCount + guessAlbumCount + guessArtistCount + guessYearCount;
 
-
-
-
         if (newTotal < numQuestions) {
             guessTrackCount += numQuestions - newTotal;
         } else if (newTotal > numQuestions) {
@@ -383,10 +382,12 @@ public class Quiz implements Serializable {
         if (insufficientData || ignoreDifficulty
                 || user.getQuizHistory() == null
                 || user.getQuizHistory().get(subjectId) == null) {
+            log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
             getFeaturedArtistTracks(guessArtistCount);
-
-        } else {
+        }
+        else {
+            log.v("Quiz history found. Separating tracks...");
             List<Track> oldTracks = new ArrayList<>();
             List<Track> hardTracks = new ArrayList<>();
 
@@ -414,6 +415,7 @@ public class Quiz implements Serializable {
                 }
             }
 
+            // TODO: Update these when the FE validation plan in set
             // While there isn't enough tracks, add old tracks
             int i = 0;
             while (tracks.size() < numQuestions + BUFFER
@@ -438,7 +440,7 @@ public class Quiz implements Serializable {
 
         }
 
-
+        // Generate questions of each type
         generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd);
         generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd);
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
@@ -697,10 +699,14 @@ public class Quiz implements Serializable {
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
+        LogUtil log = new LogUtil(TAG, "nextQuestion");
         if (!updateTest(answerIndex)) {
+            log.i("No more questions!");
             return null;
         }
-        return questions.get(currentQuestionIndex);
+        Question question = questions.get(currentQuestionIndex);
+        log.i(String.format("Returning question #%s: %s", String.valueOf(currentQuestionIndex + 1), question.getType().toString()));
+        return question;
     }
 
     private boolean updateTest(int answerIndex) {
