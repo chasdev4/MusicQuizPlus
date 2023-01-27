@@ -5,6 +5,8 @@ import android.util.Log;
 import java.io.Serializable;
 import java.net.URI;
 
+import utils.LogUtil;
+
 // SUMMARY
 // The Photo URL model stores a URI to a web-hosted image and it's dimensions.
 // Images retrieved from the API that have null width or height will be set to 0.
@@ -32,8 +34,9 @@ public class PhotoUrl implements Serializable {
     }
 
     private void validateDimensions(String strWidth, String strHeight) {
+        LogUtil log = new LogUtil(TAG, "validateDimensions");
         if (strWidth == null || strHeight == null) {
-            Log.w(TAG, String.format("Width or Height of image was null. Setting Width and Height to 0 for image: %s", url));
+            log.w(String.format("Width or Height of image was null. Setting Width and Height to 0 for image: %s", url));
             width = 0;
             height = 0;
             return;

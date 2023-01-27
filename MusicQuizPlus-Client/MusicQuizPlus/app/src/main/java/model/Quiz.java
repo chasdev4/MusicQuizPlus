@@ -1,14 +1,10 @@
 package model;
-
-import android.util.Log;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -20,6 +16,7 @@ import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
 import utils.FormatUtil;
+import utils.LogUtil;
 import utils.ValidationUtil;
 
 public class Quiz implements Serializable {
@@ -272,7 +269,7 @@ public class Quiz implements Serializable {
 
     private void generateQuiz() {
         // For logging
-        final String methodName = FormatUtil.formatMethodName("init");
+        LogUtil log = new LogUtil(TAG, "generateQuiz");
 
         // Initialize non-final members
         currentQuestionIndex = 0;
@@ -313,13 +310,13 @@ public class Quiz implements Serializable {
         }
 
         // Null check
-        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
             return;
         }
 
         // Check to see if the tracks are known, they absolutely should be
         if (rawTracks.size() == 0) {
-            Log.e(TAG, String.format("%s %s tracks are unknown.", methodName, subjectId));
+            log.e(String.format("%s tracks are unknown.", subjectId));
             return;
         }
 
@@ -435,7 +432,7 @@ public class Quiz implements Serializable {
 
             // This code block shouldn't execute
             if (tracks.size() < numQuestions + BUFFER) {
-                Log.e(TAG, "There isn't enough data for this quiz");
+                log.e("There isn't enough data for this quiz");
                 return;
             }
 
@@ -447,7 +444,7 @@ public class Quiz implements Serializable {
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
         generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd);
         Collections.shuffle(questions);
-        Log.d("Debug", "Yipee");
+        log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), subjectId));
 
     }
 
@@ -630,6 +627,7 @@ public class Quiz implements Serializable {
     }
 
     private boolean namesMatch(String a, String b) {
+        LogUtil log = new LogUtil(TAG, "namesMatch");
         // Return if they're equal
         if (a.equals(b)) {
             return true;
@@ -651,7 +649,7 @@ public class Quiz implements Serializable {
                 }
             }
             catch (Exception e) {
-                Log.d("Quiz", "Tricky bug");
+                log.e(e.getMessage());
             }
 
         }

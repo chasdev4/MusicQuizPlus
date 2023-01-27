@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -41,14 +40,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-
 import model.GoogleSignIn;
 import model.Quiz;
 import model.User;
 import model.item.Artist;
 import service.FirebaseService;
 import service.SpotifyService;
+import utils.LogUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -105,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
 //                        for (Track track : searchResults.getTracks()) {
 //                            db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
-//
+//ArrayIndexOutOfBoundsException
 //                        Log.d("TEMP", "Goodie goodie");
 //
 //                    }
@@ -141,12 +139,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateUI() {
+        LogUtil log = new LogUtil(TAG, "updateUI");
         // TODO: Update the state of app depending if the user is logged in or not
         if (firebaseUser != null) {
             // User is signed in
             signInWithGoogleButton.setVisibility(View.GONE);
-            Log.d(TAG, firebaseUser.getDisplayName());
-            Log.d(TAG, firebaseUser.getEmail());
+            log.d(firebaseUser.getDisplayName());
+            log.d(firebaseUser.getEmail());
+
 
             new Thread(new Runnable() {
                 public void run() {
@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle(View view) {
+        LogUtil log = new LogUtil(TAG, "signInWithGoogle");
         // Configuration of Google Sign In
         googleSignIn.setOneTapClient(Identity.getSignInClient(this));
         googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
@@ -264,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                                     result.getPendingIntent().getIntentSender(), REQ_ONE_TAP,
                                     null, 0, 0, 0);
                         } catch (IntentSender.SendIntentException e) {
-                            Log.e(TAG, "Couldn't start One Tap UI: " + e.getLocalizedMessage());
+                            log.e("Couldn't start One Tap UI: " + e.getLocalizedMessage());
                         }
                     }
                 })
@@ -278,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                                 .setAction("Action", null).show();
 
                         // No Google Accounts found. Just continue presenting the signed-out UI.
-                        Log.e(TAG, e.getLocalizedMessage());
+                        log.e(e.getLocalizedMessage());
                     }
                 });
     }
@@ -286,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        LogUtil log = new LogUtil(TAG, "onActivityResult");
         // Check the request code
         switch (requestCode) {
             case REQ_ONE_TAP:
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
                     String idToken = credential.getGoogleIdToken();
                     if (idToken != null) {
                         // Got an ID token from Google.
-                        Log.d(TAG, "Got ID token.");
+                        log.d("Got ID token.");
 
                         // With the Google ID token, exchange it for a Firebase credential,
                         // and authenticate with Firebase using the Firebase credential
@@ -307,13 +308,13 @@ public class MainActivity extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         if (task.isSuccessful()) {
                                             // Sign in success, update UI with the signed-in user's information
-                                            Log.d(TAG, "signInWithCredential:success");
+                                            log.d("signInWithCredential:success");
                                             firebaseUser = googleSignIn.getAuth().getCurrentUser();
                                             FirebaseService.createUser(firebaseUser, firestore, db);
                                             updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.
-                                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                                            log.w("signInWithCredential:failure", task.getException());
                                             updateUI();
                                         }
                                     }
@@ -322,16 +323,16 @@ public class MainActivity extends AppCompatActivity {
                 } catch (ApiException e) {
                     switch (e.getStatusCode()) {
                         case CommonStatusCodes.CANCELED:
-                            Log.d(TAG, "One-tap dialog was closed.");
+                            log.d("One-tap dialog was closed.");
                             // Don't re-prompt the user.
                             showOneTapUI = false;
                             break;
                         case CommonStatusCodes.NETWORK_ERROR:
-                            Log.d(TAG, "One-tap encountered a network error.");
+                            log.d("One-tap encountered a network error.");
                             // Try again or just ignore.
                             break;
                         default:
-                            Log.d(TAG, "Couldn't get credential from result."
+                            log.d("Couldn't get credential from result."
                                     + e.getLocalizedMessage());
                             break;
                     }

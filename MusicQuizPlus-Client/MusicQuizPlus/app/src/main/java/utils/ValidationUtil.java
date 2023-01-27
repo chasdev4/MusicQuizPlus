@@ -8,21 +8,21 @@ import model.ValidationObject;
 
 public class ValidationUtil {
 
-    public static boolean nullCheck(List<ValidationObject> vObjects, String TAG, String formattedMethodName) {
+    public static boolean nullCheck(List<ValidationObject> vObjects, LogUtil log) {
         boolean result = false;
         for (ValidationObject obj : vObjects) {
             if (obj.object == null) {
                 if (result == false) {
-                    String message = String.format("%s %s provided was null", formattedMethodName, obj.cls.getSimpleName());
+                    String message = String.format("%s provided was null", obj.cls.getSimpleName());
                     switch (obj.severity) {
                         case NONE:
-                            Log.i(TAG, message);
+                            log.i(message);
                             break;
                         case LOW:
-                            Log.w(TAG, message);
+                            log.w(message);
                             break;
                         case HIGH:
-                            Log.e(TAG, message);
+                            log.e(message);
                             result = true;
                             break;
                     }

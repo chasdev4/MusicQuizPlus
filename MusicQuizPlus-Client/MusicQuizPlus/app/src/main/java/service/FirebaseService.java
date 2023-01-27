@@ -1,7 +1,6 @@
 package service;
 
 import android.content.Context;
-import android.util.Log;
 import android.widget.GridView;
 
 import androidx.annotation.NonNull;
@@ -43,6 +42,7 @@ import model.item.Artist;
 import model.item.Track;
 import model.type.Severity;
 import utils.FormatUtil;
+import utils.LogUtil;
 import utils.ValidationUtil;
 
 public class FirebaseService {
@@ -50,6 +50,7 @@ public class FirebaseService {
     private final static String TAG = "FirebaseService.java";
 
     public static <T> T checkDatabase(DatabaseReference db, String child, String id, Class cls) {
+        LogUtil log = new LogUtil(TAG, "checkDatabase");
         CountDownLatch done = new CountDownLatch(1);
         final User[] users = new User[1];
         final Album[] albums = new Album[1];
@@ -60,7 +61,7 @@ public class FirebaseService {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i(TAG, String.format("Attempting to retrieve /%s/%s from database.", child, id));
+                log.v(String.format("Attempting to retrieve /%s/%s from database.", child, id));
                 switch (cls.getSimpleName()) {
                     case "User":
                         users[0] = (User)dataSnapshot.getValue(cls);
@@ -78,7 +79,7 @@ public class FirebaseService {
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
                         break;
                     default:
-                        Log.w(TAG, String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
+                        log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                         break;
                 }
                 done.countDown();
@@ -86,7 +87,7 @@ public class FirebaseService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e(TAG, error.getMessage());
+                log.e(error.getMessage());
             }
 
         });
@@ -113,7 +114,7 @@ public class FirebaseService {
             case "Track":
                 return (T) tracks[0];
             default:
-                Log.w(TAG, String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
+                log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                 break;
         }
 
@@ -124,6 +125,7 @@ public class FirebaseService {
 
 
     public static void retrieveData(GridView gridView, Context context, String dbChild, Class cls) {
+        LogUtil log = new LogUtil(TAG, "retrieveData");
         String className = cls.getSimpleName();
 
         List<Playlist> playlists = new ArrayList<>();
@@ -149,7 +151,7 @@ public class FirebaseService {
                 gridView.setAdapter(historyAdapter);
                 break;
             default:
-                Log.w(TAG, String.format("retrieveData: unsupported class %s.", cls.getSimpleName()));
+                log.w(String.format("Unsupported class %s.", cls.getSimpleName()));
                 return;
         }
 
@@ -298,6 +300,7 @@ public class FirebaseService {
     // Create a new user on both databases
     public static void createUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
                                   DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "createUser");
         // Create a new user with a first and last name
         Map<String, Object> userMap = new HashMap<>();
         userMap.put("name", firebaseUser.getDisplayName());
@@ -309,13 +312,13 @@ public class FirebaseService {
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "DocumentSnapshot successfully written!");
+                        log.d("DocumentSnapshot successfully written!");
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error writing document", e);
+                        log.w("Error writing document", e);
                     }
                 });
 
@@ -330,13 +333,14 @@ public class FirebaseService {
     // Delete user from database
     public static boolean deleteUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
                                      DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "deleteUser");
         final boolean[] result = {true};
 
         db.child("users").child(firebaseUser.getUid()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Log.d(TAG, "User data deleted from Realtime Database.");
+                    log.d("User data deleted from Realtime Database.");
                 }
                 else
                 {
@@ -351,13 +355,13 @@ public class FirebaseService {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "Firestore user data successfully deleted!");
+                            log.d("Firestore user data successfully deleted!");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.w(TAG, "Error deleting Firestore user", e);
+                            log.w("Error deleting Firestore user", e);
                         }
                     });
         }
@@ -367,8 +371,8 @@ public class FirebaseService {
     // When the user "hearts" an album
     public static void heartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                   SpotifyService spotifyService) {
-        // Null check
-        final String methodName = FormatUtil.formatMethodName("heartAlbum");
+
+        LogUtil log = new LogUtil(TAG, "heartAlbum");
 
         // Null check
         List<ValidationObject> validationObjects = new ArrayList<>() {
@@ -380,7 +384,7 @@ public class FirebaseService {
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
-        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
             return;
         }
 
@@ -392,7 +396,7 @@ public class FirebaseService {
 
         // If the album wasn't added, return
         if (!result) {
-            Log.w(TAG, String.format("%s already exists in albumIds list.", album.getId()));
+            log.w(String.format("%s already exists in albumIds list.", album.getId()));
             return;
         }
 
@@ -415,10 +419,10 @@ public class FirebaseService {
                     .child("artistIds")
                     .child(key)
                     .setValue(artistId);
-            Log.i(TAG, String.format("%s added to the artistIds list.", artistId));
+            log.i(String.format("%s added to the artistIds list.", artistId));
         }
         else {
-            Log.i(TAG, String.format("%s already exists in the artistIds list.", artistId));
+            log.i(String.format("%s already exists in the artistIds list.", artistId));
         }
 
 
@@ -435,10 +439,10 @@ public class FirebaseService {
         if (!album1.isTrackIdsKnown()) {
             // Save the hearted album's tracks to the database
             saveAlbumTracks(album, db, spotifyService);
-            Log.i(TAG, String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
+            log.i(String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
         }
         else {
-            Log.i(TAG, String.format("Tracks from %s have previously been saved to database", album.getId()));
+            log.i(String.format("Tracks from %s have previously been saved to database", album.getId()));
         }
         updates.put("albums/"+album.getId()+"/followers", ServerValue.increment(1));
         if (!album1.isFollowersKnown()) {
@@ -451,16 +455,17 @@ public class FirebaseService {
     }
 
     private static void saveArtistOverview(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
-        Log.i(TAG, "Fetching artist overview for " + artistId);
+        LogUtil log = new LogUtil(TAG, "saveArtistOverview");
+        log.i("Fetching artist overview for " + artistId);
 
         // Get the artist overview from the Spotify API
         Artist artist = spotifyService.artistOverview(artistId);
-        Log.i(TAG, String.format("Artist Overview for \"%s\" %s retrieved.",
+        log.i(String.format("Artist Overview for \"%s\" %s retrieved.",
                 artist.getName(),artist.getId()));
 
         // Save the artist to the database
         db.child("artists").child(artist.getId()).setValue(artist);
-        Log.i(TAG, String.format("%s saved to database child \"artists\"", artist.getId()));
+        log.i(String.format("%s saved to database child \"artists\"", artist.getId()));
 
         // Save each album to the database
         createAlbums(artist.getAlbums(), db, spotifyService);
@@ -469,10 +474,11 @@ public class FirebaseService {
     }
 
     private static void createAlbums(List<Album> albums, DatabaseReference db, SpotifyService spotifyService) {
+        LogUtil log = new LogUtil(TAG, "createAlbums");
         for (Album a : albums) {
             db.child("albums").child(a.getId()).setValue(a);
         }
-        Log.i(TAG, String.format("%s %sS saved to database child \"albums\"",
+        log.i(String.format("%s %sS saved to database child \"albums\"",
                 albums.size(), albums.get(0).getType()));
     }
 
@@ -519,8 +525,7 @@ public class FirebaseService {
 
     public static void unheartAlbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                     SpotifyService spotifyService) {
-        // Null check
-        final String methodName = FormatUtil.formatMethodName("unheartAlbum");
+        LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
         // Null check
         List<ValidationObject> validationObjects = new ArrayList<>() {
@@ -532,7 +537,7 @@ public class FirebaseService {
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
-        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
             return;
         }
 
@@ -541,13 +546,13 @@ public class FirebaseService {
 
         // If the album wasn't found, abort
         if (key == null) {
-            Log.w(TAG, "Album not previously saved to user. Aborting...");
+            log.w("Album not previously saved to user. Aborting...");
             return;
         }
 
         // Remove the album from the database user
         db.child("users").child(firebaseUser.getUid()).child("albumIds").child(key).removeValue();
-        Log.i(TAG, String.format("\"%s : %s\" removed from users/%s/albumIds", key, album.getId(), firebaseUser.getUid()));
+        log.i(String.format("\"%s : %s\" removed from users/%s/albumIds", key, album.getId(), firebaseUser.getUid()));
 
         Map<String, Object> updates = new HashMap<>();
 
@@ -560,10 +565,10 @@ public class FirebaseService {
                     // Check to see if it's safe to delete, the track may belong to a saved playlist
                     if (track.isAlbumKnown() && track.getPlaylistIds() == null) {
                         db.child("tracks").child(trackId).removeValue();
-                        Log.i(TAG, String.format("%s removed from database child /tracks", trackId));
+                        log.i(String.format("%s removed from database child /tracks", trackId));
                     }
                     else {
-                        Log.i(TAG, String.format("%s belongs to one or more playlists.", trackId));
+                        log.i(String.format("%s belongs to one or more playlists.", trackId));
                     }
                 }
             }
@@ -574,13 +579,13 @@ public class FirebaseService {
 
             // If the artist wasn't found, abort
             if (key == null) {
-                Log.w(TAG, "Artist not previously saved to user. Aborting...");
+                log.w("Artist not previously saved to user. Aborting...");
                 return;
             }
 
             // Remove the artist from the database user
             db.child("users").child(firebaseUser.getUid()).child("artistIds").child(key).removeValue();
-            Log.i(TAG, String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
+            log.i(String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
 
             // If the album's artist is on it's last follower, remove it and it's albums from the database.
             Artist artist = checkDatabase(db, "artists", album.getArtistIds().get(0), Artist.class);
@@ -605,13 +610,13 @@ public class FirebaseService {
                 updates.put("albums/"+album.getId()+"/tracksIdsKnown", false);
                 updates.put("artists/"+artist.getId()+"/followers", ServerValue.increment(-1));
                 db.updateChildren(updates);
-                Log.i(TAG, String.format("%s follower count has decremented.", album.getId()));
-                Log.i(TAG, String.format("%s follower count has decremented.", artist.getId()));
+                log.i(String.format("%s follower count has decremented.", album.getId()));
+                log.i(String.format("%s follower count has decremented.", artist.getId()));
             }
 
             // Remove the album from the database
             db.child("albums").child(album.getId()).removeValue();
-            Log.i(TAG, String.format("%s removed from /albums", album.getId()));
+            log.i(String.format("%s removed from /albums", album.getId()));
 
         }
         // Else the album has enough followers to live
@@ -619,7 +624,7 @@ public class FirebaseService {
             // Decrement the follower count
             updates.put("albums/"+album.getId()+"/followers", ServerValue.increment(-1));
             db.updateChildren(updates);
-            Log.i(TAG, String.format("%s follower count has decremented.", album.getId()));
+            log.i(String.format("%s follower count has decremented.", album.getId()));
         }
 
 
@@ -653,6 +658,7 @@ public class FirebaseService {
 
     // Used when a playlists tracks have not been populated yet, like from the search results
     public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
+        LogUtil log = new LogUtil(TAG, "populatePlaylistTracks");
         // Playlist is already populated, do nothing
         if (playlist.getTracks().size() > 0) {
             return playlist;
@@ -663,11 +669,11 @@ public class FirebaseService {
 
         // The playlist doesn't exist
         if (playlist1 == null) {
-            Log.i(TAG, "DataSnapshot returned null, retrieving playlist tracks...");
+            log.i("DataSnapshot returned null, retrieving playlist tracks...");
         }
         // It exists, the tracks should be known
         else if (playlist1.getTrackIds().size() > 0) {
-            Log.i(TAG, "Playlist exists in database, returning playlist...");
+            log.i("Playlist exists in database, returning playlist...");
             return playlist1;
         }
 
@@ -735,7 +741,7 @@ public class FirebaseService {
                 }
             }
             else {
-                Log.i(TAG, String.format("Track #%s in items was null", String.valueOf(i)));
+                log.i(String.format("Track #%s in items was null", String.valueOf(i)));
             }
 
         }
@@ -747,10 +753,9 @@ public class FirebaseService {
     // When the user "hearts" a playlist
     public static void heartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                      SpotifyService spotifyService) {
-        // Return if any of these fields are null
-        final String methodName = FormatUtil.formatMethodName("heartPlaylist");
+        LogUtil log = new LogUtil(TAG, "heartPlaylist");
 
-        // Null check
+        // Return if any of these fields are null
         List<ValidationObject> validationObjects = new ArrayList<>() {
             {
                 add(new ValidationObject(user, User.class, Severity.HIGH));
@@ -760,7 +765,7 @@ public class FirebaseService {
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
-        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
             return;
         }
 
@@ -770,7 +775,7 @@ public class FirebaseService {
 
         // If the playlist wasn't added, return
         if (!result) {
-            Log.w(TAG, String.format("%s already exists in playlistIds list.", playlist.getId()));
+            log.w(String.format("%s already exists in playlistIds list.", playlist.getId()));
             return;
         }
 
@@ -788,11 +793,11 @@ public class FirebaseService {
 
         // Playlist doesn't exist in db yet
         if (playlist1 == null) {
-            Log.i(TAG, "DataSnapshot returned null, saving playlist...");
+            log.i("DataSnapshot returned null, saving playlist...");
         }
         // Playlist exists but something really really unexpected happened
         else if (!playlist.getId().equals(playlist1.getId())) {
-            Log.e(TAG, "Playlist retrieved but the ID's don't match. That was unexpected...");
+            log.e("Playlist retrieved but the ID's don't match. That was unexpected...");
             return;
         }
         // Playlist exists and the followers are only known on the db
@@ -803,7 +808,7 @@ public class FirebaseService {
 
         // Save the playlist to the db
         db.child("playlists").child(playlist.getId()).setValue(playlist);
-        Log.i(TAG, String.format("%s saved to child \"playlists\"", playlist.getId()));
+        log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
 
         // Increment the follower count
         Map<String, Object> updates = new HashMap<>();
@@ -826,8 +831,7 @@ public class FirebaseService {
 
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
                                         SpotifyService spotifyService) {
-        // Null check
-        final String methodName = FormatUtil.formatMethodName("unheartPlaylist");
+        LogUtil log = new LogUtil(TAG, "unheartPlaylist");
 
         // Null check
         List<ValidationObject> validationObjects = new ArrayList<>() {
@@ -839,7 +843,7 @@ public class FirebaseService {
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
-        if (ValidationUtil.nullCheck(validationObjects, TAG, methodName)) {
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
             return;
         }
 
@@ -848,13 +852,13 @@ public class FirebaseService {
 
         // If the playlist wasn't found, abort
         if (key == null) {
-            Log.w(TAG, "Playlist not previously saved to user. Aborting...");
+            log.w("Playlist not previously saved to user. Aborting...");
             return;
         }
 
         // Remove the playlist from the database user
         db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(key).removeValue();
-        Log.i(TAG, String.format("\"%s : %s\" removed from users/%s/playlistIds", key, playlist.getId(), firebaseUser.getUid()));
+        log.i(String.format("\"%s : %s\" removed from users/%s/playlistIds", key, playlist.getId(), firebaseUser.getUid()));
 
         // If the playlist is on it's last follower or lower, remove it and it's tracks from the database
         if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
@@ -864,19 +868,19 @@ public class FirebaseService {
                 // Check to see if it's safe to delete, the track may belong to a saved album
                 if (!track.isAlbumKnown()) {
                     db.child("tracks").child(trackId).removeValue();
-                    Log.i(TAG, String.format("%s removed from database child /tracks", trackId));
+                    log.i(String.format("%s removed from database child /tracks", trackId));
                 }
                 else {
-                    Log.i(TAG, String.format("%s belongs to a saved album.", trackId));
+                    log.i(String.format("%s belongs to a saved album.", trackId));
                 }
 
                 db.child("tracks").child(trackId).removeValue();
             }
-            Log.i(TAG, String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
+            log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 
             // Remove the playlist from the database
             db.child("playlists").child(playlist.getId()).removeValue();
-            Log.i(TAG, String.format("%s removed from /playlists", playlist.getId()));
+            log.i(String.format("%s removed from /playlists", playlist.getId()));
 
         }
         // Else the playlist has enough followers to live
@@ -885,7 +889,7 @@ public class FirebaseService {
             Map<String, Object> updates = new HashMap<>();
             updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(-1));
             db.updateChildren(updates);
-            Log.i(TAG, String.format("%s follower count has decremented.", playlist.getId()));
+            log.i(String.format("%s follower count has decremented.", playlist.getId()));
         }
     }
 }

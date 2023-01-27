@@ -1,7 +1,5 @@
 package model;
 
-import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -16,6 +14,7 @@ import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
 import model.type.AlbumType;
+import utils.LogUtil;
 
 // SUMMARY
 // The Search Results model maintains lists of items models retrieved from the Spotify API
@@ -62,6 +61,7 @@ public class SearchResults {
 
     // Retrieve Album Search Results
     private void extractAlbums(JsonObject json) {
+        LogUtil log = new LogUtil(TAG,"extractAlbums");
         albums = new ArrayList<>();
 
         // Loop through and store all the albums
@@ -101,11 +101,13 @@ public class SearchResults {
                     false,
                     jsonObject.getAsJsonObject("date").get("year").getAsString()));
         }
-        Log.i(TAG, "Album results extracted from JsonObject.");
+        log.i("Album results extracted from JsonObject.");
     }
 
     // Retrieve Artist Search Results
     private void extractArtists(JsonObject json) {
+        LogUtil log = new LogUtil(TAG,"extractArtists");
+
         artists = new ArrayList<>();
 
         // Loop through and store all the artists
@@ -121,7 +123,7 @@ public class SearchResults {
                 imageJsonArraySize = imageJsonArray.size();
             }
             catch (java.lang.ClassCastException e) {
-                Log.i(TAG, "Artist Image Is Null");
+                log.i("Artist Image Is Null");
             }
 
 
@@ -138,11 +140,12 @@ public class SearchResults {
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
                     photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0, false));
         }
-        Log.i(TAG, "Artist results extracted from JsonObject.");
+        log.i("Artist results extracted from JsonObject.");
     }
 
     // Retrieve Playlist Search Results
     private void extractPlaylists(JsonObject json) {
+        LogUtil log = new LogUtil(TAG,"extractPlaylists");
         playlists = new ArrayList<>();
 
         // Loop through and store all the playlists
@@ -177,11 +180,13 @@ public class SearchResults {
                     jsonObject.get("description").getAsString()));
 
         }
-        Log.i(TAG, "Playlist results extracted from JsonObject.");
+        log.i("Playlist results extracted from JsonObject.");
     }
 
     // Retrieve Track Search Results
     private void extractTracks(JsonObject json) {
+        LogUtil log = new LogUtil(TAG,"extractTracks");
+
         tracks = new ArrayList<>();
 
         // Loop through and store all the tracks
@@ -217,7 +222,7 @@ public class SearchResults {
                     jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean()));
 
         }
-        Log.i(TAG, "Track results extracted from JsonObject.");
+        log.i("Track results extracted from JsonObject.");
     }
 
 }
