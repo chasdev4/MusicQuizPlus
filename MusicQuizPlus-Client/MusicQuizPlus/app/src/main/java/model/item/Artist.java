@@ -10,6 +10,8 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import model.ExternalLink;
 import model.PhotoUrl;
@@ -295,9 +297,28 @@ public class Artist {
     }
 
     public void initCollections(DatabaseReference db, User user) {
-        initCollection(db, user, AlbumType.SINGLE, singleIds);
-        initCollection(db, user, AlbumType.ALBUM, albumIds);
-        initCollection(db, user, AlbumType.COMPILATION, compilationIds);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.SINGLE, singleIds);
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.ALBUM, albumIds);
+
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.COMPILATION, compilationIds);
+
+            }
+        });
+
     }
 
     private void initCollection(DatabaseReference db, User user, AlbumType type, List<String> albumIdList) {
@@ -322,7 +343,6 @@ public class Artist {
                 compilations = albumsList;
                 break;
         }
-        albumsList = null;
     }
 
     public int getAveragePopularity(List<Track> tracks) {
