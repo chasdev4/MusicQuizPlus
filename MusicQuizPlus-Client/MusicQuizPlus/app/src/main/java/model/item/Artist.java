@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -162,14 +163,11 @@ public class Artist {
                     jsonPhotos.get(j).getAsJsonObject().get("width").getAsString(),
                     jsonPhotos.get(j).getAsJsonObject().get("height").getAsString()));
         }
-        List<String> artistName = new ArrayList<>() {
+
+        String artistId = id;
+        Map<String, String> artistsMap = new HashMap<>() {
             {
-                add(name);
-            }
-        };
-        List<String> artistId = new ArrayList<>() {
-            {
-                add(id);
+                put(id, name);
             }
         };
 
@@ -186,8 +184,8 @@ public class Artist {
                 album.get("uri").getAsString(),
                 album.get("name").getAsString(),
                 photos,
-                artistName,
                 artistId,
+                artistsMap,
                 albumType,
                 null,
                 false,

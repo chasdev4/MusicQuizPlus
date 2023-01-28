@@ -410,7 +410,7 @@ public class FirebaseService {
                 .setValue(album.getId());
 
         // Add the artistId to the user
-        String artistId = album.getArtistIds().get(0);
+        String artistId = album.getArtistId();
         key = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
         result = user.addArtistId(key, artistId);
 
@@ -577,7 +577,7 @@ public class FirebaseService {
 
 
             // Attempt to remove the artist from the user
-            key = user.removeArtistId(album.getArtistIds().get(0));
+            key = user.removeArtistId(album.getArtistId());
 
             // If the artist wasn't found, abort
             if (key == null) {
@@ -590,7 +590,7 @@ public class FirebaseService {
             log.i(String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
 
             // If the album's artist is on it's last follower, remove it and it's albums from the database.
-            Artist artist = checkDatabase(db, "artists", album.getArtistIds().get(0), Artist.class);
+            Artist artist = checkDatabase(db, "artists", album.getArtistId(), Artist.class);
             if (artist.getFollowers() <= 1 && artist.isFollowersKnown()) {
                 for (String albumId : artist.getAlbumIds()) {
                     db.child("albums").child(albumId).removeValue();

@@ -40,11 +40,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import model.GoogleSignIn;
+import model.PhotoUrl;
 import model.Quiz;
 import model.User;
+import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
 import utils.LogUtil;
@@ -65,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity.java";
     private static final int REQ_ONE_TAP = 2;
-
 
 
     @Override
@@ -151,40 +156,39 @@ public class MainActivity extends AppCompatActivity {
 
             new Thread(new Runnable() {
                 public void run() {
-                    user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
-                        user.initCollections(db);
+//                        user.initCollections(db);
 
-                          Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
-                          userPlaylist.initCollection(db);
-                        Quiz quiz = new Quiz(userPlaylist, user);
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
+//                        userPlaylist.initCollection(db);
+//                        Quiz quiz = new Quiz(userPlaylist, user);
 
-                        //   Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                     //   artist.initCollections(db, user);
-
-                       // Quiz quiz = new Quiz(artist, user);
+//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        artist.initCollections(db, user);
+//                        Quiz quiz = new Quiz(artist, user);
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
-//                    Playlist playlist = new Playlist(
-//                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
-//                            "NKVT 2021",
-//                            new ArrayList<PhotoUrl>() {{
-//                                add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
-//                                        0, 0));
-//                            }},
-//                            "Spotify",
-//                            "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
-//                    );
+//                        Playlist playlist = new Playlist(
+//                                "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
+//                                "NKVT 2021",
+//                                new ArrayList<PhotoUrl>() {{
+//                                    add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
+//                                            0, 0));
+//                                }},
+//                                "Spotify",
+//                                "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
+//                        );
 //
 //
-//                       playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+//                        playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
 //
 //
-//                    FirebaseService.heartPlaylist(user, firebaseUser, db,
-//                            playlist,
-//                            spotifyService
-//                    );
+//                        FirebaseService.heartPlaylist(user, firebaseUser, db,
+//                                playlist,
+//                                spotifyService
+//                        );
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test unheartPlaylist
@@ -193,36 +197,28 @@ public class MainActivity extends AppCompatActivity {
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartAlbum
-//                    FirebaseService.heartAlbum(user, firebaseUser, db,
-//                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-//                                    "Inna",
-//                                    new ArrayList<PhotoUrl>() {{
-//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-//                                                640, 640));
-//                                    }},
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("INNA");
-//                                        }
-//                                    },
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-//                                        }
-//                                    },
-//                                    AlbumType.ALBUM, new ArrayList<String>(),
-//                                    false, 0, false,
-//                                     "2015"), spotifyService);
-//
+                        FirebaseService.heartAlbum(user, firebaseUser, db,
+                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+                                        "Inna",
+                                        new ArrayList<PhotoUrl>() {{
+                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+                                                    640, 640));
+                                        }},
+                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
+                                        new HashMap<String, String>() {
+                                            {
+                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
+                                            }
+                                        },
+                                        AlbumType.ALBUM, new ArrayList<String>(),
+                                        false, 0, false,
+                                        "2015"), spotifyService);
+
 //                        user.initCollections(db);
 //
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);
-
-                        // Be careful with this one, might be the cause of an error
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(0), spotifyService);
-
+//
 //                        FirebaseService.heartAlbum(user, firebaseUser, db,
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
 //                        FirebaseService.heartAlbum(user, firebaseUser, db,
@@ -234,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
 //                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
                         //#endregion
+                    } else {
+                        FirebaseService.createUser(firebaseUser, firestore, db);
                     }
                 }
             }).start();
@@ -314,7 +312,6 @@ public class MainActivity extends AppCompatActivity {
                                             // Sign in success, update UI with the signed-in user's information
                                             log.d("signInWithCredential:success");
                                             firebaseUser = googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(firebaseUser, firestore, db);
                                             updateUI();
                                         } else {
                                             // If sign in fails, display a message to the user.

@@ -80,12 +80,14 @@ public class SearchResults {
 
             // Create an inner loop to get artists
             JsonArray artistJsonArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
-            List<String> artistNames = new ArrayList<>();
-            List<String> artistIds = new ArrayList<>();
+
+            String artistId = artistJsonArray.get(0).getAsJsonObject().get("profile")
+                    .getAsJsonObject().get("name").getAsString();
+            Map<String, String> artistsMap = new HashMap<>();
             for (int j = 0; j < artistJsonArray.size(); j++) {
-                artistNames.add(artistJsonArray.get(j).getAsJsonObject().get("profile")
-                        .getAsJsonObject().get("name").getAsString());
-                artistIds.add(artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString());
+                artistsMap.put(artistJsonArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                        artistJsonArray.get(j).getAsJsonObject().get("profile")
+                                .getAsJsonObject().get("name").getAsString());
             }
 
             // Add to collection
@@ -93,8 +95,8 @@ public class SearchResults {
                     jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
                     photoUrls,
-                    artistNames,
-                    artistIds,
+                    artistId,
+                    artistsMap,
                     AlbumType.UNINITIALIZED,
                     null,
                     false, 0,
