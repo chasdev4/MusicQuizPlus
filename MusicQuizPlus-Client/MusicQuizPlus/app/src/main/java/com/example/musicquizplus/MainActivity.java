@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         // googleSignIn.signOut();
-        //firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
         updateUI(firebaseUser);
     }
 
@@ -164,8 +164,6 @@ public class MainActivity extends AppCompatActivity {
 //                        artist.initCollections(db, user);
 //                        Quiz quiz = new Quiz(artist, user);
                         //#endregion
-
-
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
 //                        Playlist playlist = new Playlist(
