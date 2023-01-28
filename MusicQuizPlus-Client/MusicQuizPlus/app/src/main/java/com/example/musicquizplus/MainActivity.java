@@ -1,19 +1,11 @@
 package com.example.musicquizplus;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
 
-import com.google.android.gms.auth.api.identity.BeginSignInRequest;
-import com.google.android.gms.auth.api.identity.BeginSignInResult;
-import com.google.android.gms.auth.api.identity.Identity;
-import com.google.android.gms.auth.api.identity.SignInCredential;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
@@ -66,11 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUser firebaseUser;
     private GoogleSignIn googleSignIn;
     private Button signInWithGoogleButton;
-    private boolean showOneTapUI;
     private SpotifyService spotifyService;
 
     private final String TAG = "MainActivity.java";
-    private static final int REQ_ONE_TAP = 2;
 
 
     @Override
@@ -109,8 +99,6 @@ public class MainActivity extends AppCompatActivity {
 //                        for (Track track : searchResults.getTracks()) {
 //                            db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
-//ArrayIndexOutOfBoundsException
-//                        Log.d("TEMP", "Goodie goodie");
 //
 //                    }
 //                }).start();
@@ -126,10 +114,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Find the view of the button and set the on click listener to begin signing in
         signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        Context context = this;
+        Activity activity = this;
         signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGoogle(view);
+                googleSignIn.signInWithGoogle(view, activity, context);
             }
         });
 
@@ -140,14 +130,16 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
+       // googleSignIn.signOut();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
-        updateUI();
+        updateUI(firebaseUser);
     }
 
-    private void updateUI() {
+    public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
+        this.firebaseUser = firebaseUser;
         // TODO: Update the state of app depending if the user is logged in or not
-        if (firebaseUser != null) {
+        if (this.firebaseUser != null) {
             // User is signed in
             signInWithGoogleButton.setVisibility(View.GONE);
             log.d(firebaseUser.getDisplayName());
@@ -243,103 +235,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void signInWithGoogle(View view) {
-        LogUtil log = new LogUtil(TAG, "signInWithGoogle");
-        // Configuration of Google Sign In
-        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
-                .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                        .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
-                        .setServerClientId(getString(R.string.SERVER_CLIENT_ID))
-                        // Show all accounts on the device.
-                        .setFilterByAuthorizedAccounts(false)
-                        .build())
-                .build());
-
-        // Begin the Sign In Request
-        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
-                .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
-                    @Override
-                    public void onSuccess(BeginSignInResult result) {
-                        try {
-                            startIntentSenderForResult(
-                                    result.getPendingIntent().getIntentSender(), REQ_ONE_TAP,
-                                    null, 0, 0, 0);
-                        } catch (IntentSender.SendIntentException e) {
-                            log.e("Couldn't start One Tap UI: " + e.getLocalizedMessage());
-                        }
-                    }
-                })
-                .addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // TODO: (C-Feature) Take the user to a Google Sign In Form to add an account
-                        // Note: Might not work or be worth the effort...
-
-                        Snackbar.make(view, "ERROR: No Google accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-
-                        // No Google Accounts found. Just continue presenting the signed-out UI.
-                        log.e(e.getLocalizedMessage());
-                    }
-                });
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        LogUtil log = new LogUtil(TAG, "onActivityResult");
-        // Check the request code
-        switch (requestCode) {
-            case REQ_ONE_TAP:
-                try {
-                    // Create an account with a Google ID token
-                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
-                    String idToken = credential.getGoogleIdToken();
-                    if (idToken != null) {
-                        // Got an ID token from Google.
-                        log.d("Got ID token.");
-
-                        // With the Google ID token, exchange it for a Firebase credential,
-                        // and authenticate with Firebase using the Firebase credential
-                        AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
-                                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (task.isSuccessful()) {
-                                            // Sign in success, update UI with the signed-in user's information
-                                            log.d("signInWithCredential:success");
-                                            firebaseUser = googleSignIn.getAuth().getCurrentUser();
-                                            updateUI();
-                                        } else {
-                                            // If sign in fails, display a message to the user.
-                                            log.w("signInWithCredential:failure", task.getException());
-                                            updateUI();
-                                        }
-                                    }
-                                });
-                    }
-                } catch (ApiException e) {
-                    switch (e.getStatusCode()) {
-                        case CommonStatusCodes.CANCELED:
-                            log.d("One-tap dialog was closed.");
-                            // Don't re-prompt the user.
-                            showOneTapUI = false;
-                            break;
-                        case CommonStatusCodes.NETWORK_ERROR:
-                            log.d("One-tap encountered a network error.");
-                            // Try again or just ignore.
-                            break;
-                        default:
-                            log.d("Couldn't get credential from result."
-                                    + e.getLocalizedMessage());
-                            break;
-                    }
-                }
-                break;
-        }
+        googleSignIn.onActivityResult(requestCode, resultCode, data, this);
     }
 
     @Override
