@@ -27,7 +27,7 @@ public class Quiz implements Serializable {
     // Final members
     private final User user;          // Difficulty, level and xp
     private final QuizType type;
-  //  private final String id; // TODO: Quiz's ID: What if we saved the quiz to firebase for reuse? B or C Feature
+    private final String id;
     private final List<Question> questions;
     private final Playlist playlist;
     private final Artist artist;
@@ -252,6 +252,7 @@ public class Quiz implements Serializable {
     public Quiz(Playlist playlist, User user) {
         this.playlist = playlist;
         artist = null;
+        id = playlist.getId();
         this.user = user;
         type = QuizType.PLAYLIST;
         questions = new ArrayList<>();
@@ -260,6 +261,7 @@ public class Quiz implements Serializable {
     public Quiz(Artist artist, User user) {
         playlist = null;
         this.artist = artist;
+        id = artist.getId();
         this.user = user;
         type = QuizType.ARTIST;
         questions = new ArrayList<>();
@@ -286,7 +288,6 @@ public class Quiz implements Serializable {
         boolean isPlaylistQuiz = false; // Boolean to track the type once
         Class cls = null;               // Class needed for validation object
         List<Track> rawTracks = null;   // All tracks from playlist or hearted albums of artist
-        String subjectId = null;        // Playlist or Artist ID
         int averagePopularity = 0;      // Playlist or Artists' average popularity
         // Also changes dependent on quiz type
         double guessAlbumChance = GUESS_PLAYLIST_ALBUM_CHANCE;
@@ -297,7 +298,6 @@ public class Quiz implements Serializable {
                 cls = Playlist.class;
                 validationObjects.add(new ValidationObject(playlist, cls, Severity.HIGH));
                 rawTracks = playlist.getTracksListFromMap();
-                subjectId = playlist.getId();
                 averagePopularity = playlist.getAveragePopularity();
                 isPlaylistQuiz = true;
                 log.v("Playlist members initialized.");
@@ -306,7 +306,6 @@ public class Quiz implements Serializable {
                 cls = Artist.class;
                 validationObjects.add(new ValidationObject(artist, cls, Severity.HIGH));
                 rawTracks = artist.getTracks();
-                subjectId = artist.getId();
                 averagePopularity = artist.getAveragePopularity(rawTracks);
                 guessAlbumChance = GUESS_ARTIST_ALBUM_CHANCE;
                 featuredArtistsNames = artist.getFeaturedArtists(rawTracks);
@@ -321,7 +320,7 @@ public class Quiz implements Serializable {
 
         // Check to see if the tracks are known, they absolutely should be
         if (rawTracks.size() == 0) {
-            log.e(String.format("%s tracks are unknown.", subjectId));
+            log.e(String.format("%s tracks are unknown.", id));
             return;
         }
 
@@ -384,7 +383,7 @@ public class Quiz implements Serializable {
         // Prepare information for answers
         if (insufficientData || ignoreDifficulty
                 || user.getQuizHistory() == null
-                || user.getQuizHistory().get(subjectId) == null) {
+                || user.getQuizHistory().get(id) == null) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
             getFeaturedArtistTracks(guessArtistCount);
@@ -396,7 +395,7 @@ public class Quiz implements Serializable {
 
             getFeaturedArtistTracks(guessArtistCount);
 
-            Map<String, String> quizHistory = user.getQuizHistory().get(subjectId).getTrackIds();
+            Map<String, String> quizHistory = user.getQuizHistory().get(id).getTrackIds();
             for (Track track : rawTracks) {
                 boolean skip = false;
                 if (!ignoreDifficulty) {
@@ -449,7 +448,7 @@ public class Quiz implements Serializable {
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
         generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd);
         Collections.shuffle(questions);
-        log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), subjectId));
+        log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), id));
 
     }
 
