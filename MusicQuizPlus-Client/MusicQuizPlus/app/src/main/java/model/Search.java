@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.item.Album;
 import model.item.Artist;
@@ -29,6 +30,7 @@ public class Search {
     private int limit;
     private SpotifyService spotifyService;
 
+    private List<SearchResult> all;
     private List<Album> albums;
     private List<Artist> artists;
     private List<Playlist> playlists;
@@ -44,8 +46,8 @@ public class Search {
 
     }
 
-    public void search() {
-        JsonObject json = spotifyService.search(searchTerm, limit, 0);
+    public void search(int offset) {
+        JsonObject json = spotifyService.search(searchTerm, limit, offset);
         init(json);
     }
 
@@ -67,6 +69,8 @@ public class Search {
 
     // Retrieve All Search Results
     private void init(JsonObject json) {
+        LogUtil log = new LogUtil(TAG, "init");
+        all = new ArrayList<>();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         executorService.submit(new Runnable() {
             @Override
@@ -92,12 +96,17 @@ public class Search {
                 extractTracks(json);
             }
         });
-
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
     }
 
     // Retrieve Album Search Results
     private void extractAlbums(JsonObject json) {
-        LogUtil log = new LogUtil(TAG,"extractAlbums");
+        LogUtil log = new LogUtil(TAG, "extractAlbums");
         albums = new ArrayList<>();
 
         // Loop through and store all the albums
@@ -143,7 +152,7 @@ public class Search {
 
     // Retrieve Artist Search Results
     private void extractArtists(JsonObject json) {
-        LogUtil log = new LogUtil(TAG,"extractArtists");
+        LogUtil log = new LogUtil(TAG, "extractArtists");
 
         artists = new ArrayList<>();
 
@@ -158,8 +167,7 @@ public class Search {
                 imageJsonArray = jsonObject.getAsJsonObject("visuals").getAsJsonObject("avatarImage")
                         .getAsJsonArray("sources");
                 imageJsonArraySize = imageJsonArray.size();
-            }
-            catch (java.lang.ClassCastException e) {
+            } catch (java.lang.ClassCastException e) {
                 log.i("Artist Image Is Null");
             }
 
@@ -182,7 +190,7 @@ public class Search {
 
     // Retrieve Playlist Search Results
     private void extractPlaylists(JsonObject json) {
-        LogUtil log = new LogUtil(TAG,"extractPlaylists");
+        LogUtil log = new LogUtil(TAG, "extractPlaylists");
         playlists = new ArrayList<>();
 
         // Loop through and store all the playlists
@@ -222,7 +230,7 @@ public class Search {
 
     // Retrieve Track Search Results
     private void extractTracks(JsonObject json) {
-        LogUtil log = new LogUtil(TAG,"extractTracks");
+        LogUtil log = new LogUtil(TAG, "extractTracks");
 
         tracks = new ArrayList<>();
 
@@ -268,5 +276,56 @@ public class Search {
 
     public void setCurrentFilter(SearchFilter currentFilter) {
         this.currentFilter = currentFilter;
+    }
+
+    public List<SearchResult> getAll() {
+        LogUtil log = new LogUtil(TAG, "getAll");
+        if (all.size() == 0) {
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Artist artist : artists) {
+                        all.add(new SearchResult(SearchFilter.ARTIST, artist));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Album album : albums) {
+                        all.add(new SearchResult(SearchFilter.ALBUM, album));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Track track : tracks) {
+                        all.add(new SearchResult(SearchFilter.TRACK, track));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Playlist playlist : playlists) {
+                        all.add(new SearchResult(SearchFilter.PLAYLIST, playlist));
+                    }
+                }
+            });
+
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                log.e(e.getMessage());
+            }
+        }
+        return all;
+    }
+
+    public void setAll(List<SearchResult> all) {
+        this.all = all;
     }
 }

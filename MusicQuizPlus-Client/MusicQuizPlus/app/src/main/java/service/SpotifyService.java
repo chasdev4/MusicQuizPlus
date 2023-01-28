@@ -45,7 +45,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+            JsonObject jsonObject = gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
             // Populate Search Results model and return
             return jsonObject;

@@ -30,10 +30,12 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.Search;
+import model.SearchResult;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
@@ -85,7 +87,8 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         final short limit = 30;
                         Search search = new Search("Morrissey", 30, spotifyService);
-                        search.search();
+                        search.search(0);
+                        List<SearchResult> searchResults = search.getAll();
 
                         Log.d(TAG,"done");
 //                        for (Artist artist : searchResults.getArtists()) {
