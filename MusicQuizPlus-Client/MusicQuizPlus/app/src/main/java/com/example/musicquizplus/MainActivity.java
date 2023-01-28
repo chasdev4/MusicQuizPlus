@@ -197,22 +197,22 @@ public class MainActivity extends AppCompatActivity {
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartAlbum
-                        FirebaseService.heartAlbum(user, firebaseUser, db,
-                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-                                        "Inna",
-                                        new ArrayList<PhotoUrl>() {{
-                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-                                                    640, 640));
-                                        }},
-                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
-                                        new HashMap<String, String>() {
-                                            {
-                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
-                                            }
-                                        },
-                                        AlbumType.ALBUM, new ArrayList<String>(),
-                                        false, 0, false,
-                                        "2015"), spotifyService);
+//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+//                                        "Inna",
+//                                        new ArrayList<PhotoUrl>() {{
+//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+//                                                    640, 640));
+//                                        }},
+//                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
+//                                        new HashMap<String, String>() {
+//                                            {
+//                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
+//                                            }
+//                                        },
+//                                        AlbumType.ALBUM, new ArrayList<String>(),
+//                                        false, 0, false,
+//                                        "2015"), spotifyService);
 
 //                        user.initCollections(db);
 //
