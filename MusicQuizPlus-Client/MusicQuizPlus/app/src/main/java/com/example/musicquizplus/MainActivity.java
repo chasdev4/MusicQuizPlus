@@ -3,7 +3,6 @@ package com.example.musicquizplus;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -20,10 +19,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.musicquizplus.databinding.ActivityMainBinding;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
@@ -130,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
-       // googleSignIn.signOut();
+        // googleSignIn.signOut();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         updateUI(firebaseUser);
     }
@@ -151,11 +147,17 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
-//                        user.initCollections(db);
+                        user.initCollections(db);
 
-//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
-//                        userPlaylist.initCollection(db);
-//                        Quiz quiz = new Quiz(userPlaylist, user);
+                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
+                        userPlaylist.initCollection(db);
+
+                        for (String trackId : userPlaylist.getTrackIds()) {
+                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)))) {
+                                log.e("Tracks are out of order.");
+                            }
+                        }
+                        Quiz quiz = new Quiz(userPlaylist, user);
 
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);

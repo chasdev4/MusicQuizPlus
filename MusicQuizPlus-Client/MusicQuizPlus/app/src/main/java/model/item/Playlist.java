@@ -31,7 +31,7 @@ public class Playlist implements Serializable {
     private int averagePopularity;
 
     // Excluded from Database
-    private List<Track> tracks;
+    private Map<Integer, Track> tracks;
 
     private final String TAG = "Playlist.java";
 
@@ -44,7 +44,7 @@ public class Playlist implements Serializable {
         followers = 0;
         followersKnown = false;
         trackIds = new ArrayList<>();
-        tracks = new ArrayList<>();
+        tracks = new HashMap<>();
     }
 
     public Playlist() {
@@ -72,6 +72,7 @@ public class Playlist implements Serializable {
     }
 
     public List<String> getTrackIds() {
+        List<String> trackIds = new ArrayList<>();
         return trackIds;
     }
 
@@ -80,12 +81,22 @@ public class Playlist implements Serializable {
     }
 
     @Exclude
-    public List<Track> getTracks() {
+    public Map<Integer, Track> getTracks() {
         return tracks;
     }
 
-    public void addTrack(Track track) {
-        tracks.add(track);
+    @Exclude
+    public List<Track> getTracksListFromMap() {
+        List<Track> tracks = new ArrayList<>();
+        for (int i = 0; i < this.tracks.size(); i++) {
+            tracks.add(this.tracks.get(i));
+        }
+
+        return tracks;
+    }
+
+    public void putTrack(int i, Track track) {
+        tracks.put(i, track);
     }
 
     public int getFollowers() {
@@ -130,8 +141,8 @@ public class Playlist implements Serializable {
 
     private void initTracks(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initTracks");
-        tracks = new ArrayList<>();
         Map<Integer, List<String>> data = new HashMap<>();
+        tracks = new HashMap<>();
         int nThreads = (trackIds.size() >= 10) ? trackIds.size() / 10 : trackIds.size() / 2;
         int remainder = trackIds.size() % 10;
         if (remainder > 0) {
@@ -144,12 +155,11 @@ public class Playlist implements Serializable {
 
         for (int i = 0; i < nThreads; i++) {
             data.put(i, trackIds.subList(start, end));
-            start+=10;
-            if (i == nThreads -2) {
+            start += 10;
+            if (i == nThreads - 2) {
                 end = (10 * (nThreads - 1)) + remainder;
-            }
-            else {
-                end+=10;
+            } else {
+                end += 10;
             }
         }
 
@@ -158,12 +168,13 @@ public class Playlist implements Serializable {
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
+                    int j = 0;
                     for (String trackId : data.get(finalI)) {
                         Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
                         if (track != null) {
-                            tracks.add(track);
-                        }
-                        else {
+                            tracks.put((finalI * 10 + j), track);
+                            j++;
+                        } else {
                             log.w(String.format("%s is missing from the database.", trackId));
                         }
                     }

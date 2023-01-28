@@ -15,7 +15,6 @@ import model.type.Difficulty;
 import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
-import utils.FormatUtil;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
@@ -296,7 +295,7 @@ public class Quiz implements Serializable {
             case PLAYLIST:
                 cls = Playlist.class;
                 validationObjects.add(new ValidationObject(playlist, cls, Severity.HIGH));
-                rawTracks = playlist.getTracks();
+                rawTracks = playlist.getTracksListFromMap();
                 subjectId = playlist.getId();
                 averagePopularity = playlist.getAveragePopularity();
                 isPlaylistQuiz = true;

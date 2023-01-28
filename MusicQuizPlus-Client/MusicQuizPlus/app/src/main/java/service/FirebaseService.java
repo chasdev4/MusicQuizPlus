@@ -662,7 +662,7 @@ public class FirebaseService {
     public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
         LogUtil log = new LogUtil(TAG, "populatePlaylistTracks");
         // Playlist is already populated, do nothing
-        if (playlist.getTracks().size() > 0) {
+        if (playlist.getTracksListFromMap().size() > 0) {
             return playlist;
         }
 
@@ -739,7 +739,7 @@ public class FirebaseService {
                 boolean result = track.addPlaylistId(key, playlist.getId());
                 if (result) {
                     // Add the track to the playlist
-                    playlist.addTrack(track);
+                    playlist.putTrack(playlist.getTrackIds().size() - 1, track);
                 }
             }
             else {
@@ -822,13 +822,9 @@ public class FirebaseService {
         db.updateChildren(updates);
 
         // Save each track to the database
-        for (Track t : playlist.getTracks()) {
-            db.child("tracks").child(t.getId()).setValue(t);
+        for (Map.Entry<Integer, Track> t : playlist.getTracks().entrySet()) {
+            db.child("tracks").child(t.getValue().getId()).setValue(t.getValue());
         }
-
-        // DEBUG: Uncomment me to create a sample_history table
-        // db.child("sample_history").setValue(playlist.getTrackIds());
-
     }
 
     public static void unheartPlaylist(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
