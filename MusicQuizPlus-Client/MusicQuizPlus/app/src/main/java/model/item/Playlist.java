@@ -51,93 +51,54 @@ public class Playlist implements Serializable {
 
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
+    //#region Getters
     public String getId() {
         return id;
     }
-
     public String getName() {
         return name;
     }
-
     public List<PhotoUrl> getPhotoUrl() {
         return photoUrl;
     }
-
+    public String getOwner() {
+        return owner;
+    }
+    public String getDescription() {
+        return description;
+    }
     public List<String> getTrackIds() {
-        List<String> trackIds = new ArrayList<>();
+        if (trackIds == null) {
+            trackIds = new ArrayList<>();
+        }
         return trackIds;
     }
-
-    public void addTrackId(String trackId) {
-        trackIds.add(trackId);
-    }
-
+    public int getFollowers() { return followers; }
+    public boolean isFollowersKnown() { return followersKnown; }
+    public int getAveragePopularity() { return averagePopularity; }
     @Exclude
-    public Map<Integer, Track> getTracks() {
-        return tracks;
-    }
-
+    public Map<Integer, Track> getTracks() { return tracks; }
     @Exclude
     public List<Track> getTracksListFromMap() {
         List<Track> tracks = new ArrayList<>();
         for (int i = 0; i < this.tracks.size(); i++) {
             tracks.add(this.tracks.get(i));
         }
-
         return tracks;
     }
+    //#endregion
 
-    public void putTrack(int i, Track track) {
-        tracks.put(i, track);
-    }
+    //#region Setters
+    public void setFollowers(int followers) { this.followers = followers; }
+    public void setFollowersKnown(boolean followersKnown) { this.followersKnown = followersKnown; }
+    public void setAveragePopularity(int avg) { averagePopularity = avg; }
+    //#endregion
 
-    public int getFollowers() {
-        return followers;
-    }
+    public void addTrackId(String trackId) { trackIds.add(trackId); }
 
-    public void setFollowers(int followers) {
-        this.followers = followers;
-    }
+    public void putTrack(int i, Track track) { tracks.put(i, track); }
 
-    public boolean isFollowersKnown() {
-        return followersKnown;
-    }
-
-    public void setFollowersKnown(boolean followersKnown) {
-        this.followersKnown = followersKnown;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setPhotoUrl(List<PhotoUrl> photoUrl) {
-        this.photoUrl = photoUrl;
-    }
-
-    public int getAveragePopularity() {
-        return averagePopularity;
-    }
-
-    public void setAveragePopularity(int averagePopularity) {
-        this.averagePopularity = averagePopularity;
-    }
-
-    public void initCollection(DatabaseReference db) {
-        initTracks(db);
-    }
+    public void initCollection(DatabaseReference db) { initTracks(db); }
 
     private void initTracks(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initTracks");

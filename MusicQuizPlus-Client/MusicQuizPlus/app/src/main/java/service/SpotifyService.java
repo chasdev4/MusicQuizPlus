@@ -142,13 +142,14 @@ public class SpotifyService {
         return null;
     }
 
+
     // User profile endpoint
-    // ONLY USED TO RETRIEVE / UPDATE DEFAULT PLAYLISTS
+    // Used to retrieve default playlists
     public JsonArray getDefaultPlaylists() {
         // Create the client and request
         OkHttpClient client = new OkHttpClient();
         final Request request = new Request.Builder()
-                .url("https://spotify23.p.rapidapi.com/user_profile/?id=spotify&playlistLimit=50&artistLimit=50")
+                .url("https://spotify23.p.rapidapi.com/user_profile/?id=spotify&playlistLimit=16&artistLimit=16")
                 .get()
                 .addHeader("X-RapidAPI-Key", _key)
                 .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
@@ -160,6 +161,32 @@ public class SpotifyService {
             String json = response.body().string();
             return gson.fromJson(json, JsonElement.class).getAsJsonObject().getAsJsonArray("public_playlists");
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // Does not return tracks, but does return description and image array
+    public JsonObject getPlaylistInfo(String playlistId) {
+        String[] playlistIdArray = playlistId.split(":");
+        // Create the client and request
+        OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder()
+                .url("https://spotify23.p.rapidapi.com/playlist/?id="
+                        + playlistIdArray[2]
+                )
+                .get()
+                .addHeader("X-RapidAPI-Key", _key)
+                .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
+                .build();
+
+        try (Response response = client.newCall(request).execute())
+        {
+            // Use gson to get a JsonObject
+            String json = response.body().string();
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject();
         } catch (IOException e) {
             e.printStackTrace();
         }

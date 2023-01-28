@@ -3,7 +3,10 @@ package utils;
 // SUMMARY
 // Static methods for formatting strings
 
-public class FormatUtil {
+import android.text.Html;
 
-    // TODO: Use this class to create static methods that will format strings, we will need it eventually
+public class FormatUtil {
+    public static String removeHtml(String str) {
+        return Html.fromHtml(str).toString();
+    }
 }

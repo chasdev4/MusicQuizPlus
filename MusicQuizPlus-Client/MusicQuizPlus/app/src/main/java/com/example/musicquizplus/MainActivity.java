@@ -85,24 +85,13 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        final short limit = 30;
-                        Search search = new Search("Morrissey", 30, spotifyService);
-                        search.search(0);
-                        List<SearchResult> searchResults = search.getAll();
+//                        final short limit = 30;
+//                        Search search = new Search("Morrissey", 30, spotifyService);
+//                        search.search(0);
+//                        List<SearchResult> searchResults = search.getAll();
+//
+//                        Log.d(TAG,"done");
 
-                        Log.d(TAG,"done");
-//                        for (Artist artist : searchResults.getArtists()) {
-//                            db.child("sample_artists").child(artist.getId()).setValue(artist);
-//                        }
-//                        for (Album album : searchResults.getAlbums()) {
-//                            db.child("sample_albums").child(album.getId()).setValue(album);
-//                        }
-//                        for (Playlist playlist : searchResults.getPlaylists()) {
-//                            db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
-//                        }
-//                        for (Track track : searchResults.getTracks()) {
-//                            db.child("sample_tracks").child(track.getId()).setValue(track);
-//                        }
 
                     }
                 }).start();
@@ -135,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         // googleSignIn.signOut();
-        firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        //firebaseUser = googleSignIn.getAuth().getCurrentUser();
         updateUI(firebaseUser);
     }
 
@@ -238,6 +227,15 @@ public class MainActivity extends AppCompatActivity {
                         //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
 //                    AlbumService.unheartalbum(user, firebaseUser, db, album, spotifyService);
+                        //#endregion
+
+
+
+
+
+                        //#region DO NOT USE unless absolutely necessary
+//                        PlaylistService.createDefaultPlaylists(db, spotifyService);
+//                        log.d("Done.");
                         //#endregion
                     } else {
                         UserService.createUser(firebaseUser, firestore, db);

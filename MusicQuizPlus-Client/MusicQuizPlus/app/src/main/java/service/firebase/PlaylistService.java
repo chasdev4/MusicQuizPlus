@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ServerValue;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -20,12 +21,19 @@ import model.item.Track;
 import model.type.Severity;
 import service.FirebaseService;
 import service.SpotifyService;
+import utils.FormatUtil;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
 
 public class PlaylistService {
     private final static String TAG = "PlaylistService.java";
+
+    private final static List<String> blacklist = new ArrayList<>() {
+        {
+            add("spotify:playlist:37i9dQZF1DXcBWIGoYBM5M");
+        }
+    };
 
     // Used when a playlists tracks have not been populated yet, like from the search results
     public static Playlist populatePlaylistTracks(DatabaseReference db, Playlist playlist, SpotifyService spotifyService) {
@@ -121,29 +129,54 @@ public class PlaylistService {
         return playlist;
     }
 
-    // TODO: Complete or delete this method
-    public static void createDefaultPlaylists(FirebaseUser firebaseUser, DatabaseReference db, SpotifyService spotifyService) {
+    // Use this sparingly!! Very expensive on the Spotify API, also is set to false for writing
+    public static void createDefaultPlaylists(DatabaseReference db, SpotifyService spotifyService) {
         JsonArray jsonArray = spotifyService.getDefaultPlaylists();
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
-            String playlistId = jsonObject.getAsJsonObject("uri").getAsString();
+            String playlistId = jsonObject.get("uri").getAsString();
+            if (!blacklist.contains(playlistId)) {
+                JsonObject info = spotifyService.getPlaylistInfo(playlistId);
 
-            List<PhotoUrl> photoUrl = new ArrayList<>();
-            String[] imageIdArray = jsonObject.get("image_url").getAsString().split(":");
-            photoUrl.add(new PhotoUrl("https://i.scdn.co/image/" + imageIdArray[2], 0, 0));
+                List<PhotoUrl> photoUrl = new ArrayList<>();
+                JsonArray imageArray = info.get("images").getAsJsonArray();
 
 
-//            Playlist playlist = new Playlist(
-//                    jsonObject.getAsJsonObject("uri").getAsString(),
-//                    jsonObject.getAsJsonObject("name").getAsString(),
-//                    photoUrl,
-//                    "Spotify",
-//
-//                    );
-//
-//            db.child("default_playlists")
-//                    .child(playlistId)
-//                    .setValue(playlist);
+                for (int j = 0; j < imageArray.size(); j++) {
+                    JsonObject image = imageArray.get(j).getAsJsonObject();
+                    double width = image.get("width").isJsonNull() ? 0 : image.get("width").getAsDouble();
+                    double height = image.get("height").isJsonNull() ? 0 : image.get("height").getAsDouble();
+                    if (width == 0 || height == 0) {
+                        width = 0;
+                        height = 0;
+                    }
+                    photoUrl.add(new PhotoUrl(
+                            image.get("url").getAsString(),
+                            width,
+                            height
+                    ));
+                }
+
+                Playlist playlist = new Playlist(
+                        playlistId,
+                        jsonObject.get("name").getAsString(),
+                        photoUrl,
+                        "Spotify",
+                        FormatUtil.removeHtml(info.get("description").getAsString())
+                );
+                playlist = populatePlaylistTracks(db, playlist, spotifyService);
+
+                String key = db.child("default_playlists").push().getKey();
+                db.child("default_playlists")
+                        .child(key)
+                        .setValue(playlistId);
+
+                db.child("playlists")
+                        .child(playlistId)
+                        .setValue(playlist);
+
+                savePlaylistTracks(db, playlist);
+            }
         }
     }
 
@@ -217,9 +250,14 @@ public class PlaylistService {
 
         db.updateChildren(updates);
 
+        savePlaylistTracks(db, playlist);
+    }
+
+    public static void savePlaylistTracks(DatabaseReference db, Playlist playlist) {
         // Save each track to the database
-        for (Map.Entry<Integer, Track> t : playlist.getTracks().entrySet()) {
-            db.child("tracks").child(t.getValue().getId()).setValue(t.getValue());
+        for (int i = 0; i < playlist.getTracks().size(); i++) {
+            db.child("tracks").child(playlist.getTracks().get(i).getId()).setValue(playlist.getTracks().get(i));
+
         }
     }
 

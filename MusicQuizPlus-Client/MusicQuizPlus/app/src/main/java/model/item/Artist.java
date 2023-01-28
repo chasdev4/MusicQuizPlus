@@ -19,6 +19,7 @@ import model.PhotoUrl;
 import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
+import utils.FormatUtil;
 
 // SUMMARY
 // The Artist model stores artist information
@@ -68,15 +69,14 @@ public class Artist {
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
 
         // Remove HTML from bio
-        bio = Html.fromHtml(
-                jsonArtist.getAsJsonObject()
-                        .get("profile")
-                        .getAsJsonObject()
-                        .get("biography")
-                        .getAsJsonObject()
-                        .get("text")
-                        .getAsString()
-        ).toString();
+        bio = FormatUtil.removeHtml(jsonArtist.getAsJsonObject()
+                .get("profile")
+                .getAsJsonObject()
+                .get("biography")
+                .getAsJsonObject()
+                .get("text")
+                .getAsString());
+
 
         JsonArray jsonArray = jsonArtist.getAsJsonObject()
                 .get("profile")
