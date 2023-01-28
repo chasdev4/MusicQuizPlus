@@ -6,11 +6,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
-import java.util.List;
 
-import model.SearchResults;
+import model.Search;
 import model.item.Artist;
-import model.item.Track;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,7 +31,7 @@ public class SpotifyService {
     }
 
     // Search endpoint
-    public SearchResults search(String query, short limit, int offset) {
+    public JsonObject search(String query, int limit, int offset) {
         // Create the client and request
         OkHttpClient client = new OkHttpClient();
         final Request request = new Request.Builder()
@@ -50,7 +48,7 @@ public class SpotifyService {
             JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
             // Populate Search Results model and return
-            return new SearchResults(jsonObject, gson);
+            return jsonObject;
 
 
         } catch (IOException e) {

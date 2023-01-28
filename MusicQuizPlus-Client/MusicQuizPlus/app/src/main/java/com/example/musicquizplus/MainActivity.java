@@ -10,6 +10,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 
 import model.GoogleSignIn;
 import model.PhotoUrl;
+import model.Search;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
@@ -79,11 +81,13 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-//                new Thread(new Runnable() {
-//                    public void run() {
-//                        final short limit = 30;
-//                        SearchResults searchResults = spotifyService.search("Morrissey", limit, 0);
-//
+                new Thread(new Runnable() {
+                    public void run() {
+                        final short limit = 30;
+                        Search search = new Search("Morrissey", 30, spotifyService);
+                        search.search();
+
+                        Log.d(TAG,"done");
 //                        for (Artist artist : searchResults.getArtists()) {
 //                            db.child("sample_artists").child(artist.getId()).setValue(artist);
 //                        }
@@ -96,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
 //                        for (Track track : searchResults.getTracks()) {
 //                            db.child("sample_tracks").child(track.getId()).setValue(track);
 //                        }
-//
-//                    }
-//                }).start();
+
+                    }
+                }).start();
 
             }
         });
