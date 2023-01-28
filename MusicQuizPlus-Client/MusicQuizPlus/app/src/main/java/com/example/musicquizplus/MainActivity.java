@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
-                        //#region DEBUG: Uncomment me to test out quiz generation
+                        //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
 //
 //                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
@@ -158,12 +158,17 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                        }
 //                        Quiz quiz = new Quiz(userPlaylist, user);
+//                        log.d("Done.");
                         //#endregion
 
-
+                        //#region DEBUG: Uncomment me to test out artist quiz generation
+//                        user.initCollections(db);
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);
 //                        Quiz quiz = new Quiz(artist, user);
+                        //#endregion
+
+
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
 //                        Playlist playlist = new Playlist(
