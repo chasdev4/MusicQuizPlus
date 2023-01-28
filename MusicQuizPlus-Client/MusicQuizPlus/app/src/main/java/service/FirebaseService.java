@@ -41,9 +41,11 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Track;
 import model.type.Severity;
-import utils.FormatUtil;
 import utils.LogUtil;
 import utils.ValidationUtil;
+
+// SUMMARY
+// Static methods for Firebase management
 
 public class FirebaseService {
 

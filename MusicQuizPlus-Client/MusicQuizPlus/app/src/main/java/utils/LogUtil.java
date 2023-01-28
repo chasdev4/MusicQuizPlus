@@ -2,6 +2,10 @@ package utils;
 
 import android.util.Log;
 
+// SUMMARY
+// Use this class over "Log" for logcat messages. It formats the message to include the method name
+// every time.
+
 public class LogUtil {
 
     private String TAG;

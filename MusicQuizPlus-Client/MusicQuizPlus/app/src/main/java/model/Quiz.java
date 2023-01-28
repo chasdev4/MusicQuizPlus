@@ -19,6 +19,9 @@ import utils.FormatUtil;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
+// SUMMARY
+// The Quiz model holds data and methods for artist and playlist quizzes
+
 public class Quiz implements Serializable {
 
     // Final members

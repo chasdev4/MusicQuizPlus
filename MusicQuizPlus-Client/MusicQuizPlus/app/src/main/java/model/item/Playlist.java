@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import model.PhotoUrl;
 import service.FirebaseService;
 import utils.LogUtil;
-import utils.ValidationUtil;
 
 // SUMMARY
 // The Playlist model stores playlist information
@@ -178,8 +177,5 @@ public class Playlist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
-
-
-
     }
 }

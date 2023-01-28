@@ -15,6 +15,9 @@ import model.type.Difficulty;
 import service.FirebaseService;
 import utils.LogUtil;
 
+// SUMMARY
+// The User model stores information tied to the current user
+
 public class User implements Serializable {
     private Map<String, String> albumIds;
     private Map<String, String> artistIds;

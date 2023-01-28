@@ -4,6 +4,9 @@ import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.SignInClient;
 import com.google.firebase.auth.FirebaseAuth;
 
+// SUMMARY
+// The GoogleSignIn model stores variables related to Firebase authentication
+
 public class GoogleSignIn {
     private SignInClient oneTapClient;
     private BeginSignInRequest signUpRequest;

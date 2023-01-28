@@ -1,10 +1,11 @@
 package utils;
 
-import android.util.Log;
-
 import java.util.List;
 
 import model.ValidationObject;
+
+// SUMMARY
+// Static methods for validation
 
 public class ValidationUtil {
 
