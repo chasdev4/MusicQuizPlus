@@ -44,6 +44,7 @@ import model.GoogleSignIn;
 import model.Quiz;
 import model.User;
 import model.item.Artist;
+import model.item.Playlist;
 import service.FirebaseService;
 import service.SpotifyService;
 import utils.LogUtil;
@@ -155,11 +156,14 @@ public class MainActivity extends AppCompatActivity {
                     if (user != null) {
                         user.initCollections(db);
 
-                    //    user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
-                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                        artist.initCollections(db, user);
+                          Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
+                          userPlaylist.initCollection(db);
+                        Quiz quiz = new Quiz(userPlaylist, user);
 
-                        Quiz quiz = new Quiz(artist, user);
+                        //   Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                     //   artist.initCollections(db, user);
+
+                       // Quiz quiz = new Quiz(artist, user);
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
 //                    Playlist playlist = new Playlist(

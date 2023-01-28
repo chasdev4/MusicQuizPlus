@@ -5,10 +5,17 @@ import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.PhotoUrl;
 import service.FirebaseService;
+import utils.LogUtil;
+import utils.ValidationUtil;
 
 // SUMMARY
 // The Playlist model stores playlist information
@@ -26,6 +33,8 @@ public class Playlist implements Serializable {
 
     // Excluded from Database
     private List<Track> tracks;
+
+    private final String TAG = "Playlist.java";
 
     public Playlist(String id, String name, List<PhotoUrl> photoUrl, String owner, String description) {
         this.id = id;
@@ -121,10 +130,56 @@ public class Playlist implements Serializable {
     }
 
     private void initTracks(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initTracks");
         tracks = new ArrayList<>();
-        for (String trackId : trackIds) {
-            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-            tracks.add(track);
+        Map<Integer, List<String>> data = new HashMap<>();
+        int nThreads = (trackIds.size() >= 10) ? trackIds.size() / 10 : trackIds.size() / 2;
+        int remainder = trackIds.size() % 10;
+        if (remainder > 0) {
+            nThreads++;
         }
+
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        int start = 0;
+        int end = 10;
+
+        for (int i = 0; i < nThreads; i++) {
+            data.put(i, trackIds.subList(start, end));
+            start+=10;
+            if (i == nThreads -2) {
+                end = (10 * (nThreads - 1)) + remainder;
+            }
+            else {
+                end+=10;
+            }
+        }
+
+        for (int i = 0; i < nThreads; i++) {
+            int finalI = i;
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    for (String trackId : data.get(finalI)) {
+                        Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+                        if (track != null) {
+                            tracks.add(track);
+                        }
+                        else {
+                            log.w(String.format("%s is missing from the database.", trackId));
+                        }
+                    }
+                }
+            });
+
+        }
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
+
+
+
     }
 }
