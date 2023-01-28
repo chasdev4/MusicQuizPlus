@@ -7,7 +7,6 @@ import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,7 +32,6 @@ import java.util.HashMap;
 
 import model.GoogleSignIn;
 import model.PhotoUrl;
-import model.Quiz;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
@@ -41,6 +39,9 @@ import model.item.Playlist;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
+import service.firebase.PlaylistService;
+import service.firebase.UserService;
 import utils.LogUtil;
 
 public class MainActivity extends AppCompatActivity {
@@ -183,22 +184,22 @@ public class MainActivity extends AppCompatActivity {
 //                        );
 //
 //
-//                        playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+//                        playlist = PlaylistService.populatePlaylistTracks(db, playlist, spotifyService);
 //
 //
-//                        FirebaseService.heartPlaylist(user, firebaseUser, db,
+//                        PlaylistService.heart(user, firebaseUser, db,
 //                                playlist,
 //                                spotifyService
 //                        );
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test unheartPlaylist
-//                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
-//                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
+//                   playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
+//                    PlaylistService.unheart(user, firebaseUser, db, playlist, spotifyService);
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartAlbum
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                        AlbumService.heart(user, firebaseUser, db,
 //                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
 //                                        "Inna",
 //                                        new ArrayList<PhotoUrl>() {{
@@ -214,25 +215,25 @@ public class MainActivity extends AppCompatActivity {
 //                                        AlbumType.ALBUM, new ArrayList<String>(),
 //                                        false, 0, false,
 //                                        "2015"), spotifyService);
-
+//
 //                        user.initCollections(db);
 //
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);
 //
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                        AlbumService.heart(user, firebaseUser, db,
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                        AlbumService.heart(user, firebaseUser, db,
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
                         //#endregion
 
 
                         //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
-//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
+//                    AlbumService.unheartalbum(user, firebaseUser, db, album, spotifyService);
                         //#endregion
                     } else {
-                        FirebaseService.createUser(firebaseUser, firestore, db);
+                        UserService.createUser(firebaseUser, firestore, db);
                     }
                 }
             }).start();

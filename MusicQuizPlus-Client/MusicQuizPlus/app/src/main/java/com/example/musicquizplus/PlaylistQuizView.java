@@ -14,8 +14,6 @@ import android.widget.TextView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.IOError;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +21,6 @@ import java.util.List;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
-import model.quiz.PlaylistQuiz;
-import model.type.QuizType;
-import service.FirebaseService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
 
@@ -130,19 +125,19 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             title.setText(playlist.getName());
             owner.setText(playlist.getOwner());
-            playlistTracks = playlist.getTracks();
+          //  playlistTracks = playlist.getTracksListFromMap();
 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
 
-        final PlaylistQuiz[] playlistQuiz = new PlaylistQuiz[1];
+       // final PlaylistQuiz[] playlistQuiz = new PlaylistQuiz[1];
         User user = new User();
 
         new Thread(new Runnable() {
             public void run() {
 
                 playlist.initCollection(reference);
-                playlistQuiz[0] = new PlaylistQuiz(playlist, user, null, QuizType.PLAYLIST, null, null, 10);
+               // playlistQuiz[0] = new PlaylistQuiz(playlist, user, null, QuizType.PLAYLIST, null, null, 10);
 
             }
         }).start();
@@ -154,9 +149,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                finalPlaylist.getTracks().clear();
+                finalPlaylist.getTracksListFromMap().clear();
                 //intent.putExtra("currentPlaylist", finalPlaylist);
-                intent.putExtra("playlistQuiz", playlistQuiz[0]);
+              //  intent.putExtra("playlistQuiz", playlistQuiz[0]);
                 startActivity(intent);
             }
         });

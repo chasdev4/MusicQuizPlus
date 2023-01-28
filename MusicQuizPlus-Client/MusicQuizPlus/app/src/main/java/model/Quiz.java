@@ -15,6 +15,7 @@ import model.type.Difficulty;
 import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
+import service.FirebaseService;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
