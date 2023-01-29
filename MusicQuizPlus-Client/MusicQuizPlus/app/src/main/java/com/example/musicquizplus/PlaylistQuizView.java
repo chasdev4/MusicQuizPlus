@@ -20,10 +20,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.Quiz;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
-import model.quiz.PlaylistQuiz;
 import model.type.QuizType;
 import service.FirebaseService;
 
@@ -53,64 +53,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         quizListView = findViewById(R.id.playlistQuizViewListView);
         startQuiz = findViewById(R.id.playlistQuizViewStartQuizButton);
 
-
-
-
-/*
-        for (String track : playlist.getTrackIds())
-        {
-
-            Track trackOfPlaylist = FirebaseService.checkDatabase(reference, "tracks", track, Track.class);
-            playlistTracks.add(trackOfPlaylist);
-            //DatabaseReference dbReference =FirebaseDatabase.getInstance().getReference("tracks");
-
-
-            mDatabase.equalTo(track).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot dataSnapshot: snapshot.getChildren()) {
-                        Object val = dataSnapshot.getValue();
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-
-
-
-            List<Track> finalPlaylistTracks = playlistTracks;
-            dbReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                    for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                    {
-                        Track dbTrack = dataSnapshot.getValue(Track.class);
-                        if(Objects.equals(track, dbTrack.getId()))
-                        {
-                            finalPlaylistTracks.add(dbTrack);
-                        }
-                    }
-
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-
-
-
-        }
-
-        playlistQuizAdapter = new PlaylistQuizAdapter(this, R.layout.playlist_quiz_listview_contents, playlistTracks);
-        quizListView.setAdapter(playlistQuizAdapter);
-*/
     }
 
 
@@ -135,18 +77,17 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
 
-        final PlaylistQuiz[] playlistQuiz = new PlaylistQuiz[1];
+        final Quiz[] playlistQuiz = new Quiz[1];
         User user = new User();
 
         new Thread(new Runnable() {
             public void run() {
 
                 playlist.initCollection(reference);
-                playlistQuiz[0] = new PlaylistQuiz(playlist, user, null, QuizType.PLAYLIST, null, null, 10);
+                playlistQuiz[0] = new Quiz(playlist, user);
 
             }
         }).start();
-
 
         Playlist finalPlaylist = playlist;
 

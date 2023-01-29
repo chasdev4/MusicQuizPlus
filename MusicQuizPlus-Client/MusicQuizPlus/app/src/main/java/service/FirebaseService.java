@@ -63,6 +63,7 @@ public class FirebaseService {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 log.v(String.format("Attempting to retrieve /%s/%s from database.", child, id));
                 switch (cls.getSimpleName()) {
                     case "User":
@@ -81,6 +82,7 @@ public class FirebaseService {
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
                         break;
                     default:
+
                         log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                         break;
                 }
@@ -89,6 +91,7 @@ public class FirebaseService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+
                 log.e(error.getMessage());
             }
 
@@ -116,6 +119,7 @@ public class FirebaseService {
             case "Track":
                 return (T) tracks[0];
             default:
+
                 log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                 break;
         }

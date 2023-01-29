@@ -34,4 +34,6 @@
     <string name="guess_the_album">Guess The Album</string>
     <string name="quiz_results">Quiz Results</string>
     <string name="continueText">Continue</string>
+    <string name="accuracy">Accuracy :</string>
+    <string name="score">Score :</string>
 </resources>

@@ -1,5 +1,6 @@
 package model;
 import java.io.Serializable;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import model.type.Severity;
 import service.FirebaseService;
 import utils.LogUtil;
 import utils.ValidationUtil;
+
 
 // SUMMARY
 // The Quiz model holds data and methods for artist and playlist quizzes
@@ -697,6 +699,8 @@ public class Quiz implements Serializable {
         double accuracy = (double)numCorrect / numQuestions;
         return String.valueOf(accuracy  * 100)  + "%";
     }
+
+
 
     // Pass in the selected answer
     // Returns the next question
