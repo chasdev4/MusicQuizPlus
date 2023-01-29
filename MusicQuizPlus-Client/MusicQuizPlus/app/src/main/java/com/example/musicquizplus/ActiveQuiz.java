@@ -18,10 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.Question;
+import model.Quiz;
 import model.item.Playlist;
 import model.item.Track;
-import model.quiz.PlaylistQuiz;
-import model.quiz.Question;
 import model.type.QuestionType;
 import model.type.QuizType;
 import service.FirebaseService;
@@ -29,20 +29,14 @@ import service.FirebaseService;
 public class ActiveQuiz extends AppCompatActivity implements View.OnClickListener, Serializable {
 
     Button answerA, answerB, answerC, answerD;
-    TextView currentQuestion;
-
-    //Playlist playlist;
-    PlaylistQuiz playlistQuiz;
-    List<Question> questions;
+    TextView currentQuestionType;
+    Quiz playlistQuiz;
     QuestionType type;
     String[] answers;
     int index;
-    int totalNumberOfQuestions;
     String audioURL;
     MediaPlayer mediaPlayer;
-
-    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-    int currentQuestionIndex = 0;
+    Question currentQuestion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +47,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         answerB = findViewById(R.id.answerB);
         answerC = findViewById(R.id.answerC);
         answerD = findViewById(R.id.answerD);
-        currentQuestion = findViewById(R.id.question);
+        currentQuestionType = findViewById(R.id.question);
 
         answerA.setOnClickListener(this);
         answerB.setOnClickListener(this);
@@ -69,18 +63,17 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            playlistQuiz = (PlaylistQuiz) extras.getSerializable("playlistQuiz");
-            questions = playlistQuiz.getQuestions();
-            totalNumberOfQuestions = playlistQuiz.getQuestions().size();
+            playlistQuiz = (Quiz) extras.getSerializable("playlistQuiz");
+            currentQuestion = playlistQuiz.getFirstQuestion();
         }
 
-        type = questions.get(currentQuestionIndex).getType();
-        answers = questions.get(currentQuestionIndex).getAnswers();
-        audioURL = questions.get(currentQuestionIndex).getPreviewUrl();
+        type = currentQuestion.getType();
+        answers = currentQuestion.getAnswers();
+        audioURL = currentQuestion.getPreviewUrl();
 
         mediaPlayer = playAudio(audioURL);
 
-        currentQuestion.setText(type.toString());
+        currentQuestionType.setText(type.toString());
         answerA.setText(answers[0]);
         answerB.setText(answers[1]);
         answerC.setText(answers[2]);
@@ -93,41 +86,26 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         pauseAudio(mediaPlayer);
 
         Button btnClicked = (Button) view;
+        index = findIndex(btnClicked);
 
-        if(btnClicked.getId() == R.id.answerA)
-        {
-            index = 0;
-        }
-        else if(btnClicked.getId() == R.id.answerB)
-        {
-            index = 1;
-        }
-        else if(btnClicked.getId() == R.id.answerC)
-        {
-            index = 2;
-        }
-        else if(btnClicked.getId() == R.id.answerD)
-        {
-            index = 3;
-        }
+        currentQuestion = playlistQuiz.nextQuestion(index);
 
-        if(currentQuestionIndex == totalNumberOfQuestions)
+        if(currentQuestion == null)
         {
             Intent intent = new Intent(this, QuizResults.class);
+            intent.putExtra("quizScore", playlistQuiz.getScore());
+            intent.putExtra("quizAccuracy", playlistQuiz.getAccuracy());
             startActivity(intent);
         }
-        else
+        else if (currentQuestion != null)
         {
-            Question nextQuestion = playlistQuiz.nextQuestion(index);
-            currentQuestionIndex++;
+            type = currentQuestion.getType();
+            answers = currentQuestion.getAnswers();
 
-            type = nextQuestion.getType();
-            answers = nextQuestion.getAnswers();
-
-            audioURL = nextQuestion.getPreviewUrl();
+            audioURL = currentQuestion.getPreviewUrl();
             mediaPlayer = playAudio(audioURL);
 
-            currentQuestion.setText(type.toString());
+            currentQuestionType.setText(type.toString());
             answerA.setText(answers[0]);
             answerB.setText(answers[1]);
             answerC.setText(answers[2]);
@@ -159,5 +137,27 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             mediaPlayer.reset();
             mediaPlayer.release();
         }
+    }
+
+    private int findIndex(Button btnClicked)
+    {
+        if(btnClicked.getId() == R.id.answerA)
+        {
+            index = 0;
+        }
+        else if(btnClicked.getId() == R.id.answerB)
+        {
+            index = 1;
+        }
+        else if(btnClicked.getId() == R.id.answerC)
+        {
+            index = 2;
+        }
+        else if(btnClicked.getId() == R.id.answerD)
+        {
+            index = 3;
+        }
+
+        return index;
     }
 }
