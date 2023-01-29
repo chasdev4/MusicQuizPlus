@@ -48,7 +48,7 @@
                 android:id="@+id/answerA"
                 android:text="Answer A"
                 android:backgroundTint="@color/mqBlue"
-                android:layout_margin="5dp"/>
+                android:layout_margin="0.5dp"/>
 
             <Button
                 android:layout_width="match_parent"
@@ -56,7 +56,7 @@
                 android:id="@+id/answerB"
                 android:text="Answer B"
                 android:backgroundTint="@color/mqBlue"
-                android:layout_margin="5dp"/>
+                android:layout_margin="0.5dp"/>
 
             <Button
                 android:layout_width="match_parent"
@@ -64,7 +64,7 @@
                 android:id="@+id/answerC"
                 android:text="Answer C"
                 android:backgroundTint="@color/mqBlue"
-                android:layout_margin="5dp"/>
+                android:layout_margin="0.5dp"/>
 
             <Button
                 android:layout_width="match_parent"
@@ -72,7 +72,7 @@
                 android:id="@+id/answerD"
                 android:text="Answer D"
                 android:backgroundTint="@color/mqBlue"
-                android:layout_margin="5dp"/>
+                android:layout_margin="0.5dp"/>
 
         </LinearLayout>
 
