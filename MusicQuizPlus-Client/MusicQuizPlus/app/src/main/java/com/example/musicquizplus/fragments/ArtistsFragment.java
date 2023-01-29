@@ -10,16 +10,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.example.musicquizplus.ArtistsView;
 import com.example.musicquizplus.R;
 
 import java.util.Objects;
 
+import model.GoogleSignIn;
 import model.item.Artist;
 import service.FirebaseService;
 
@@ -93,6 +94,7 @@ public class ArtistsFragment extends Fragment {
             }
         });
 
+
         artistsUserAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +116,7 @@ public class ArtistsFragment extends Fragment {
                     final AlertDialog alertDialog = alertDialogBuilder.create();
                     alertDialog.show();
 
+                    Button signInWithGoogle = alertDialog.findViewById(R.id.googleSignInButton);
                     ImageButton cancelPopUp = alertDialog.findViewById(R.id.closeDialogButton);
                     TextView noThanksLink = alertDialog.findViewById(R.id.noThanksHyperLink);
                     TextView signUpHeader = alertDialog.findViewById(R.id.logged_out_header);
@@ -133,6 +136,14 @@ public class ArtistsFragment extends Fragment {
                     signUpHeader.setText(R.string.user_profile_signup_header);
                     linkGoogle.setTextSize(14);
                     accountBenefits.setTextSize(14);
+
+                    signInWithGoogle.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            GoogleSignIn googleSignIn = new GoogleSignIn();
+                            googleSignIn.signInWithGoogle(view, getActivity(), view.getContext());
+                        }
+                    });
 
                     noThanksLink.setOnClickListener(new View.OnClickListener() {
                         @Override
