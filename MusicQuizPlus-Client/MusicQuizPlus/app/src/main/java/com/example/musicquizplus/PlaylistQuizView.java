@@ -37,7 +37,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     Playlist playlist;
     PlaylistQuizAdapter playlistQuizAdapter;
     Handler mainHandler = new Handler();
-    List<Track> playlistTracks = new ArrayList<>();
+//    List<Track> playlistTracks = new ArrayList<>();
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
 
@@ -72,7 +72,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             title.setText(playlist.getName());
             owner.setText(playlist.getOwner());
-            playlistTracks = playlist.getTracks();
+//            playlistTracks = playlist.getTracksListFromMap();
 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
