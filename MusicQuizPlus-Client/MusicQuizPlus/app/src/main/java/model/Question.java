@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 import model.type.QuestionType;
 
+// SUMMARY
+// The question model stores information about a single question in a quiz
+
 public class Question implements Serializable {
 
     private final QuestionType type;

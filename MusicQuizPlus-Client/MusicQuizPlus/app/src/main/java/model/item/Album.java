@@ -5,6 +5,7 @@ import com.google.firebase.database.Exclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import model.PhotoUrl;
 import model.type.AlbumType;
@@ -18,8 +19,8 @@ public class Album {
     private String id;
     private String name;
     private List<PhotoUrl> photoUrl;
-    private List<String> artistNames;
-    private List<String> artistIds;
+    private String artistId;
+    private Map<String, String> artistsMap;
     private AlbumType type;
     private List<String> trackIds;
     private boolean trackIdsKnown;
@@ -30,14 +31,14 @@ public class Album {
     // Excluded from database
     private List<Track> tracks;
 
-    public Album(String id, String name, List<PhotoUrl> photoUrl, List<String> artistNames,
-                 List<String> artistIds, AlbumType type, List<String> trackIds, boolean trackIdsKnown,
-                 int followers, boolean followersKnown, String year) {
+    public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId,
+                 Map<String, String> artistsMap, AlbumType type, List<String> trackIds,
+                 boolean trackIdsKnown, int followers, boolean followersKnown, String year) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;
-        this.artistNames = artistNames;
-        this.artistIds = artistIds;
+        this.artistId = artistId;
+        this.artistsMap = artistsMap;
         this.type = type;
         this.trackIds = trackIds;
         this.trackIdsKnown = trackIdsKnown;
@@ -48,14 +49,6 @@ public class Album {
 
     public Album() {
 
-    }
-
-    public List<String> getArtistNames() {
-        return artistNames;
-    }
-
-    public List<String> getArtistIds() {
-        return artistIds;
     }
 
     public AlbumType getType() {
@@ -140,5 +133,21 @@ public class Album {
 
     public void setTrackIds(List<String> trackIds) {
         this.trackIds = trackIds;
+    }
+
+    public String getArtistId() {
+        return artistId;
+    }
+
+    public void setArtistId(String artistId) {
+        this.artistId = artistId;
+    }
+
+    public Map<String, String> getArtistsMap() {
+        return artistsMap;
+    }
+
+    public void setArtistsMap(Map<String, String> artistsMap) {
+        this.artistsMap = artistsMap;
     }
 }

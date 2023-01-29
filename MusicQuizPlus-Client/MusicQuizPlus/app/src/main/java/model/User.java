@@ -1,7 +1,5 @@
 package model;
 
-import android.util.Log;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
@@ -15,6 +13,10 @@ import model.item.Playlist;
 import model.item.Track;
 import model.type.Difficulty;
 import service.FirebaseService;
+import utils.LogUtil;
+
+// SUMMARY
+// The User model stores information tied to the current user
 
 public class User implements Serializable {
     private Map<String, String> albumIds;
@@ -235,27 +237,35 @@ public class User implements Serializable {
     }
 
     private void initArtists(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initArtists");
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
             artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
             artists.get(entry.getKey()).initCollections(db, this);
         }
-        Log.i(TAG, "Artists retrieved.");
+        log.i("Artists retrieved.");
     }
     private void initPlaylists(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initPlaylists");
         playlists = new HashMap<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
             playlists.put(entry.getKey(), FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class));
             playlists.get(entry.getKey()).initCollection(db);
         }
-        Log.i(TAG, "Playlists retrieved.");
+        log.i("Playlists retrieved.");
     }
     private void initHistory(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initPlaylists");
         history = new HashMap<>();
         for (Map.Entry<String, String> entry : historyIds.entrySet()) {
             history.put(entry.getKey(), FirebaseService.checkDatabase(db, "tracks", entry.getValue(), Track.class));
         }
-        Log.i(TAG, "History retrieved.");
+        if (history.size() > 0) {
+            log.i("History retrieved.");
+        }
+        else {
+            log.i("No history to retrieve.");
+        }
     }
 
 

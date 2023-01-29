@@ -2,6 +2,9 @@ package model;
 
 import java.util.Map;
 
+// SUMMARY
+// The QuizHistory model is used for keeping track of a specific quiz's history of tracks heard
+
 public class QuizHistory {
 
     private String id;          // Artist or Playlist ID

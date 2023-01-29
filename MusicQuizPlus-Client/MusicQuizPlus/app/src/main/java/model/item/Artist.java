@@ -9,14 +9,18 @@ import com.google.gson.JsonObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import model.ExternalLink;
 import model.PhotoUrl;
 import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
+import utils.FormatUtil;
 
 // SUMMARY
 // The Artist model stores artist information
@@ -66,15 +70,14 @@ public class Artist implements Serializable {
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
 
         // Remove HTML from bio
-        bio = Html.fromHtml(
-                jsonArtist.getAsJsonObject()
-                        .get("profile")
-                        .getAsJsonObject()
-                        .get("biography")
-                        .getAsJsonObject()
-                        .get("text")
-                        .getAsString()
-        ).toString();
+        bio = FormatUtil.removeHtml(jsonArtist.getAsJsonObject()
+                .get("profile")
+                .getAsJsonObject()
+                .get("biography")
+                .getAsJsonObject()
+                .get("text")
+                .getAsString());
+
 
         JsonArray jsonArray = jsonArtist.getAsJsonObject()
                 .get("profile")
@@ -161,14 +164,11 @@ public class Artist implements Serializable {
                     jsonPhotos.get(j).getAsJsonObject().get("width").getAsString(),
                     jsonPhotos.get(j).getAsJsonObject().get("height").getAsString()));
         }
-        List<String> artistName = new ArrayList<>() {
+
+        String artistId = id;
+        Map<String, String> artistsMap = new HashMap<>() {
             {
-                add(name);
-            }
-        };
-        List<String> artistId = new ArrayList<>() {
-            {
-                add(id);
+                put(id, name);
             }
         };
 
@@ -185,8 +185,8 @@ public class Artist implements Serializable {
                 album.get("uri").getAsString(),
                 album.get("name").getAsString(),
                 photos,
-                artistName,
                 artistId,
+                artistsMap,
                 albumType,
                 null,
                 false,
@@ -296,9 +296,28 @@ public class Artist implements Serializable {
     }
 
     public void initCollections(DatabaseReference db, User user) {
-        initCollection(db, user, AlbumType.SINGLE, singleIds);
-        initCollection(db, user, AlbumType.ALBUM, albumIds);
-        initCollection(db, user, AlbumType.COMPILATION, compilationIds);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.SINGLE, singleIds);
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.ALBUM, albumIds);
+
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                initCollection(db, user, AlbumType.COMPILATION, compilationIds);
+
+            }
+        });
+
     }
 
     private void initCollection(DatabaseReference db, User user, AlbumType type, List<String> albumIdList) {
@@ -323,7 +342,6 @@ public class Artist implements Serializable {
                 compilations = albumsList;
                 break;
         }
-        albumsList = null;
     }
 
     public int getAveragePopularity(List<Track> tracks) {

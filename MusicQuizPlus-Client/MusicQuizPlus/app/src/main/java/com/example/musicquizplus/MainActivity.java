@@ -1,22 +1,12 @@
 package com.example.musicquizplus;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
 
-import com.google.android.gms.auth.api.identity.BeginSignInRequest;
-import com.google.android.gms.auth.api.identity.BeginSignInResult;
-import com.google.android.gms.auth.api.identity.Identity;
-import com.google.android.gms.auth.api.identity.SignInCredential;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -29,10 +19,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.musicquizplus.databinding.ActivityMainBinding;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
@@ -42,13 +29,24 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import model.GoogleSignIn;
-import model.Quiz;
+import model.PhotoUrl;
+import model.Search;
+import model.SearchResult;
 import model.User;
+import model.item.Album;
 import model.item.Artist;
+import model.item.Playlist;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
+import service.firebase.PlaylistService;
+import service.firebase.UserService;
+import utils.LogUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,12 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUser firebaseUser;
     private GoogleSignIn googleSignIn;
     private Button signInWithGoogleButton;
-    private boolean showOneTapUI;
     private SpotifyService spotifyService;
 
     private final String TAG = "MainActivity.java";
-    private static final int REQ_ONE_TAP = 2;
-
 
 
     @Override
@@ -88,28 +83,18 @@ public class MainActivity extends AppCompatActivity {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
 
-//                new Thread(new Runnable() {
-//                    public void run() {
+                new Thread(new Runnable() {
+                    public void run() {
 //                        final short limit = 30;
-//                        SearchResults searchResults = spotifyService.search("Morrissey", limit, 0);
+//                        Search search = new Search("Morrissey", 30, spotifyService);
+//                        search.search(0);
+//                        List<SearchResult> searchResults = search.getAll();
 //
-//                        for (Artist artist : searchResults.getArtists()) {
-//                            db.child("sample_artists").child(artist.getId()).setValue(artist);
-//                        }
-//                        for (Album album : searchResults.getAlbums()) {
-//                            db.child("sample_albums").child(album.getId()).setValue(album);
-//                        }
-//                        for (Playlist playlist : searchResults.getPlaylists()) {
-//                            db.child("sample_playlists").child(playlist.getId()).setValue(playlist);
-//                        }
-//                        for (Track track : searchResults.getTracks()) {
-//                            db.child("sample_tracks").child(track.getId()).setValue(track);
-//                        }
-//
-//                        Log.d("TEMP", "Goodie goodie");
-//
-//                    }
-//                }).start();
+//                        Log.d(TAG,"done");
+
+
+                    }
+                }).start();
 
             }
         });
@@ -122,10 +107,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Find the view of the button and set the on click listener to begin signing in
         signInWithGoogleButton = findViewById(R.id.sign_in_with_google_button);
+        Context context = this;
+        Activity activity = this;
         signInWithGoogleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                signInWithGoogle(view);
+                googleSignIn.signInWithGoogle(view, activity, context);
             }
         });
 
@@ -136,100 +123,120 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
+        // googleSignIn.signOut();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
-        updateUI();
+        updateUI(firebaseUser);
     }
 
-    private void updateUI() {
+    public void updateUI(FirebaseUser firebaseUser) {
+        LogUtil log = new LogUtil(TAG, "updateUI");
+        this.firebaseUser = firebaseUser;
         // TODO: Update the state of app depending if the user is logged in or not
-        if (firebaseUser != null) {
+        if (this.firebaseUser != null) {
             // User is signed in
             signInWithGoogleButton.setVisibility(View.GONE);
-            Log.d(TAG, firebaseUser.getDisplayName());
-            Log.d(TAG, firebaseUser.getEmail());
+            log.d(firebaseUser.getDisplayName());
+            log.d(firebaseUser.getEmail());
+
 
             new Thread(new Runnable() {
                 public void run() {
-                    user = (User)FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
-                        user.initCollections(db);
+                        //#region DEBUG: Uncomment me to test out playlist quiz generation
+//                        user.initCollections(db);
+//
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
+//                        userPlaylist.initCollection(db);
+//                        for (String trackId : userPlaylist.getTrackIds()) {
+//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)))) {
+//                                log.e("Tracks are out of order.");
+//                            }
+//                        }
+//                        Quiz quiz = new Quiz(userPlaylist, user);
+//                        log.d("Done.");
+                        //#endregion
 
-                    //    user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP").initCollection(db);
-                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                        artist.initCollections(db, user);
-
-                        Quiz quiz = new Quiz(artist, user);
+                        //#region DEBUG: Uncomment me to test out artist quiz generation
+//                        user.initCollections(db);
+//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        artist.initCollections(db, user);
+//                        Quiz quiz = new Quiz(artist, user);
+                        //#endregion
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
-//                    Playlist playlist = new Playlist(
-//                            "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
-//                            "NKVT 2021",
-//                            new ArrayList<PhotoUrl>() {{
-//                                add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
-//                                        0, 0));
-//                            }},
-//                            "Spotify",
-//                            "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
-//                    );
+//                        Playlist playlist = new Playlist(
+//                                "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP",
+//                                "NKVT 2021",
+//                                new ArrayList<PhotoUrl>() {{
+//                                    add(new PhotoUrl("https://i.scdn.co/image/ab67706f00000003c535afb205514b59e204627a",
+//                                            0, 0));
+//                                }},
+//                                "Spotify",
+//                                "NKVT sunar: yılın favori Türkçe rap parçaları. Kapak: UZI"
+//                        );
 //
 //
-//                       playlist = FirebaseService.populatePlaylistTracks(db, playlist, spotifyService);
+//                        playlist = PlaylistService.populatePlaylistTracks(db, playlist, spotifyService);
 //
 //
-//                    FirebaseService.heartPlaylist(user, firebaseUser, db,
-//                            playlist,
-//                            spotifyService
-//                    );
+//                        PlaylistService.heart(user, firebaseUser, db,
+//                                playlist,
+//                                spotifyService
+//                        );
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test unheartPlaylist
-//                    Playlist playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
-//                    FirebaseService.unheartPlaylist(user, firebaseUser, db, playlist, spotifyService);
+//                   playlist = FirebaseService.checkDatabase(db, "playlists", "spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP", Playlist.class);
+//                    PlaylistService.unheart(user, firebaseUser, db, playlist, spotifyService);
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartAlbum
-//                    FirebaseService.heartAlbum(user, firebaseUser, db,
-//                            new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-//                                    "Inna",
-//                                    new ArrayList<PhotoUrl>() {{
-//                                        add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-//                                                640, 640));
-//                                    }},
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("INNA");
-//                                        }
-//                                    },
-//                                    new ArrayList<String>() {
-//                                        {
-//                                            add("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-//                                        }
-//                                    },
-//                                    AlbumType.ALBUM, new ArrayList<String>(),
-//                                    false, 0, false,
-//                                     "2015"), spotifyService);
+//                        AlbumService.heart(user, firebaseUser, db,
+//                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
+//                                        "Inna",
+//                                        new ArrayList<PhotoUrl>() {{
+//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
+//                                                    640, 640));
+//                                        }},
+//                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
+//                                        new HashMap<String, String>() {
+//                                            {
+//                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
+//                                            }
+//                                        },
+//                                        AlbumType.ALBUM, new ArrayList<String>(),
+//                                        false, 0, false,
+//                                        "2015"), spotifyService);
 //
 //                        user.initCollections(db);
 //
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);
-
-                        // Be careful with this one, might be the cause of an error
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(0), spotifyService);
-
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//
+//                        AlbumService.heart(user, firebaseUser, db,
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
-//                        FirebaseService.heartAlbum(user, firebaseUser, db,
+//                        AlbumService.heart(user, firebaseUser, db,
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
                         //#endregion
 
 
                         //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
-//                    FirebaseService.unheartAlbum(user, firebaseUser, db, album, spotifyService);
+//                    AlbumService.unheartalbum(user, firebaseUser, db, album, spotifyService);
                         //#endregion
+
+
+
+
+
+                        //#region DO NOT USE unless absolutely necessary
+//                        PlaylistService.createDefaultPlaylists(db, spotifyService);
+//                        log.d("Done.");
+                        //#endregion
+                    } else {
+                        UserService.createUser(firebaseUser, firestore, db);
                     }
                 }
             }).start();
@@ -241,103 +248,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void signInWithGoogle(View view) {
-        // Configuration of Google Sign In
-        googleSignIn.setOneTapClient(Identity.getSignInClient(this));
-        googleSignIn.setSignUpRequest(BeginSignInRequest.builder()
-                .setGoogleIdTokenRequestOptions(BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                        .setSupported(true)
-                        // Your server's client ID, not your Android client ID.
-                        .setServerClientId(getString(R.string.SERVER_CLIENT_ID))
-                        // Show all accounts on the device.
-                        .setFilterByAuthorizedAccounts(false)
-                        .build())
-                .build());
-
-        // Begin the Sign In Request
-        googleSignIn.getOneTapClient().beginSignIn(googleSignIn.getSignUpRequest())
-                .addOnSuccessListener(this, new OnSuccessListener<BeginSignInResult>() {
-                    @Override
-                    public void onSuccess(BeginSignInResult result) {
-                        try {
-                            startIntentSenderForResult(
-                                    result.getPendingIntent().getIntentSender(), REQ_ONE_TAP,
-                                    null, 0, 0, 0);
-                        } catch (IntentSender.SendIntentException e) {
-                            Log.e(TAG, "Couldn't start One Tap UI: " + e.getLocalizedMessage());
-                        }
-                    }
-                })
-                .addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // TODO: (C-Feature) Take the user to a Google Sign In Form to add an account
-                        // Note: Might not work or be worth the effort...
-
-                        Snackbar.make(view, "ERROR: No Google accounts associate with this device. Sign In to Google Play Services and try again.", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-
-                        // No Google Accounts found. Just continue presenting the signed-out UI.
-                        Log.e(TAG, e.getLocalizedMessage());
-                    }
-                });
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        // Check the request code
-        switch (requestCode) {
-            case REQ_ONE_TAP:
-                try {
-                    // Create an account with a Google ID token
-                    SignInCredential credential = googleSignIn.getOneTapClient().getSignInCredentialFromIntent(data);
-                    String idToken = credential.getGoogleIdToken();
-                    if (idToken != null) {
-                        // Got an ID token from Google.
-                        Log.d(TAG, "Got ID token.");
-
-                        // With the Google ID token, exchange it for a Firebase credential,
-                        // and authenticate with Firebase using the Firebase credential
-                        AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
-                        googleSignIn.getAuth().signInWithCredential(firebaseCredential)
-                                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<AuthResult> task) {
-                                        if (task.isSuccessful()) {
-                                            // Sign in success, update UI with the signed-in user's information
-                                            Log.d(TAG, "signInWithCredential:success");
-                                            firebaseUser = googleSignIn.getAuth().getCurrentUser();
-                                            FirebaseService.createUser(firebaseUser, firestore, db);
-                                            updateUI();
-                                        } else {
-                                            // If sign in fails, display a message to the user.
-                                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                                            updateUI();
-                                        }
-                                    }
-                                });
-                    }
-                } catch (ApiException e) {
-                    switch (e.getStatusCode()) {
-                        case CommonStatusCodes.CANCELED:
-                            Log.d(TAG, "One-tap dialog was closed.");
-                            // Don't re-prompt the user.
-                            showOneTapUI = false;
-                            break;
-                        case CommonStatusCodes.NETWORK_ERROR:
-                            Log.d(TAG, "One-tap encountered a network error.");
-                            // Try again or just ignore.
-                            break;
-                        default:
-                            Log.d(TAG, "Couldn't get credential from result."
-                                    + e.getLocalizedMessage());
-                            break;
-                    }
-                }
-                break;
-        }
+        googleSignIn.onActivityResult(requestCode, resultCode, data, this);
     }
 
     @Override
