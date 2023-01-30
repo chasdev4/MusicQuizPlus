@@ -33,6 +33,7 @@ public class HistoryFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
+        Button googleSignIn = view.findViewById(R.id.googleSignInButton);
         ListView listView = view.findViewById(R.id.historyListView);
         TextView userLevel = view.findViewById(R.id.userLevel);
         View noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
@@ -49,6 +50,14 @@ public class HistoryFragment extends Fragment {
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);
             noCurrentUser.setVisibility(View.VISIBLE);
+
+            googleSignIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    GoogleSignIn signInWGoogle = new GoogleSignIn();
+                    signInWGoogle.signInWithGoogle(view, getActivity(), view.getContext());
+                }
+            });
         }
         else
         {

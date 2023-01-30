@@ -41,7 +41,7 @@ public class ArtistsFragment extends Fragment {
         View noUser = view.findViewById(R.id.artistNoCurrentUser);
         ImageButton backToTop = view.findViewById(R.id.backToTop);
         View artistsUserAvatar = view.findViewById(R.id.artistsUserAvatar);
-
+        Button googleSignIn = view.findViewById(R.id.googleSignInButton);
 
         boolean guestAccount;
 
@@ -50,6 +50,13 @@ public class ArtistsFragment extends Fragment {
             guestAccount = true;
             gridView.setVisibility(View.GONE);
             noUser.setVisibility(View.VISIBLE);
+            googleSignIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    GoogleSignIn signInWGoogle = new GoogleSignIn();
+                    signInWGoogle.signInWithGoogle(view, getActivity(), view.getContext());
+                }
+            });
         }
         else
         {
