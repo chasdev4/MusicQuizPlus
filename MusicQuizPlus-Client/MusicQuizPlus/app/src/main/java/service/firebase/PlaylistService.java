@@ -95,12 +95,12 @@ public class PlaylistService {
                             jsonObject.get("name").getAsString(),
                             jsonObject.getAsJsonObject("album").get("uri").getAsString(),
                             jsonObject.getAsJsonObject("album").get("name").getAsString(),
+                            false,
                             artistId,
                             artistsMap,
                             jsonObject.get("popularity").getAsInt(),
                             true,
                             jsonObject.get("preview_url").getAsString(),
-                            false,
                             jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
                             jsonObject.get("is_playable").getAsBoolean());
                 }

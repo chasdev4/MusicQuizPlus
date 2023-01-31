@@ -29,19 +29,17 @@ import utils.ValidationUtil;
 
 public class Quiz implements Serializable {
     //#region Database members
+    private QuizType type;
     private List<Question> questions;
     private String quizId;
+    private Difficulty difficulty;
     //#endregion
 
-    //#region Final members
-    private final User user;
-    private final QuizType type;
-    private final String topicId;
-    private final Playlist playlist;
-    private final Artist artist;
-    //#endregion
-
-    //#region Non-final members
+    //#region Other members
+    private User user;
+    private String topicId;
+    private Playlist playlist;
+    private Artist artist;
     private List<Track> tracks = new ArrayList<>();
     private List<Track> history = new ArrayList<>();
     private int numQuestions;
@@ -284,11 +282,17 @@ public class Quiz implements Serializable {
         isNewQuiz = true;
         init(db, firebaseUser);
     }
+
+    public Quiz() {
+
+    }
     //#endregion
 
     //#region Accessors
+    public QuizType getType() { return type; }
     public String getQuizId() { return quizId; }
     public List<Question> getQuestions() { return questions; }
+    public Difficulty getDifficulty() { return difficulty; }
 
     @Exclude
     private void getFeaturedArtistTracks(int guessArtistCount) {
@@ -316,23 +320,19 @@ public class Quiz implements Serializable {
             }
         }
     }
-
     @Exclude
     public int getScore() {
         return score;
     }
-
     @Exclude
     public String getAccuracy() {
         double accuracy = (double)numCorrect / numQuestions;
         return String.valueOf(accuracy  * 100)  + "%";
     }
-
     @Exclude
     public Question getFirstQuestion() {
         return questions.get(0);
     }
-
     @Exclude
     private String getAnswerText(QuestionType type, int randomIndex) {
         switch (type) {
@@ -378,7 +378,6 @@ public class Quiz implements Serializable {
     //#endregion
 
     public void init(DatabaseReference db, FirebaseUser firebaseUser) {
-
         if (!retrieveQuiz(db)) {
             generateQuiz();
         }
@@ -470,7 +469,7 @@ public class Quiz implements Serializable {
         boolean insufficientData = false;
 
         // User's difficulty
-        Difficulty difficulty = user.getDifficulty();
+        difficulty = user.getDifficulty();
 
         // Calculate the popularity threshold and update ignoreDifficulty
         if (difficulty != Difficulty.HARD) {
@@ -597,7 +596,7 @@ public class Quiz implements Serializable {
             return;
         }
         for (int i = 0; i < count; i++) {
-            String[] answers = new String[4];
+            List<String> answers = new ArrayList<>() { { add(""); add(""); add(""); add(""); } };
 
             // Pick a random index for the correct answer
             int answerIndex = rnd.nextInt(4);
@@ -613,7 +612,7 @@ public class Quiz implements Serializable {
             String previewUrl = null;
 
             if (isFeaturedArtistQuestion) {
-                answers[answerIndex] = featuredArtistTracks.get(randomIndex).getFeaturedArtistName();
+                answers.set(answerIndex, featuredArtistTracks.get(randomIndex).getFeaturedArtistName());
 
                 // Remove the track from set
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
@@ -622,7 +621,7 @@ public class Quiz implements Serializable {
             }
             else {
                 // Assign the correct answer
-                answers[answerIndex] = getAnswerText(type, randomIndex);
+                answers.set(answerIndex, getAnswerText(type, randomIndex));
 
                 // Remove the track from set
                 previewUrl = tracks.get(randomIndex).getPreviewUrl();
@@ -632,7 +631,7 @@ public class Quiz implements Serializable {
 
 
             if (type == QuestionType.GUESS_YEAR) {
-                int year = Integer.parseInt(answers[answerIndex]);
+                int year = Integer.parseInt(answers.get(answerIndex));
 
                 int yearDifference = Calendar.getInstance().get(Calendar.YEAR) - year;
                 int yearUp = 0;
@@ -661,7 +660,7 @@ public class Quiz implements Serializable {
                 Collections.shuffle(years);
                 for (int j = 0; j < 4; j++) {
                     if (j != answerIndex) {
-                        answers[j] = String.valueOf(years.get(0));
+                        answers.set(j, String.valueOf(years.get(0)));
                         years.remove(0);
                     }
                 }
@@ -686,8 +685,8 @@ public class Quiz implements Serializable {
                         // Validate the new answer
                         boolean tryAgain = false;
                         for (int k = 0; k < 4; k++) {
-                            if (answerText != null && answers[k] != null) {
-                                if (namesMatch(answers[k], answerText)) {
+                            if (answerText != null && answers.get(k) != null) {
+                                if (namesMatch(answers.get(k), answerText)) {
                                     tryAgain = true;
                                 }
                             }
@@ -695,7 +694,7 @@ public class Quiz implements Serializable {
                         if (tryAgain) {
                             j--;
                         } else {
-                            answers[j] = answerText;
+                            answers.set(j, answerText);
                         }
                     }
                 }
@@ -706,6 +705,11 @@ public class Quiz implements Serializable {
 
     private boolean namesMatch(String a, String b) {
         LogUtil log = new LogUtil(TAG, "namesMatch");
+        // Return if either are empty
+        if (a.isEmpty() || b.isEmpty()) {
+            return false;
+        }
+
         // Return if they're equal
         if (a.equals(b)) {
             return true;
@@ -784,7 +788,11 @@ public class Quiz implements Serializable {
         return true;
     }
 
-    // TODO: Call this method after the quiz is complete
+    // Call this method after the quiz is complete
+    public void end(DatabaseReference db, FirebaseUser firebaseUser) {
+        updateDatabase(db, firebaseUser);
+    }
+
     private void updateDatabase(DatabaseReference db, FirebaseUser firebaseUser) {
         String key = null;
         if (isNewQuiz) {
@@ -797,6 +805,6 @@ public class Quiz implements Serializable {
         }
         user.updateHistory(history);
         user.updateQuizHistory(db, firebaseUser, topicId, history);
-        db.child("users").child(firebaseUser.getUid()).child("history").setValue(user.getHistory());
+        db.child("users").child(firebaseUser.getUid()).child("history").setValue(user.getHistoryIds());
     }
 }

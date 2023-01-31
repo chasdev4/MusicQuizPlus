@@ -10,7 +10,6 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -29,22 +28,14 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import model.GoogleSignIn;
-import model.PhotoUrl;
-import model.Search;
-import model.SearchResult;
+import model.Quiz;
 import model.User;
-import model.item.Album;
-import model.item.Artist;
 import model.item.Playlist;
-import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
-import service.firebase.AlbumService;
-import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
 
@@ -145,17 +136,20 @@ public class MainActivity extends AppCompatActivity {
 
                     if (user != null) {
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
-//                        user.initCollections(db);
-//
-//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
-//                        userPlaylist.initCollection(db);
-//                        for (String trackId : userPlaylist.getTrackIds()) {
-//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)))) {
-//                                log.e("Tracks are out of order.");
-//                            }
-//                        }
-//                        Quiz quiz = new Quiz(userPlaylist, user);
-//                        log.d("Done.");
+                        user.initCollections(db);
+                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
+                        userPlaylist.initCollection(db);
+                        List<String> newTrackIds = new ArrayList<>();
+                        int i = 0;
+                        for (String trackId : userPlaylist.getTrackIds()) {
+                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
+                                log.e("Tracks are out of order.");
+                            }
+                            i++;
+                        }
+                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+                        quiz.end(db, firebaseUser);
+                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test out artist quiz generation

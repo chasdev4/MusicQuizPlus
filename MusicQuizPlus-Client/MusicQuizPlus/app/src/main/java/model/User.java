@@ -88,6 +88,15 @@ public class User implements Serializable {
     public LinkedList<Track> getHistory() {
         return history;
     }
+    @Exclude
+    public Playlist getPlaylist(String playlistId) {
+        for (Map.Entry<String, Playlist> playlist : playlists.entrySet()) {
+            if (playlist.getValue().getId().equals(playlistId)) {
+                return playlist.getValue();
+            }
+        }
+        return null;
+    }
     //#endregion
 
     //#region Mutators
@@ -183,6 +192,10 @@ public class User implements Serializable {
         }
     }
     public void updateQuizHistory(DatabaseReference db, FirebaseUser firebaseUser, String topicId, List<Track> history) {
+        if (quizHistories == null) {
+            quizHistories = new HashMap<>();
+            quizHistories.put(topicId, new QuizHistory());
+        }
         DatabaseReference quizHistoryRef = db.child("users").child(firebaseUser.getUid()).child("quizHistories").child(topicId);
         for (int i = 0; i < history.size(); i++) {
             String key = quizHistoryRef.push().getKey();
@@ -215,7 +228,6 @@ public class User implements Serializable {
         playlists = new HashMap<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
             playlists.put(entry.getKey(), FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class));
-            playlists.get(entry.getKey()).initCollection(db);
         }
         log.i("Playlists retrieved.");
     }

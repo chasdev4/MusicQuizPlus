@@ -60,7 +60,7 @@ public class FirebaseService {
         final Artist[] artists = new Artist[1];
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
-        final Map<String, String>[] quizzes = new HashMap[1];
+        final Quiz[] quizzes = new Quiz[1];
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -84,7 +84,7 @@ public class FirebaseService {
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
                         break;
                     case "Quiz":
-                        quizzes[0] = (Map<String, String>)dataSnapshot.getValue(cls);
+                        quizzes[0] = (Quiz)dataSnapshot.getValue(cls);
                         break;
                     default:
                         log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
@@ -213,96 +213,26 @@ public class FirebaseService {
             }
         });
 
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child(dbChild);
-//        reference.addValueEventListener(new ValueEventListener() {
+    // NOTE: Modify this method if you absolutely need to fix database children
+//    private static void removeFeaturedArtist(DatabaseReference db) {
+//        db.child("tracks").addValueEventListener(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                //itemsList.clear();
-//
-//                String description = null;
-//                String id = null;
-//                String name = null;
-//                String owner = null;
-//                String photoUrl = null;
-//
 //                for (DataSnapshot dataSnapshot : snapshot.getChildren())
 //                {
-//                    for (DataSnapshot dss : dataSnapshot.getChildren())
-//                    {
-//                        String key = dss.getKey();
-//
-//                        if(Objects.equals(key, "_description"))
-//                        {
-//                            description = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "id"))
-//                        {
-//                            id = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "name"))
-//                        {
-//                            name = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "_owner"))
-//                        {
-//                            owner = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "photoUrl"))
-//                        {
-//                            for (DataSnapshot photoUrlSnapshot : dss.getChildren())
-//                            {
-//                                String uriKey = photoUrlSnapshot.getKey();
-//
-//                                if(Objects.equals(uriKey, "0"))
-//                                {
-//                                    for (DataSnapshot urlSnapshot : photoUrlSnapshot.getChildren())
-//                                    {
-//                                        String UrlKey = urlSnapshot.getKey();
-//
-//                                        if(Objects.equals(UrlKey, "url"))
-//                                        {
-//                                            photoUrl = Objects.requireNonNull(urlSnapshot.getValue()).toString();
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
+//                    if (dataSnapshot.hasChild("featuredArtistName")) {
+//                        db.child("tracks").child(dataSnapshot.getKey()).child("featuredArtistName").removeValue();
 //                    }
-//                    String finalPhotoUrl = photoUrl;
-//                    Playlist playlistToAdd = new Playlist(
-//                            id,
-//                            name,
-//                            new ArrayList<PhotoUrl>() {{
-//                            add(new PhotoUrl(finalPhotoUrl, 0, 0));
-//                        }},
-//                            owner,
-//                            description);
-//                    itemsList.add(playlistToAdd);
 //                }
-//
-//                customAdapter.notifyDataSetChanged();
 //            }
-//
 //
 //            @Override
 //            public void onCancelled(@NonNull DatabaseError error) {
 //
 //            }
 //        });
-    }
+//    }
+
 }

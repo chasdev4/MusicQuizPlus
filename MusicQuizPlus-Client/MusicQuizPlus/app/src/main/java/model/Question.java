@@ -1,6 +1,7 @@
 package model;
 
 import java.io.Serializable;
+import java.util.List;
 
 import model.type.QuestionType;
 
@@ -10,11 +11,11 @@ import model.type.QuestionType;
 public class Question implements Serializable {
 
     private final QuestionType type;
-    private final String[] answers;
+    private final List<String> answers;
     private final int answerIndex;
     private final String previewUrl;
 
-    public Question(QuestionType type, String[] answers, int answerIndex, String previewUrl) {
+    public Question(QuestionType type, List<String> answers, int answerIndex, String previewUrl) {
         this.type = type;
         this.answers = answers;
         this.answerIndex = answerIndex;
@@ -26,7 +27,7 @@ public class Question implements Serializable {
         return type;
     }
 
-    public String[] getAnswers() {
+    public List<String> getAnswers() {
         return answers;
     }
 

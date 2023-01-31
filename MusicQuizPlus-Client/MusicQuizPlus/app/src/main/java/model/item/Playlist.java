@@ -117,7 +117,7 @@ public class Playlist implements Serializable {
         for (int i = 0; i < nThreads; i++) {
             data.put(i, trackIds.subList(start, end));
             start += 10;
-            if (i == nThreads - 2) {
+            if (i == nThreads - 2 && remainder > 0) {
                 end = (10 * (nThreads - 1)) + remainder;
             } else {
                 end += 10;

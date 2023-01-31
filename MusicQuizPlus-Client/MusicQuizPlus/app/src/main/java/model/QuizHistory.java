@@ -1,5 +1,6 @@
 package model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 // SUMMARY
@@ -7,9 +8,9 @@ import java.util.Map;
 
 public class QuizHistory {
 
-    private String id;          // Topic ID
+//    private String id;          // Topic ID
     private Map<String, String> trackIds;
-    private Map<String, String> quizIds;
+//    private Map<String, String> quizIds;
     private int total;
     private int count;
 
@@ -18,25 +19,26 @@ public class QuizHistory {
     }
 
     //#region Accessors
-    public String getId() {
-        return id;
-    }
+//    public String getId() {return id;}
     public Map<String, String> getTrackIds() {
         return trackIds;
     }
-    public Map<String, String> getQuizIds() { return quizIds; }
+//    public Map<String, String> getQuizIds() { return quizIds; }
     public int getTotal() { return total; }
     public int getCount() { return count; }
     //#endregion
 
     //#region Mutators
-    public void setId(String id) {
-        this.id = id;
-    }
+//    public void setId(String id) {
+//        this.id = id;
+//    }
     public void setTrackIds(Map<String, String> trackIds) {
         this.trackIds = trackIds;
     }
     public boolean addTrackId(String key, String trackId) {
+        if (trackIds == null) {
+            trackIds = new HashMap<>();
+        }
         if (trackIds.containsValue(trackId)) {
             return false;
         }
