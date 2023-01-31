@@ -7,29 +7,35 @@ import java.util.Map;
 
 public class QuizHistory {
 
-    private String id;          // Artist or Playlist ID
+    private String id;          // Topic ID
     private Map<String, String> trackIds;
+    private Map<String, String> quizIds;
+    private int total;
+    private int count;
 
     public QuizHistory() {
 
     }
 
+    //#region Accessors
     public String getId() {
         return id;
     }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public Map<String, String> getTrackIds() {
         return trackIds;
     }
+    public Map<String, String> getQuizIds() { return quizIds; }
+    public int getTotal() { return total; }
+    public int getCount() { return count; }
+    //#endregion
 
+    //#region Mutators
+    public void setId(String id) {
+        this.id = id;
+    }
     public void setTrackIds(Map<String, String> trackIds) {
         this.trackIds = trackIds;
     }
-
     public boolean addTrackId(String key, String trackId) {
         if (trackIds.containsValue(trackId)) {
             return false;
@@ -37,4 +43,15 @@ public class QuizHistory {
         trackIds.put(key, trackId);
         return true;
     }
+    public void setTotal(int total) { this.total = total; }
+    public void incrementCount() { count++; }
+    //#endregion
+
+
+
+
+
+
+
+
 }

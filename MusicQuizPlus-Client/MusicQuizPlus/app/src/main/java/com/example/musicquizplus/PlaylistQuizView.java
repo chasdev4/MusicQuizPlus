@@ -84,7 +84,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             public void run() {
 
                 playlist.initCollection(reference);
-                playlistQuiz[0] = new Quiz(playlist, user);
+                // TODO: Pass in our DatabaseReference
+         //       playlistQuiz[0] = new Quiz(playlist, user);
 
             }
         }).start();

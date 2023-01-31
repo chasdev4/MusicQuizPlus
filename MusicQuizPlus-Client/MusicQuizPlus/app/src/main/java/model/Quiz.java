@@ -1,5 +1,8 @@
 package model;
-import java.io.Serializable;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -25,16 +28,20 @@ import utils.ValidationUtil;
 // The Quiz model holds data and methods for artist and playlist quizzes
 
 public class Quiz implements Serializable {
+    //#region Database members
+    private List<Question> questions;
+    private String quizId;
+    //#endregion
 
-    // Final members
-    private final User user;          // Difficulty, level and xp
+    //#region Final members
+    private final User user;
     private final QuizType type;
-    private final String id;
-    private final List<Question> questions;
+    private final String topicId;
     private final Playlist playlist;
     private final Artist artist;
+    //#endregion
 
-    // Non-final members
+    //#region Non-final members
     private List<Track> tracks = new ArrayList<>();
     private List<Track> history = new ArrayList<>();
     private int numQuestions;
@@ -44,8 +51,10 @@ public class Quiz implements Serializable {
     private int popularityThreshold;
     private List<String> featuredArtistsNames;
     private List<Track> featuredArtistTracks;
+    private boolean isNewQuiz;
+    //#endregion
 
-    // Constants
+    //#region Constants
     private final String TAG = "Quiz.java";
     private final Map<Integer, List<String>> WORDS = new HashMap<>() {
         {
@@ -250,28 +259,157 @@ public class Quiz implements Serializable {
     private final double GUESS_YEAR_CHANCE = .1;
     private final int BUFFER = 5;
     private final int BASE_SCORE = 100;
+    //#endregion
 
-    public Quiz(Playlist playlist, User user) {
+    //#region Constructors
+    public Quiz(Playlist playlist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
+        topicId = playlist.getId();
+        quizId = db.child("generated_quizzes").child(topicId).push().getKey();
         this.playlist = playlist;
         artist = null;
-        id = playlist.getId();
         this.user = user;
         type = QuizType.PLAYLIST;
         questions = new ArrayList<>();
-        init();
+        isNewQuiz = true;
+        init(db, firebaseUser);
     }
-    public Quiz(Artist artist, User user) {
+    public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
+        topicId = artist.getId();
+        quizId = db.child("generated_quizzes").child(topicId).push().getKey();
         playlist = null;
         this.artist = artist;
-        id = artist.getId();
         this.user = user;
         type = QuizType.ARTIST;
         questions = new ArrayList<>();
-        init();
+        isNewQuiz = true;
+        init(db, firebaseUser);
+    }
+    //#endregion
+
+    //#region Accessors
+    public String getQuizId() { return quizId; }
+    public List<Question> getQuestions() { return questions; }
+
+    @Exclude
+    private void getFeaturedArtistTracks(int guessArtistCount) {
+        if (type == QuizType.ARTIST) {
+            boolean deleted = false;
+            for (Track track : tracks) {
+                if (track.getArtistsMap().size() == 2) {
+                    featuredArtistTracks.add(track);
+                }
+            }
+            Random rnd = new Random();
+            List<Track> temp = new ArrayList<>();
+
+            for (int i = 0; i < guessArtistCount; i++) {
+                temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
+            }
+            featuredArtistTracks = temp;
+
+            for (int i = 0; i < featuredArtistTracks.size(); i++) {
+                featuredArtistsNames.remove(featuredArtistsNames.indexOf(featuredArtistTracks.get(i).getFeaturedArtistName()));
+            }
+
+            for (Track track : featuredArtistTracks) {
+                tracks.remove(track);
+            }
+        }
     }
 
-    public void init() {
-        generateQuiz();
+    @Exclude
+    public int getScore() {
+        return score;
+    }
+
+    @Exclude
+    public String getAccuracy() {
+        double accuracy = (double)numCorrect / numQuestions;
+        return String.valueOf(accuracy  * 100)  + "%";
+    }
+
+    @Exclude
+    public Question getFirstQuestion() {
+        return questions.get(0);
+    }
+
+    @Exclude
+    private String getAnswerText(QuestionType type, int randomIndex) {
+        switch (type) {
+            case GUESS_TRACK:
+                return tracks.get(randomIndex).getName();
+            case GUESS_ALBUM:
+                switch (this.type) {
+                    case PLAYLIST:
+                        return tracks.get(randomIndex).getAlbumName();
+                    case ARTIST:
+                        Random rnd = new Random();
+                        int collection = rnd.nextInt(3);
+                        if (collection == 0) {
+                            randomIndex = rnd.nextInt(artist.getSingles().size());
+                            return artist.getSingles().get(randomIndex).getName();
+                        }
+                        else if (collection == 1) {
+                            randomIndex = rnd.nextInt(artist.getAlbums().size());
+                            return artist.getAlbums().get(randomIndex).getName();
+                        }
+                        else {
+                            randomIndex = rnd.nextInt(artist.getCompilations().size());
+                            return artist.getCompilations().get(randomIndex).getName();
+                        }
+                }
+
+            case GUESS_ARTIST:
+                switch (this.type) {
+                    case PLAYLIST:
+                        return tracks.get(randomIndex).getArtistName();
+                    case ARTIST:
+                        return featuredArtistsNames.get(randomIndex);
+                }
+            case GUESS_YEAR:
+                return tracks.get(randomIndex).getYear();
+        }
+        return null;
+    }
+    //#endregion
+
+    //#region Mutators
+
+    //#endregion
+
+    public void init(DatabaseReference db, FirebaseUser firebaseUser) {
+
+        if (!retrieveQuiz(db)) {
+            generateQuiz();
+        }
+
+    }
+
+    // Checks the database for generated quizzes and whether or not a user has taken it yet
+    private boolean retrieveQuiz(DatabaseReference db) {
+        // Get a map of generated quiz ids indexed under the topicId
+        Map<String, String> generatedQuizzesByTopic = FirebaseService.checkDatabase(db, "generated_quizzes", topicId, Quiz.class);
+
+        // If there are no generated quizzes, return to generate one
+        if (generatedQuizzesByTopic == null) {
+            return false;
+        }
+
+        // Iterate over the generated quiz Id's and check against the user's generated quiz history
+        for (Map.Entry<String, String> dbQuizId : generatedQuizzesByTopic.entrySet()) {
+            if (!user.getGeneratedQuizHistories().get(topicId).getQuizIds().containsValue(dbQuizId.getValue())) {
+                // Found a new quiz, use it
+                Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", dbQuizId.getValue(), Quiz.class);
+                if (quiz != null) {
+                    isNewQuiz = false;
+                    questions = quiz.questions;
+                    quizId = quiz.getQuizId();
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void generateQuiz() {
@@ -322,7 +460,7 @@ public class Quiz implements Serializable {
 
         // Check to see if the tracks are known, they absolutely should be
         if (rawTracks.size() == 0) {
-            log.e(String.format("%s tracks are unknown.", id));
+            log.e(String.format("%s tracks are unknown.", topicId));
             return;
         }
 
@@ -384,8 +522,8 @@ public class Quiz implements Serializable {
 
         // Prepare information for answers
         if (insufficientData || ignoreDifficulty
-                || user.getQuizHistory() == null
-                || user.getQuizHistory().get(id) == null) {
+                || user.getQuizHistories() == null
+                || user.getQuizHistories().get(topicId) == null) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
             getFeaturedArtistTracks(guessArtistCount);
@@ -397,7 +535,7 @@ public class Quiz implements Serializable {
 
             getFeaturedArtistTracks(guessArtistCount);
 
-            Map<String, String> quizHistory = user.getQuizHistory().get(id).getTrackIds();
+            Map<String, String> quizHistory = user.getQuizHistories().get(topicId).getTrackIds();
             for (Track track : rawTracks) {
                 boolean skip = false;
                 if (!ignoreDifficulty) {
@@ -450,8 +588,7 @@ public class Quiz implements Serializable {
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
         generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd);
         Collections.shuffle(questions);
-        log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), id));
-
+        log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), topicId));
     }
 
     private void generateQuestions(QuestionType type, int count, Random rnd) {
@@ -567,71 +704,6 @@ public class Quiz implements Serializable {
         }
     }
 
-    private void getFeaturedArtistTracks(int guessArtistCount) {
-        if (type == QuizType.ARTIST) {
-            boolean deleted = false;
-            for (Track track : tracks) {
-                if (track.getArtistsMap().size() == 2) {
-                    featuredArtistTracks.add(track);
-                }
-            }
-            Random rnd = new Random();
-            List<Track> temp = new ArrayList<>();
-
-            for (int i = 0; i < guessArtistCount; i++) {
-                temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
-            }
-            featuredArtistTracks = temp;
-
-            for (int i = 0; i < featuredArtistTracks.size(); i++) {
-                featuredArtistsNames.remove(featuredArtistsNames.indexOf(featuredArtistTracks.get(i).getFeaturedArtistName()));
-            }
-
-            for (Track track : featuredArtistTracks) {
-                tracks.remove(track);
-            }
-        }
-    }
-
-
-    private String getAnswerText(QuestionType type, int randomIndex) {
-        switch (type) {
-            case GUESS_TRACK:
-                return tracks.get(randomIndex).getName();
-            case GUESS_ALBUM:
-                switch (this.type) {
-                    case PLAYLIST:
-                        return tracks.get(randomIndex).getAlbumName();
-                    case ARTIST:
-                        Random rnd = new Random();
-                        int collection = rnd.nextInt(3);
-                        if (collection == 0) {
-                            randomIndex = rnd.nextInt(artist.getSingles().size());
-                            return artist.getSingles().get(randomIndex).getName();
-                        }
-                        else if (collection == 1) {
-                            randomIndex = rnd.nextInt(artist.getAlbums().size());
-                            return artist.getAlbums().get(randomIndex).getName();
-                        }
-                        else {
-                            randomIndex = rnd.nextInt(artist.getCompilations().size());
-                            return artist.getCompilations().get(randomIndex).getName();
-                        }
-                }
-
-            case GUESS_ARTIST:
-                switch (this.type) {
-                    case PLAYLIST:
-                        return tracks.get(randomIndex).getArtistName();
-                    case ARTIST:
-                        return featuredArtistsNames.get(randomIndex);
-                }
-            case GUESS_YEAR:
-                return tracks.get(randomIndex).getYear();
-        }
-        return null;
-    }
-
     private boolean namesMatch(String a, String b) {
         LogUtil log = new LogUtil(TAG, "namesMatch");
         // Return if they're equal
@@ -687,21 +759,6 @@ public class Quiz implements Serializable {
         return false;
     }
 
-    public Question getFirstQuestion() {
-        return questions.get(0);
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public String getAccuracy() {
-        double accuracy = (double)numCorrect / numQuestions;
-        return String.valueOf(accuracy  * 100)  + "%";
-    }
-
-
-
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
@@ -725,5 +782,21 @@ public class Quiz implements Serializable {
         }
         currentQuestionIndex++;
         return true;
+    }
+
+    // TODO: Call this method after the quiz is complete
+    private void updateDatabase(DatabaseReference db, FirebaseUser firebaseUser) {
+        String key = null;
+        if (isNewQuiz) {
+            // Save the new quiz up to the database
+            db.child("quizzes").child(quizId).setValue(this);
+
+            // Save a reference to this quiz to generated_quizzes
+            key = db.child("generated_quizzes").child(topicId).push().getKey();
+            db.child("generated_quizzes").child(topicId).child(key).setValue(quizId);
+        }
+        user.updateHistory(history);
+        user.updateQuizHistory(db, firebaseUser, topicId, history);
+        db.child("users").child(firebaseUser.getUid()).child("history").setValue(user.getHistory());
     }
 }

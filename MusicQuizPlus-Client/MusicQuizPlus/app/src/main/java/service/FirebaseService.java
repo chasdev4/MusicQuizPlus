@@ -32,6 +32,7 @@ import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
+import model.Quiz;
 import model.ValidationObject;
 import model.item.Playlist;
 
@@ -59,6 +60,7 @@ public class FirebaseService {
         final Artist[] artists = new Artist[1];
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
+        final Map<String, String>[] quizzes = new HashMap[1];
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -81,8 +83,10 @@ public class FirebaseService {
                     case "Track":
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
                         break;
+                    case "Quiz":
+                        quizzes[0] = (Map<String, String>)dataSnapshot.getValue(cls);
+                        break;
                     default:
-
                         log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                         break;
                 }
@@ -118,8 +122,9 @@ public class FirebaseService {
                 return (T) playlists[0];
             case "Track":
                 return (T) tracks[0];
+            case "Quiz":
+                return (T) quizzes[0];
             default:
-
                 log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                 break;
         }
