@@ -45,6 +45,16 @@ public class User implements Serializable {
         difficulty = Difficulty.EASY;
     }
 
+    public User(User user) {
+        albumIds = user.albumIds;
+        artistIds = user.artistIds;
+        playlistIds = user.playlistIds;
+        historyIds = user.historyIds;
+        level = user.level;
+        xp = user.xp;
+        difficulty = user.difficulty;
+    }
+
     public Map<String, String> getAlbumIds() {
         return albumIds;
     }

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import model.GettingStarted;
 import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.Search;
@@ -41,6 +42,7 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.type.AlbumType;
+import model.type.Difficulty;
 import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -144,6 +146,29 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
+
+                        /*
+
+                        //TESTING GETTING STARTED MODEL
+
+                        GettingStarted gettingStarted = new GettingStarted();
+                        gettingStarted.setMinYear((short) 1930);
+                        gettingStarted.createDecades();
+                        List<String> decades = gettingStarted.getSelectedDecades();
+
+                        gettingStarted.setDifficulty(Difficulty.MEDIUM);
+                        gettingStarted.addToList("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "artistsList");
+                        Intent intent = gettingStarted.finished(db, firebaseUser, getBaseContext());
+                        startActivity(intent);
+
+                         */
+
+
+
+
+
+
+
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
 //
