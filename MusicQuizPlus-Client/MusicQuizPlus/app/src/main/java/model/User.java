@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,9 +28,9 @@ public class User implements Serializable {
     private Map<String, String> albumIds;
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
-    private LinkedList<String> historyIds;
-    private Map<String, QuizHistory> quizHistories;                     // Map<topicId, QuizHistory>
-    private Map<String, GeneratedQuizHistory> generatedQuizHistories;   // Map<topicId, GeneratedQuizHistory>
+    private List<String> historyIds;
+    private Map<String, QuizHistory> quizHistory;                     // Map<topicId, QuizHistory>
+    private Map<String, GeneratedQuizHistory> generatedQuizHistory;   // Map<topicId, GeneratedQuizHistory>
 
     // Excluded from Database
     private Map<String, Playlist> playlists;
@@ -68,13 +69,13 @@ public class User implements Serializable {
     public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
-    public LinkedList<String> getHistoryIds() {
+    public List<String> getHistoryIds() {
         return historyIds;
     }
-    public Map<String, QuizHistory> getQuizHistories() {
-        return quizHistories;
+    public Map<String, QuizHistory> getQuizHistory() {
+        return quizHistory;
     }
-    public Map<String, GeneratedQuizHistory> getGeneratedQuizHistories() { return generatedQuizHistories; }
+    public Map<String, GeneratedQuizHistory> getGeneratedQuizHistory() { return generatedQuizHistory; }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
@@ -109,8 +110,8 @@ public class User implements Serializable {
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
     }
-    public void setQuizHistories(Map<String, QuizHistory> quizHistories) { this.quizHistories = quizHistories; }
-    public void setGeneratedQuizHistories(Map<String, GeneratedQuizHistory> generatedQuizHistories) { this.generatedQuizHistories = generatedQuizHistories; }
+    public void setQuizHistory(Map<String, QuizHistory> quizHistory) { this.quizHistory = quizHistory; }
+    public void setGeneratedQuizHistory(Map<String, GeneratedQuizHistory> generatedQuizHistory) { this.generatedQuizHistory = generatedQuizHistory; }
 
     public void setPlaylists(Map<String, Playlist> playlists) {
         this.playlists = playlists;
@@ -181,7 +182,12 @@ public class User implements Serializable {
     }
     //#endregion
 
-    public void updateHistory(List<Track> tracks) {
+    public void updateHistoryIds(List<Track> tracks) {
+        LinkedList<String> historyIds = new LinkedList<>();
+        for (String id : this.historyIds) {
+            historyIds.add(id);
+        }
+
         for (int i = 0; i < tracks.size(); i++) {
             if (history.size() == HISTORY_LIMIT) {
                 history.removeFirst();
@@ -190,21 +196,41 @@ public class User implements Serializable {
             history.addLast(tracks.get(i));
             historyIds.addLast(tracks.get(i).getId());
         }
+
+        this.historyIds = new ArrayList<>();
+        for (String id : historyIds) {
+            this.historyIds.add(id);
+        }
     }
     public void updateQuizHistory(DatabaseReference db, FirebaseUser firebaseUser, String topicId, List<Track> history) {
-        if (quizHistories == null) {
-            quizHistories = new HashMap<>();
-            quizHistories.put(topicId, new QuizHistory());
+        if (quizHistory == null) {
+            quizHistory = new HashMap<>();
+            quizHistory.put(topicId, new QuizHistory());
         }
-        DatabaseReference quizHistoryRef = db.child("users").child(firebaseUser.getUid()).child("quizHistories").child(topicId);
+        DatabaseReference quizHistoryRef = db.child("users").child(firebaseUser.getUid()).child("quizHistory").child(topicId);
         for (int i = 0; i < history.size(); i++) {
             String key = quizHistoryRef.push().getKey();
-            boolean trackIdAdded = quizHistories.get(topicId).addTrackId(key, history.get(i).getId());
+            boolean trackIdAdded = quizHistory.get(topicId).addTrackId(key, history.get(i).getId());
             if (trackIdAdded) {
-                quizHistories.get(topicId).incrementCount();
-                quizHistoryRef.child(key).setValue(history.get(i).getId());
+                quizHistory.get(topicId).incrementCount();
+                quizHistoryRef.child(key).setValue(new QuizHistory(history));
             }
         }
+    }
+
+    public void updateGeneratedQuizHistory(DatabaseReference db, FirebaseUser firebaseUser, String topicId, String quizId) {
+        if (generatedQuizHistory == null || generatedQuizHistory.isEmpty()) {
+            generatedQuizHistory = new HashMap<>();
+            generatedQuizHistory.put(topicId, new GeneratedQuizHistory(new HashMap<>()));
+        }
+        DatabaseReference generatedQuizHistoryRef = db.child("users").child(firebaseUser.getUid())
+                .child("generatedQuizHistory");
+        String key = generatedQuizHistoryRef.child(topicId).push().getKey();
+        if (generatedQuizHistory.get(topicId).isQuizIdsNull()) {
+            generatedQuizHistory.get(topicId).setQuizIds(new HashMap<>());
+        }
+        generatedQuizHistory.get(topicId).getQuizIds().put(key, quizId);
+        generatedQuizHistoryRef.child(topicId).child(key).setValue(generatedQuizHistory.get(topicId));
     }
 
     //#region Collections initialization

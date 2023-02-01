@@ -10,18 +10,21 @@ import model.type.QuestionType;
 
 public class Question implements Serializable {
 
-    private final QuestionType type;
-    private final List<String> answers;
-    private final int answerIndex;
-    private final String previewUrl;
+    private QuestionType type;
+    private List<String> answers;
+    private int answerIndex;
+    private String trackId;
+    private String previewUrl;
 
-    public Question(QuestionType type, List<String> answers, int answerIndex, String previewUrl) {
+    public Question(QuestionType type, List<String> answers, int answerIndex, String trackId, String previewUrl) {
         this.type = type;
         this.answers = answers;
         this.answerIndex = answerIndex;
+        this.trackId = trackId;
         this.previewUrl = previewUrl;
 
     }
+    public Question() {}
 
     public QuestionType getType() {
         return type;
@@ -40,6 +43,7 @@ public class Question implements Serializable {
     }
 
 
-
-
+    public String getTrackId() {
+        return trackId;
+    }
 }

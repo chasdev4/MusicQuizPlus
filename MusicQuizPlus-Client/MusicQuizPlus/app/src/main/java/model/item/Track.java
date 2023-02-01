@@ -64,6 +64,11 @@ public class Track implements Serializable {
         }
     }
 
+    // Used for generated quizzes' questions
+    public Track(String id) {
+        this.id = id;
+    }
+
     public Track() {
 
     }

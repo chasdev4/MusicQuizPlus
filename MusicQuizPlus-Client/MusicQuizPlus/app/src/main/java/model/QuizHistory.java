@@ -7,31 +7,29 @@ import java.util.Map;
 // The QuizHistory model is used for keeping track of a specific quiz's history of tracks heard
 
 public class QuizHistory {
-
-//    private String id;          // Topic ID
     private Map<String, String> trackIds;
-//    private Map<String, String> quizIds;
     private int total;
     private int count;
+
+    public QuizHistory(Map<String, String> trackIds, int total, int count) {
+        this.trackIds = trackIds;
+        this.total = total;
+        this.count = count;
+    }
 
     public QuizHistory() {
 
     }
 
     //#region Accessors
-//    public String getId() {return id;}
     public Map<String, String> getTrackIds() {
         return trackIds;
     }
-//    public Map<String, String> getQuizIds() { return quizIds; }
     public int getTotal() { return total; }
     public int getCount() { return count; }
     //#endregion
 
     //#region Mutators
-//    public void setId(String id) {
-//        this.id = id;
-//    }
     public void setTrackIds(Map<String, String> trackIds) {
         this.trackIds = trackIds;
     }

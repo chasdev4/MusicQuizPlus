@@ -1,4 +1,5 @@
 package model;
+
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
@@ -20,6 +21,7 @@ import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
 import service.FirebaseService;
+import service.firebase.QuizService;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
@@ -50,6 +52,8 @@ public class Quiz implements Serializable {
     private List<String> featuredArtistsNames;
     private List<Track> featuredArtistTracks;
     private boolean isNewQuiz;
+    private DatabaseReference db;
+    private FirebaseUser firebaseUser;
     //#endregion
 
     //#region Constants
@@ -264,23 +268,27 @@ public class Quiz implements Serializable {
         topicId = playlist.getId();
         quizId = db.child("generated_quizzes").child(topicId).push().getKey();
         this.playlist = playlist;
+        this.db = db;
+        this.firebaseUser = firebaseUser;
         artist = null;
         this.user = user;
         type = QuizType.PLAYLIST;
         questions = new ArrayList<>();
         isNewQuiz = true;
-        init(db, firebaseUser);
+        init();
     }
     public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
         topicId = artist.getId();
         quizId = db.child("generated_quizzes").child(topicId).push().getKey();
+        this.db = db;
+        this.firebaseUser = firebaseUser;
         playlist = null;
         this.artist = artist;
         this.user = user;
         type = QuizType.ARTIST;
         questions = new ArrayList<>();
         isNewQuiz = true;
-        init(db, firebaseUser);
+        init();
     }
 
     public Quiz() {
@@ -377,32 +385,50 @@ public class Quiz implements Serializable {
 
     //#endregion
 
-    public void init(DatabaseReference db, FirebaseUser firebaseUser) {
-        if (!retrieveQuiz(db)) {
+    public void init() {
+        // Initialize non-final members
+        currentQuestionIndex = 0;
+        score = 0;
+        numCorrect = 0;
+        numQuestions = 10;
+        difficulty = user.getDifficulty();
+
+        if (!retrieveQuiz()) {
             generateQuiz();
         }
-
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
-    private boolean retrieveQuiz(DatabaseReference db) {
+    private boolean retrieveQuiz() {
         // Get a map of generated quiz ids indexed under the topicId
-        Map<String, String> generatedQuizzesByTopic = FirebaseService.checkDatabase(db, "generated_quizzes", topicId, Quiz.class);
+        Map<String, GeneratedQuiz> generatedQuizzesByTopic = QuizService.retrieveGeneratedQuizzes(db, topicId);
 
         // If there are no generated quizzes, return to generate one
-        if (generatedQuizzesByTopic == null) {
+        if (generatedQuizzesByTopic == null || generatedQuizzesByTopic.isEmpty() || generatedQuizzesByTopic.size() == 0) {
             return false;
         }
 
         // Iterate over the generated quiz Id's and check against the user's generated quiz history
-        for (Map.Entry<String, String> dbQuizId : generatedQuizzesByTopic.entrySet()) {
-            if (!user.getGeneratedQuizHistories().get(topicId).getQuizIds().containsValue(dbQuizId.getValue())) {
+        for (Map.Entry<String, GeneratedQuiz> generatedQuizEntry : generatedQuizzesByTopic.entrySet()) {
+            if (user.getGeneratedQuizHistory() == null) {
+                user.setGeneratedQuizHistory(new HashMap<>());
+            }
+            if (user.getGeneratedQuizHistory().isEmpty()
+                    || (!user.getGeneratedQuizHistory().get(topicId).isQuizIdsNull()
+                    && !user.getGeneratedQuizHistory().get(topicId).getQuizIds().containsValue(generatedQuizEntry.getValue()))
+            && generatedQuizEntry.getValue().getDifficulty() == user.getDifficulty()) {
                 // Found a new quiz, use it
-                Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", dbQuizId.getValue(), Quiz.class);
+                Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", generatedQuizEntry.getValue().getQuizId(), Quiz.class);
                 if (quiz != null) {
                     isNewQuiz = false;
+                    type = quiz.getType();
                     questions = quiz.questions;
                     quizId = quiz.getQuizId();
+                    history = new ArrayList<>();
+                    for (Question question : quiz.getQuestions()) {
+                        history.add(new Track(question.getTrackId()));
+                    }
+
                     return true;
                 }
             }
@@ -415,11 +441,7 @@ public class Quiz implements Serializable {
         // For logging
         LogUtil log = new LogUtil(TAG, "generateQuiz");
         log.v(String.format("Creating a%s quiz.", (this.type == QuizType.PLAYLIST) ? " playlist" : "n artist"));
-        // Initialize non-final members
-        currentQuestionIndex = 0;
-        score = 0;
-        numCorrect = 0;
-        numQuestions = 10;
+
         featuredArtistTracks = new ArrayList<>();
 
         // Local variables that are set depending on the quiz type.
@@ -521,8 +543,8 @@ public class Quiz implements Serializable {
 
         // Prepare information for answers
         if (insufficientData || ignoreDifficulty
-                || user.getQuizHistories() == null
-                || user.getQuizHistories().get(topicId) == null) {
+                || user.getQuizHistory() == null
+                || user.getQuizHistory().get(topicId) == null) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
             getFeaturedArtistTracks(guessArtistCount);
@@ -534,7 +556,7 @@ public class Quiz implements Serializable {
 
             getFeaturedArtistTracks(guessArtistCount);
 
-            Map<String, String> quizHistory = user.getQuizHistories().get(topicId).getTrackIds();
+            Map<String, String> quizHistory = user.getQuizHistory().get(topicId).getTrackIds();
             for (Track track : rawTracks) {
                 boolean skip = false;
                 if (!ignoreDifficulty) {
@@ -546,7 +568,7 @@ public class Quiz implements Serializable {
                     }
                 }
                 if (!skip) {
-                    if (quizHistory.containsValue(track.getId())) {
+                    if (quizHistory != null && quizHistory.containsValue(track.getId())) {
                         oldTracks.add(track);
                     } else {
                         tracks.add(track);
@@ -609,12 +631,14 @@ public class Quiz implements Serializable {
                 randomIndex = rnd.nextInt(tracks.size());
             }
 
+            String correctTrackId = null;
             String previewUrl = null;
 
             if (isFeaturedArtistQuestion) {
                 answers.set(answerIndex, featuredArtistTracks.get(randomIndex).getFeaturedArtistName());
 
                 // Remove the track from set
+                correctTrackId = featuredArtistTracks.get(randomIndex).getId();
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
                 history.add(featuredArtistTracks.get(randomIndex));
                 featuredArtistTracks.remove(randomIndex);
@@ -624,6 +648,7 @@ public class Quiz implements Serializable {
                 answers.set(answerIndex, getAnswerText(type, randomIndex));
 
                 // Remove the track from set
+                correctTrackId = tracks.get(randomIndex).getId();
                 previewUrl = tracks.get(randomIndex).getPreviewUrl();
                 history.add(tracks.get(randomIndex));
                 tracks.remove(randomIndex);
@@ -699,7 +724,7 @@ public class Quiz implements Serializable {
                     }
                 }
             }
-            questions.add(new Question(type, answers, answerIndex, previewUrl));
+            questions.add(new Question(type, answers, answerIndex, correctTrackId, previewUrl));
         }
     }
 
@@ -789,11 +814,11 @@ public class Quiz implements Serializable {
     }
 
     // Call this method after the quiz is complete
-    public void end(DatabaseReference db, FirebaseUser firebaseUser) {
-        updateDatabase(db, firebaseUser);
+    public void end() {
+        updateDatabase();
     }
 
-    private void updateDatabase(DatabaseReference db, FirebaseUser firebaseUser) {
+    private void updateDatabase() {
         String key = null;
         if (isNewQuiz) {
             // Save the new quiz up to the database
@@ -801,10 +826,12 @@ public class Quiz implements Serializable {
 
             // Save a reference to this quiz to generated_quizzes
             key = db.child("generated_quizzes").child(topicId).push().getKey();
-            db.child("generated_quizzes").child(topicId).child(key).setValue(quizId);
+            db.child("generated_quizzes").child(topicId).child(key).setValue(
+                    new GeneratedQuiz(quizId, difficulty));
         }
-        user.updateHistory(history);
+        user.updateHistoryIds(history);
         user.updateQuizHistory(db, firebaseUser, topicId, history);
-        db.child("users").child(firebaseUser.getUid()).child("history").setValue(user.getHistoryIds());
+        user.updateGeneratedQuizHistory(db, firebaseUser, topicId, quizId);
+        db.child("users").child(firebaseUser.getUid()).child("historyIds").setValue(user.getHistoryIds());
     }
 }

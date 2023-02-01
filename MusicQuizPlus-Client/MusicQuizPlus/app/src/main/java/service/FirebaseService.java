@@ -9,41 +9,25 @@ import com.example.musicquizplus.ArtistsAdapter;
 import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
 import model.Quiz;
-import model.ValidationObject;
 import model.item.Playlist;
 
-import model.PhotoUrl;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Track;
-import model.type.Severity;
 import utils.LogUtil;
-import utils.ValidationUtil;
 
 // SUMMARY
 // Static methods for Firebase management
@@ -84,7 +68,7 @@ public class FirebaseService {
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
                         break;
                     case "Quiz":
-                        quizzes[0] = (Quiz)dataSnapshot.getValue(cls);
+                        quizzes[0] = (Quiz) dataSnapshot.getValue(cls);
                         break;
                     default:
                         log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
@@ -103,8 +87,6 @@ public class FirebaseService {
 
         try {
             done.await();
-
-
         } catch(InterruptedException e) {
             e.printStackTrace();
         }

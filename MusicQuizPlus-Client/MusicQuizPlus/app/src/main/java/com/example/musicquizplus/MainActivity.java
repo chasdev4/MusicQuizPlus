@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                             i++;
                         }
                         Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-                        quiz.end(db, firebaseUser);
+                        quiz.end();
                         log.d("Done.");
                         //#endregion
 
