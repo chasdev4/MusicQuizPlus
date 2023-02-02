@@ -24,6 +24,7 @@ public class User implements Serializable {
     private Map<String, String> playlistIds;
     private Map<String, String> historyIds;
     private Map<String, QuizHistory> quizHistory;
+    private Map<String, String> badgeIds;
     private int playlistQuizCount;
     private int artistQuizCount;
     private int level;
@@ -42,6 +43,7 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
         historyIds = new HashMap<>();
+        badgeIds = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
         level = 1;
@@ -54,11 +56,35 @@ public class User implements Serializable {
         artistIds = user.artistIds;
         playlistIds = user.playlistIds;
         historyIds = user.historyIds;
+        badgeIds = user.badgeIds;
         playlistQuizCount = user.playlistQuizCount;
         artistQuizCount = user.artistQuizCount;
         level = user.level;
         xp = user.xp;
         difficulty = user.difficulty;
+    }
+
+    public Map<String, String> getBadgeIds() { return badgeIds; }
+
+    public boolean addBadgeId(String key, String badgeId){
+        if(badgeIds.containsValue(badgeId)){
+            return false;
+        }
+
+        badgeIds.put(key, badgeId);
+        return true;
+    }
+
+    public String removeBadgeId(String badgeId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
+            if (entry.getValue().equals(badgeId)) {
+                key = entry.getKey();
+            }
+        }
+
+        badgeIds.remove(key);
+        return key;
     }
 
     public Map<String, String> getAlbumIds() {
