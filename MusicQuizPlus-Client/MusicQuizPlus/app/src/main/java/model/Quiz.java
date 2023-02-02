@@ -1,4 +1,5 @@
 package model;
+import com.google.firebase.database.Exclude;
 import java.io.Serializable;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -686,6 +687,17 @@ public class Quiz implements Serializable {
 
         return false;
     }
+/*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+ */
+
+    @Exclude
+    public Artist getArtist() { return artist;}
+
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
 
     public Question getFirstQuestion() {
         return questions.get(0);

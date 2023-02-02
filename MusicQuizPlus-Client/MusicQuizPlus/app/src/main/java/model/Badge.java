@@ -1,6 +1,8 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import model.type.QuizType;
@@ -13,12 +15,13 @@ public class Badge {
     private String photoURL;
     private int badgeType;
     private int badgeRank;
-    private List<Badge> earnedBadges;
+    private List<Badge> earnedBadges = new ArrayList<>();
     private Badge performanceBadge;
+    private User user;
 
-    public Badge()
+    public Badge(User user)
     {
-
+        this.user = user;
     }
 
     public Badge(String badgeName, String description, String photoURL, int badgeType, int badgeRank)
@@ -30,23 +33,33 @@ public class Badge {
         this.badgeRank = badgeRank;
     }
 
-    public List<Badge> getEarnedBadges(User user, Quiz quiz, QuizType quizType)
+    public List<Badge> getEarnedBadges(Quiz quiz, QuizType quizType)
     {
-
         switch(quizType)
         {
             case ARTIST:
 
-                getArtistBadge(quiz);
+                //String artist = quiz.getArtist().getName();
+                String artist = "Kanye West";
+                Badge badge = getArtistBadge(quiz, artist);
                 user.incrementArtistQuizCount();
+
+                if(badge != null)
+                {
+                    //There is an artist badge to be awarded
+                    earnedBadges.add(badge);
+                }
+                break;
 
             case PLAYLIST:
 
+                //TODO: Get playlist badges
                 //getPlaylistBadge(quiz);
                 user.incrementPlaylistQuizCount();
+                break;
         }
 
-        Badge milestoneBadge = checkForMilestoneBadge(user, quizType);
+        Badge milestoneBadge = checkForMilestoneBadge(quizType);
         List <Badge> performanceBadges = checkForPerformanceBadges(quiz);
 
         if (milestoneBadge != null)
@@ -55,32 +68,40 @@ public class Badge {
             earnedBadges.add(milestoneBadge);
         }
 
+        earnedBadges.addAll(performanceBadges);
+
         return earnedBadges;
     }
 
-    private Badge getArtistBadge(Quiz quiz)
+    private Badge getArtistBadge(Quiz quiz, String artist)
     {
-        Badge badge = new Badge();
+        Badge badge = null;
 
-        int score = quiz.getScore();
+        int score = quiz.getNumCorrect();
 
         if(score > 2 && score < 5)
         {
-            //TODO: Add "I LIKE {ARTIST}" badge
+            String badgeName = String.format(Locale.ENGLISH, "I Like %s", artist);
+            String description = "User Has Got 3-4 Correct on an Artist Quiz";
+            badge = new Badge(badgeName, description, "photoURL", 0, 0);
         }
         else if (score > 4 && score < 7)
         {
-            //TODO: Add "I LOVE {ARTIST}" badge
+            String badgeName = String.format(Locale.ENGLISH, "I Love %s", artist);
+            String description = "User Has Got 5-6 Correct on an Artist Quiz";
+            badge = new Badge(badgeName, description, "photoURL", 0, 0);
         }
         else if (score > 6 && score <= 10)
         {
-            //TODO: Add "TRUE {ARTIST} FAN" badge
+            String badgeName = String.format(Locale.ENGLISH, "True %s Fan", artist);
+            String description = "User Has Got 7-10 Correct on an Artist Quiz";
+            badge = new Badge(badgeName, description, "photoURL", 0, 0);
         }
 
         return badge;
     }
 
-    private Badge checkForMilestoneBadge(User user, QuizType quizType)
+    private Badge checkForMilestoneBadge(QuizType quizType)
     {
         Badge badge = null;
 
@@ -90,54 +111,66 @@ public class Badge {
 
                 if(user.getArtistQuizCount() == 1)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
                 else if(user.getArtistQuizCount() == 3)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
                 else if(user.getArtistQuizCount() == 5)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
                 else if(user.getArtistQuizCount() == 10)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
                 else if(user.getArtistQuizCount() == 25)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
                 else if((user.getArtistQuizCount() % 50) == 0)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getArtistQuizCount(), "Artist");
+                    break;
                 }
 
             case PLAYLIST:
 
                 if(user.getPlaylistQuizCount() == 1)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
                 else if(user.getPlaylistQuizCount() == 3)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
                 else if(user.getPlaylistQuizCount() == 5)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
                 else if(user.getPlaylistQuizCount() == 10)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
                 else if(user.getPlaylistQuizCount() == 25)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
                 else if((user.getPlaylistQuizCount() % 50) == 0)
                 {
-                    //TODO: Add Milestone Badge
+                    badge = getMilestoneBadge(user.getPlaylistQuizCount(), "Playlist");
+                    break;
                 }
         }
 
@@ -146,16 +179,31 @@ public class Badge {
 
     private List<Badge> checkForPerformanceBadges(Quiz quiz)
     {
-        List<Badge> performanceBadges = null;
+        List<Badge> performanceBadges = new ArrayList<>();
 
-        if(Objects.equals(quiz.getAccuracy(), "100%"))
+        String accuracy = quiz.getAccuracy();
+
+        if(Objects.equals(accuracy, "100.0%"))
         {
-            //TODO: Create photo URL for perfect accuracy badge
-            Badge perfectAccuracy = new Badge("Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", "photoURL", 0, 0);
-            performanceBadges.add(perfectAccuracy);
+            performanceBadges.add(getPerfectAccuracyBadge());
         }
 
+        //TODO: Check for quick reaction times for more badges
+
+
         return performanceBadges;
+    }
+
+    private Badge getPerfectAccuracyBadge()
+    {
+        return new Badge("Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", "photoURL", 0, 0);
+    }
+
+    private Badge getMilestoneBadge(int quizCount, String type)
+    {
+        String badgeName = String.format(Locale.ENGLISH, "%d %s Quizzes Taken", quizCount, type);
+        String description = String.format(Locale.ENGLISH, "User has taken %d %s quizzes", quizCount, type);
+        return new Badge(badgeName, description, "photoURL", 0, 0);
     }
 
     public int getBadgeID() {

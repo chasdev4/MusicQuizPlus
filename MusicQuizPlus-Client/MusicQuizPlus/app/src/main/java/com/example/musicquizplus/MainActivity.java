@@ -146,29 +146,6 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
-
-                        /*
-
-                        //TESTING GETTING STARTED MODEL
-
-                        GettingStarted gettingStarted = new GettingStarted();
-                        gettingStarted.setMinYear((short) 1930);
-                        gettingStarted.createDecades();
-                        List<String> decades = gettingStarted.getSelectedDecades();
-
-                        gettingStarted.setDifficulty(Difficulty.MEDIUM);
-                        gettingStarted.addToList("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "artistsList");
-                        Intent intent = gettingStarted.finished(db, firebaseUser, getBaseContext());
-                        startActivity(intent);
-
-                         */
-
-
-
-
-
-
-
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
 //
