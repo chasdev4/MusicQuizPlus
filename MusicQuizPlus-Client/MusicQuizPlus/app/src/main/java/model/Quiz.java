@@ -847,6 +847,14 @@ public class Quiz implements Serializable {
             score += BASE_SCORE;
             numCorrect++;
         }
+        else {
+            for (Track track : history) {
+                if (track.getId().equals(questions.get(currentQuestionIndex).getTrackId())) {
+                    history.remove(track);
+                    break;
+                }
+            }
+        }
         if (currentQuestionIndex == numQuestions - 1) {
             return false;
         }
