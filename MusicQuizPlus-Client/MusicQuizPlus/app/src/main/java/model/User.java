@@ -24,6 +24,8 @@ public class User implements Serializable {
     private Map<String, String> playlistIds;
     private Map<String, String> historyIds;
     private Map<String, QuizHistory> quizHistory;
+    private int playlistQuizCount;
+    private int artistQuizCount;
     private int level;
     private int xp;
     private Difficulty difficulty;
@@ -40,6 +42,8 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
         historyIds = new HashMap<>();
+        playlistQuizCount = 0;
+        artistQuizCount = 0;
         level = 1;
         xp = 0;
         difficulty = Difficulty.EASY;
@@ -50,6 +54,8 @@ public class User implements Serializable {
         artistIds = user.artistIds;
         playlistIds = user.playlistIds;
         historyIds = user.historyIds;
+        playlistQuizCount = user.playlistQuizCount;
+        artistQuizCount = user.artistQuizCount;
         level = user.level;
         xp = user.xp;
         difficulty = user.difficulty;
@@ -127,6 +133,34 @@ public class User implements Serializable {
 
         playlistIds.remove(key);
         return key;
+    }
+
+    public void incrementArtistQuizCount()
+    {
+        artistQuizCount++;
+    }
+
+    public void incrementPlaylistQuizCount()
+    {
+        playlistQuizCount++;
+    }
+
+    public int getArtistQuizCount() {
+        return artistQuizCount;
+    }
+
+    //USED FOR DEBUGGING
+    public void setArtistQuizCount(int artistQuizCount) {
+        this.artistQuizCount = artistQuizCount;
+    }
+
+    public int getPlaylistQuizCount() {
+        return playlistQuizCount;
+    }
+
+    //USED FOR DEBUGGING
+    public void setPlaylistQuizCount(int playlistQuizCount) {
+        this.playlistQuizCount = playlistQuizCount;
     }
 
     public int getLevel() {
