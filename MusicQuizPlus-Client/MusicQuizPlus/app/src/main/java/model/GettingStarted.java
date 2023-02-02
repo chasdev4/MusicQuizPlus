@@ -30,12 +30,12 @@ public class GettingStarted {
     private Difficulty currentDifficulty;
     private boolean areAllSelected;
 
-    public GettingStarted()
+    public GettingStarted(User user)
     {
-        maxYear = (short) Calendar.getInstance().get(Calendar.YEAR);
-        selectedArtists = new ArrayList<>();
-        selectedDecades = new ArrayList<>();
-        user = new User();
+        this.maxYear = (short) Calendar.getInstance().get(Calendar.YEAR);
+        this.selectedArtists = new ArrayList<>();
+        this.selectedDecades = new ArrayList<>();
+        this.user = user;
     }
 
     public static final List<String> DIFFICULTY_NAMES = new ArrayList<>() {
