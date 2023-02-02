@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import model.history.GeneratedQuizHistory;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -54,6 +57,7 @@ public class Quiz implements Serializable {
     private boolean isNewQuiz;
     private DatabaseReference db;
     private FirebaseUser firebaseUser;
+    private int poolCount;
     //#endregion
 
     //#region Constants
@@ -277,6 +281,7 @@ public class Quiz implements Serializable {
         isNewQuiz = true;
         init();
     }
+
     public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
         topicId = artist.getId();
         quizId = db.child("generated_quizzes").child(topicId).push().getKey();
@@ -297,10 +302,21 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Accessors
-    public QuizType getType() { return type; }
-    public String getQuizId() { return quizId; }
-    public List<Question> getQuestions() { return questions; }
-    public Difficulty getDifficulty() { return difficulty; }
+    public QuizType getType() {
+        return type;
+    }
+
+    public String getQuizId() {
+        return quizId;
+    }
+
+    public List<Question> getQuestions() {
+        return questions;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
 
     @Exclude
     private void getFeaturedArtistTracks(int guessArtistCount) {
@@ -328,19 +344,23 @@ public class Quiz implements Serializable {
             }
         }
     }
+
     @Exclude
     public int getScore() {
         return score;
     }
+
     @Exclude
     public String getAccuracy() {
-        double accuracy = (double)numCorrect / numQuestions;
-        return String.valueOf(accuracy  * 100)  + "%";
+        double accuracy = (double) numCorrect / numQuestions;
+        return String.valueOf(accuracy * 100) + "%";
     }
+
     @Exclude
     public Question getFirstQuestion() {
         return questions.get(0);
     }
+
     @Exclude
     private String getAnswerText(QuestionType type, int randomIndex) {
         switch (type) {
@@ -356,12 +376,10 @@ public class Quiz implements Serializable {
                         if (collection == 0) {
                             randomIndex = rnd.nextInt(artist.getSingles().size());
                             return artist.getSingles().get(randomIndex).getName();
-                        }
-                        else if (collection == 1) {
+                        } else if (collection == 1) {
                             randomIndex = rnd.nextInt(artist.getAlbums().size());
                             return artist.getAlbums().get(randomIndex).getName();
-                        }
-                        else {
+                        } else {
                             randomIndex = rnd.nextInt(artist.getCompilations().size());
                             return artist.getCompilations().get(randomIndex).getName();
                         }
@@ -412,30 +430,44 @@ public class Quiz implements Serializable {
         for (Map.Entry<String, GeneratedQuiz> generatedQuizEntry : generatedQuizzesByTopic.entrySet()) {
             if (user.getGeneratedQuizHistory() == null) {
                 user.setGeneratedQuizHistory(new HashMap<>());
-            }
-            if (user.getGeneratedQuizHistory().isEmpty()
-                    || (!user.getGeneratedQuizHistory().get(topicId).isQuizIdsNull()
-                    && !user.getGeneratedQuizHistory().get(topicId).getQuizIds().containsValue(generatedQuizEntry.getValue()))
-            && generatedQuizEntry.getValue().getDifficulty() == user.getDifficulty()) {
-                // Found a new quiz, use it
+                user.getGeneratedQuizHistory().put(topicId, new HashMap<>());
                 Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", generatedQuizEntry.getValue().getQuizId(), Quiz.class);
                 if (quiz != null) {
-                    isNewQuiz = false;
-                    type = quiz.getType();
-                    questions = quiz.questions;
-                    quizId = quiz.getQuizId();
-                    history = new ArrayList<>();
-                    for (Question question : quiz.getQuestions()) {
-                        history.add(new Track(question.getTrackId()));
-                    }
-
+                    newQuizInit(quiz);
                     return true;
                 }
             }
+            else {
+                for (Map.Entry<String, String> generatedQuizHistoryEntry : user.getGeneratedQuizHistory().get(topicId).entrySet()) {
+                    if (user.getGeneratedQuizHistory().get(topicId) == null
+                            || (!generatedQuizHistoryEntry.getValue().equals(generatedQuizEntry.getValue().getQuizId())
+                            || user.getGeneratedQuizHistory().isEmpty())
+                            && generatedQuizEntry.getValue().getDifficulty() == user.getDifficulty()) {
+                        // Found a new quiz, use it
+                        Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", generatedQuizEntry.getValue().getQuizId(), Quiz.class);
+                        if (quiz != null) {
+                            newQuizInit(quiz);
+                            return true;
+                        }
+                    }
+                }
+            }
         }
-
         return false;
     }
+
+    private void newQuizInit(Quiz quiz) {
+        isNewQuiz = false;
+        type = quiz.getType();
+        questions = quiz.questions;
+        quizId = quiz.getQuizId();
+        history = new ArrayList<>();
+        for (Question question : quiz.getQuestions()) {
+            history.add(new Track(question.getTrackId()));
+        }
+
+    }
+
 
     private void generateQuiz() {
         // For logging
@@ -450,6 +482,7 @@ public class Quiz implements Serializable {
         Class cls = null;               // Class needed for validation object
         List<Track> rawTracks = null;   // All tracks from playlist or hearted albums of artist
         int averagePopularity = 0;      // Playlist or Artists' average popularity
+
         // Also changes dependent on quiz type
         double guessAlbumChance = GUESS_PLAYLIST_ALBUM_CHANCE;
 
@@ -473,6 +506,8 @@ public class Quiz implements Serializable {
                 log.v("Artist members initialized.");
                 break;
         }
+        // For creating a quiz history
+        poolCount = rawTracks.size();
 
         // Null check
         if (ValidationUtil.nullCheck(validationObjects, log)) {
@@ -541,22 +576,26 @@ public class Quiz implements Serializable {
         // For random index selection
         Random rnd = new Random();
 
+        // TODO: Fix this after history is fixed
         // Prepare information for answers
-        if (insufficientData || ignoreDifficulty
-                || user.getQuizHistory() == null
-                || user.getQuizHistory().get(topicId) == null) {
+        if (false)
+//        if (insufficientData || ignoreDifficulty
+//                || user.getQuizHistory() == null
+//                || user.getQuizHistory().get(topicId) == null)
+        {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
             getFeaturedArtistTracks(guessArtistCount);
-        }
-        else {
+        } else {
             log.v("Quiz history found. Separating tracks...");
             List<Track> oldTracks = new ArrayList<>();
             List<Track> hardTracks = new ArrayList<>();
 
             getFeaturedArtistTracks(guessArtistCount);
 
-            Map<String, String> quizHistory = user.getQuizHistory().get(topicId).getTrackIds();
+            // TODO: here
+            Map<String, String> quizHistory = null;
+            //   Map<String, String> quizHistory = user.getQuizHistory().get(topicId).getTrackIds();
             for (Track track : rawTracks) {
                 boolean skip = false;
                 if (!ignoreDifficulty) {
@@ -618,7 +657,14 @@ public class Quiz implements Serializable {
             return;
         }
         for (int i = 0; i < count; i++) {
-            List<String> answers = new ArrayList<>() { { add(""); add(""); add(""); add(""); } };
+            List<String> answers = new ArrayList<>() {
+                {
+                    add("");
+                    add("");
+                    add("");
+                    add("");
+                }
+            };
 
             // Pick a random index for the correct answer
             int answerIndex = rnd.nextInt(4);
@@ -626,8 +672,7 @@ public class Quiz implements Serializable {
 
             if (isFeaturedArtistQuestion) {
                 randomIndex = rnd.nextInt(featuredArtistTracks.size());
-            }
-            else {
+            } else {
                 randomIndex = rnd.nextInt(tracks.size());
             }
 
@@ -642,8 +687,7 @@ public class Quiz implements Serializable {
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
                 history.add(featuredArtistTracks.get(randomIndex));
                 featuredArtistTracks.remove(randomIndex);
-            }
-            else {
+            } else {
                 // Assign the correct answer
                 answers.set(answerIndex, getAnswerText(type, randomIndex));
 
@@ -690,8 +734,7 @@ public class Quiz implements Serializable {
                     }
                 }
 
-            }
-            else {
+            } else {
                 // Assign the other 3 answers
                 for (int j = 0; j < 4; j++) {
                     rnd = new Random();
@@ -699,10 +742,9 @@ public class Quiz implements Serializable {
                     if (j != answerIndex) {
                         int randomIndex2 = 0;
                         if (isFeaturedArtistQuestion) {
-                             randomIndex2 = rnd.nextInt(featuredArtistsNames.size());
-                        }
-                        else {
-                             randomIndex2 = rnd.nextInt(tracks.size());
+                            randomIndex2 = rnd.nextInt(featuredArtistsNames.size());
+                        } else {
+                            randomIndex2 = rnd.nextInt(tracks.size());
                         }
 
                         String answerText = getAnswerText(type, randomIndex2);
@@ -754,8 +796,7 @@ public class Quiz implements Serializable {
                 } else {
                     break;
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.e(e.getMessage());
             }
 
@@ -820,6 +861,7 @@ public class Quiz implements Serializable {
 
     private void updateDatabase() {
         String key = null;
+
         if (isNewQuiz) {
             // Save the new quiz up to the database
             db.child("quizzes").child(quizId).setValue(this);
@@ -829,9 +871,13 @@ public class Quiz implements Serializable {
             db.child("generated_quizzes").child(topicId).child(key).setValue(
                     new GeneratedQuiz(quizId, difficulty));
         }
-        user.updateHistoryIds(history);
-        user.updateQuizHistory(db, firebaseUser, topicId, history);
-        user.updateGeneratedQuizHistory(db, firebaseUser, topicId, quizId);
-        db.child("users").child(firebaseUser.getUid()).child("historyIds").setValue(user.getHistoryIds());
+
+        user.updateHistoryIds(db, firebaseUser.getUid(), history);
+        if (this.type == QuizType.PLAYLIST) {
+            user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
+        } else {
+            user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
+        }
+        user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
 }

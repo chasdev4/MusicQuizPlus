@@ -1,4 +1,4 @@
-package model;
+package model.history;
 
 // SUMMARY
 // The GeneratedQuizHistory model is used to track which generated quizzes the user has taken

@@ -3,6 +3,7 @@ package model;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.ServerValue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import model.history.ArtistHistory;
+import model.history.GeneratedQuizHistory;
+import model.history.TopicHistory;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -29,8 +33,9 @@ public class User implements Serializable {
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
     private List<String> historyIds;
-    private Map<String, QuizHistory> quizHistory;                     // Map<topicId, QuizHistory>
-    private Map<String, GeneratedQuizHistory> generatedQuizHistory;   // Map<topicId, GeneratedQuizHistory>
+    private Map<String, TopicHistory> playlistHistory;
+    private Map<String, ArtistHistory> artistHistory;
+    private Map<String, Map<String, String>> generatedQuizHistory;
 
     // Excluded from Database
     private Map<String, Playlist> playlists;
@@ -72,10 +77,13 @@ public class User implements Serializable {
     public List<String> getHistoryIds() {
         return historyIds;
     }
-    public Map<String, QuizHistory> getQuizHistory() {
-        return quizHistory;
+    public Map<String, TopicHistory> getPlaylistHistory() {
+        return playlistHistory;
     }
-    public Map<String, GeneratedQuizHistory> getGeneratedQuizHistory() { return generatedQuizHistory; }
+    public Map<String, ArtistHistory> getArtistHistory() {
+        return artistHistory;
+    }
+    public Map<String, Map<String, String>> getGeneratedQuizHistory() { return generatedQuizHistory; }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
@@ -110,8 +118,9 @@ public class User implements Serializable {
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
     }
-    public void setQuizHistory(Map<String, QuizHistory> quizHistory) { this.quizHistory = quizHistory; }
-    public void setGeneratedQuizHistory(Map<String, GeneratedQuizHistory> generatedQuizHistory) { this.generatedQuizHistory = generatedQuizHistory; }
+    public void setPlaylistHistory(Map<String, TopicHistory> playlistHistory) { this.playlistHistory = playlistHistory; }
+    public void setArtistHistory(Map<String, ArtistHistory> artistHistory) { this.artistHistory = artistHistory; }
+    public void setGeneratedQuizHistory(Map<String, Map<String, String>> generatedQuizHistory) { this.generatedQuizHistory = generatedQuizHistory; }
 
     public void setPlaylists(Map<String, Playlist> playlists) {
         this.playlists = playlists;
@@ -182,7 +191,7 @@ public class User implements Serializable {
     }
     //#endregion
 
-    public void updateHistoryIds(List<Track> tracks) {
+    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
         LinkedList<String> historyIds = new LinkedList<>();
         for (String id : this.historyIds) {
             historyIds.add(id);
@@ -201,36 +210,127 @@ public class User implements Serializable {
         for (String id : historyIds) {
             this.historyIds.add(id);
         }
+        db.child("users").child(uId).child("historyIds").setValue(historyIds);
     }
-    public void updateQuizHistory(DatabaseReference db, FirebaseUser firebaseUser, String topicId, List<Track> history) {
-        if (quizHistory == null) {
-            quizHistory = new HashMap<>();
-            quizHistory.put(topicId, new QuizHistory());
+
+    public void updatePlaylistHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
+        DatabaseReference playlistHistoryRef = db.child("users").child(uId).child("playlistHistory").child(topicId);
+
+        // If there is no playlist history at all
+        if (playlistHistory == null) {
+            playlistHistory = new HashMap<>();
         }
-        DatabaseReference quizHistoryRef = db.child("users").child(firebaseUser.getUid()).child("quizHistory").child(topicId);
-        for (int i = 0; i < history.size(); i++) {
-            String key = quizHistoryRef.push().getKey();
-            boolean trackIdAdded = quizHistory.get(topicId).addTrackId(key, history.get(i).getId());
+
+        boolean newEntry = false;
+        // If there is no Topic History
+        if (playlistHistory.get(topicId) == null) {
+            playlistHistory.put(topicId, new TopicHistory());
+            playlistHistory.get(topicId).setTotal(poolCount);
+            playlistHistory.get(topicId).setCount(tracks.size());
+            newEntry = true;
+        }
+
+        // Convert the list to a map
+        Map<String, String> tracksMap = new HashMap<>();
+
+        for (int i = 0; i < tracks.size(); i++) {
+            String key = playlistHistoryRef.push().getKey();
+
+            boolean trackIdAdded = playlistHistory.get(topicId).addTrackId(key, tracks.get(i).getId());
             if (trackIdAdded) {
-                quizHistory.get(topicId).incrementCount();
-                quizHistoryRef.child(key).setValue(new QuizHistory(history));
+                tracksMap.put(key, tracks.get(i).getId());
+                playlistHistory.get(topicId).incrementCount();
+            }
+        }
+
+        // If there is no playlist history for the current topic
+        if (newEntry) {
+            // Set the value since it's new
+            playlistHistoryRef.setValue(new TopicHistory(tracksMap, poolCount, tracks.size()));
+        }
+        else {
+            for (Map.Entry<String, String> entry : tracksMap.entrySet()) {
+                playlistHistoryRef.child("trackIds").child(entry.getKey()).setValue(entry.getValue());
+            }
+            playlistHistoryRef.child("count").setValue(playlistHistory.get(topicId).getCount());
+        }
+    }
+
+    public void updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+        DatabaseReference artistHistoryRef = db.child("users").child(uId).child("artistHistory").child(artist.getId());
+
+        // If there is no artist history at all
+        if (artistHistory == null) {
+            artistHistory = new HashMap<>();
+        }
+
+        // Convert the list to an albums map
+        Map<String, TopicHistory> albumsMap = new HashMap<>();
+
+        // Create album keys and default values
+        for (Track track : tracks) {
+            if (!albumsMap.containsKey(track.getAlbumId())) {
+                albumsMap.put(track.getAlbumId(), new TopicHistory());
+                albumsMap.get(track.getAlbumId()).setTotal(artist.getAlbumTrackCount(track.getAlbumId()));
+                albumsMap.get(track.getAlbumId()).setCount(0);
+            }
+        }
+
+        // Add track ids to each album
+        for (int i = 0; i < tracks.size(); i++) {
+            String key = artistHistoryRef.child(tracks.get(i).getAlbumId()).push().getKey();
+            boolean trackIdAdded = artistHistory.get(artist.getId()).addTrackId(key, tracks.get(i));
+            if (trackIdAdded) {
+                albumsMap.get(tracks.get(i).getAlbumId()).getTrackIds().put(key, tracks.get(i).getId());
+            }
+        }
+
+        // If there is no artist history for the current topic
+        if (playlistHistory.get(artist.getId()) == null) {
+            // Set the value since it's new
+            artistHistoryRef.setValue(new ArtistHistory(albumsMap, poolCount, tracks.size()));
+        }
+        else {
+            for (Map.Entry<String, TopicHistory> entry : albumsMap.entrySet()) {
+                artistHistoryRef.child("albums").child(entry.getKey()).setValue(entry.getValue());
             }
         }
     }
 
-    public void updateGeneratedQuizHistory(DatabaseReference db, FirebaseUser firebaseUser, String topicId, String quizId) {
+//    public void updateQuizHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
+//        if (quizHistory == null) {
+//            quizHistory = new HashMap<>();
+//            quizHistory.put(topicId, new TopicHistory(tracks));
+//        }
+//        DatabaseReference quizHistoryRef = db.child("users").child(uId).child("quizHistory").child(topicId);
+//        for (int i = 0; i < tracks.size(); i++) {
+//            String key = quizHistoryRef.push().getKey();
+//            boolean trackIdAdded = quizHistory.get(topicId).addTrackId(key, tracks.get(i).getId());
+//            if (trackIdAdded) {
+//                quizHistory.get(topicId).incrementCount();
+//                quizHistoryRef.child(key).setValue(new TopicHistory(tracks));
+//            }
+//        }
+//    }
+//
+//    // Creates a new Quiz History of Topic Histories
+//    private void createQuizHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
+//        quizHistory = new HashMap<>();
+//        quizHistory.put(topicId, new TopicHistory(tracks, poolCount, ));
+//    }
+
+    public void updateGeneratedQuizHistory(DatabaseReference db, String uId, String topicId, String quizId) {
+        DatabaseReference generatedQuizHistoryRef = db.child("users").child(uId)
+                .child("generatedQuizHistory");
+
         if (generatedQuizHistory == null || generatedQuizHistory.isEmpty()) {
             generatedQuizHistory = new HashMap<>();
-            generatedQuizHistory.put(topicId, new GeneratedQuizHistory(new HashMap<>()));
+            generatedQuizHistory.put(topicId, new HashMap<>());
         }
-        DatabaseReference generatedQuizHistoryRef = db.child("users").child(firebaseUser.getUid())
-                .child("generatedQuizHistory");
+
         String key = generatedQuizHistoryRef.child(topicId).push().getKey();
-        if (generatedQuizHistory.get(topicId).isQuizIdsNull()) {
-            generatedQuizHistory.get(topicId).setQuizIds(new HashMap<>());
-        }
-        generatedQuizHistory.get(topicId).getQuizIds().put(key, quizId);
-        generatedQuizHistoryRef.child(topicId).child(key).setValue(generatedQuizHistory.get(topicId));
+        generatedQuizHistory.get(topicId).put(key, quizId);
+        generatedQuizHistoryRef.child(topicId).child(key).setValue(quizId);
     }
 
     //#region Collections initialization

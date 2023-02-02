@@ -1,23 +1,23 @@
-package model;
+package model.history;
 
 import java.util.HashMap;
 import java.util.Map;
 
 // SUMMARY
-// The QuizHistory model is used for keeping track of a specific quiz's history of tracks heard
+// The TopicHistory model is used for keeping track of a playlist history or individual album history.
 
-public class QuizHistory {
+public class TopicHistory {
     private Map<String, String> trackIds;
     private int total;
     private int count;
 
-    public QuizHistory(Map<String, String> trackIds, int total, int count) {
+    public TopicHistory(Map<String, String> trackIds, int total, int count) {
         this.trackIds = trackIds;
         this.total = total;
         this.count = count;
     }
 
-    public QuizHistory() {
+    public TopicHistory() {
 
     }
 
@@ -33,6 +33,9 @@ public class QuizHistory {
     public void setTrackIds(Map<String, String> trackIds) {
         this.trackIds = trackIds;
     }
+    public void setTotal(int total) { this.total = total; }
+    public void setCount(int count) {this.count = count; }
+    public void incrementCount() { count++; }
     public boolean addTrackId(String key, String trackId) {
         if (trackIds == null) {
             trackIds = new HashMap<>();
@@ -43,8 +46,6 @@ public class QuizHistory {
         trackIds.put(key, trackId);
         return true;
     }
-    public void setTotal(int total) { this.total = total; }
-    public void incrementCount() { count++; }
     //#endregion
 
 

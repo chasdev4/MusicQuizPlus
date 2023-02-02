@@ -63,6 +63,117 @@ public class Artist implements Serializable {
 
     }
 
+    //#region Accessors
+    public String getId() { return id; }
+    public String getName() {
+        return name;
+    }
+    public List<PhotoUrl> getPhotoUrl() {
+        return photoUrl;
+    }
+    public String getBio() { return bio; }
+    public List<ExternalLink> getExternalLinks() {
+        return externalLinks;
+    }
+    public String getLatest() {
+        return latest;
+    }
+    public List<String> getSingleIds() { return singleIds; }
+    public List<String> getAlbumIds() { return albumIds; }
+    public List<String> getCompilationIds() {
+        return compilationIds;
+    }
+    public int getFollowers() {
+        return followers;
+    }
+    public boolean isFollowersKnown() {
+        return followersKnown;
+    }
+
+    @Exclude
+    public List<Album> getSingles() { return singles; }
+    @Exclude
+    public List<Album> getAlbums() { return albums; }
+    @Exclude
+    public List<Album> getCompilations() { return compilations; }
+    @Exclude
+    public List<Track> getTracks() {
+        return getAllTracks();
+    }
+    @Exclude
+    private List<Track> getAllTracks() {
+        List<Track> tracks = new ArrayList<>();
+
+        if (singles != null) {
+            for (Album album : singles) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (albums != null) {
+            for (Album album : albums) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (compilations != null) {
+            for (Album album : compilations) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+
+        return tracks;
+    }
+    @Exclude
+    public List<String> getFeaturedArtists(List<Track> trackList) {
+        List<String> featuredArtistNames = new ArrayList<>();
+
+        for (Track track : trackList) {
+            if (track.getArtistsMap().size() > 1) {
+                for (Map.Entry<String, String> feat : track.getArtistsMap().entrySet()) {
+                    if (!feat.getKey().equals(track.getArtistId()) && !featuredArtistNames.contains(feat.getValue())) {
+                        featuredArtistNames.add(feat.getValue());
+                    }
+                }
+            }
+        }
+
+        return featuredArtistNames;
+    }
+    @Exclude
+    public int getAlbumTrackCount(String albumId) {
+        for (Album album : albums) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
+        return -1;
+    }
+    @Exclude
+    public int getAveragePopularity(List<Track> tracks) {
+        int averagePopularity = 0;
+
+        for (Track track : tracks) {
+            averagePopularity += track.getPopularity();
+        }
+
+        return averagePopularity / tracks.size();
+    }
+    //#endregion
+
+    //#region Mutators
+    public void setFollowers(int followers) { this.followers = followers; }
+    public void setFollowersKnown(boolean followersKnown) {
+        this.followersKnown = followersKnown;
+    }
+
+    //#endregion
+
+    //#region Data Extraction
     // Extract information from the Artist Overview JsonObject into the model
     private void extractArtist(JsonObject jsonObject) {
         JsonObject jsonArtist = jsonObject.getAsJsonObject("data").getAsJsonObject("artist");
@@ -194,107 +305,9 @@ public class Artist implements Serializable {
                 false,
                 album.getAsJsonObject("date").get("year").getAsString());
     }
+    //#endregion
 
-    public List<PhotoUrl> getPhotoUrl() {
-        return photoUrl;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public List<ExternalLink> getExternalLinks() {
-        return externalLinks;
-    }
-
-    public String getLatest() {
-        return latest;
-    }
-
-    @Exclude
-    public List<Album> getSingles() {
-        return singles;
-    }
-
-    @Exclude
-    public List<Album> getAlbums() {
-        return albums;
-    }
-
-    @Exclude
-    public List<Album> getCompilations() {
-        return compilations;
-    }
-
-    public List<String> getSingleIds() {
-        return singleIds;
-    }
-
-    public List<String> getAlbumIds() {
-        return albumIds;
-    }
-
-    public List<String> getCompilationIds() {
-        return compilationIds;
-    }
-
-    public int getFollowers() {
-        return followers;
-    }
-
-    public void setFollowers(int followers) {
-        this.followers = followers;
-    }
-
-    public boolean isFollowersKnown() {
-        return followersKnown;
-    }
-
-    public void setFollowersKnown(boolean followersKnown) {
-        this.followersKnown = followersKnown;
-    }
-
-    @Exclude
-    public List<Track> getTracks() {
-        return getAllTracks();
-    }
-
-    private List<Track> getAllTracks() {
-        List<Track> tracks = new ArrayList<>();
-
-        if (singles != null) {
-            for (Album album : singles) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-        if (albums != null) {
-            for (Album album : albums) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-        if (compilations != null) {
-            for (Album album : compilations) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-
-        return tracks;
-    }
-
+    //#region Collection Initialization
     public void initCollections(DatabaseReference db, User user) {
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.submit(new Runnable() {
@@ -343,30 +356,6 @@ public class Artist implements Serializable {
                 break;
         }
     }
+    //#endregion
 
-    public int getAveragePopularity(List<Track> tracks) {
-        int averagePopularity = 0;
-
-        for (Track track : tracks) {
-            averagePopularity += track.getPopularity();
-        }
-
-        return averagePopularity / tracks.size();
-    }
-
-    public List<String> getFeaturedArtists(List<Track> trackList) {
-        List<String> featuredArtistNames = new ArrayList<>();
-
-        for (Track track : trackList) {
-            if (track.getArtistsMap().size() > 1) {
-                for (Map.Entry<String, String> feat : track.getArtistsMap().entrySet()) {
-                    if (!feat.getKey().equals(track.getArtistId()) && !featuredArtistNames.contains(feat.getValue())) {
-                        featuredArtistNames.add(feat.getValue());
-                    }
-                }
-            }
-        }
-
-        return featuredArtistNames;
-    }
 }
