@@ -481,7 +481,8 @@ public class Quiz implements Serializable {
         List<ValidationObject> validationObjects = new ArrayList<>();   // For null checking
         boolean isPlaylistQuiz = false; // Boolean to track the type once
         Class cls = null;               // Class needed for validation object
-        List<Track> rawTracks = null;   // All tracks from playlist or hearted albums of artist
+        List<Track> rawTracks = new ArrayList<>();   // All tracks from playlist or hearted albums of artist
+        Map<Integer, Track> playlistTracks = null;
         int averagePopularity = 0;      // Playlist or Artists' average popularity
 
         // Also changes dependent on quiz type
@@ -492,7 +493,10 @@ public class Quiz implements Serializable {
             case PLAYLIST:
                 cls = Playlist.class;
                 validationObjects.add(new ValidationObject(playlist, cls, Severity.HIGH));
-                rawTracks = playlist.getTracksListFromMap();
+                playlistTracks = playlist.getTracks();
+                for (int i = 0; i < playlistTracks.size(); i++) {
+                    rawTracks.add(playlistTracks.get(i));
+                }
                 averagePopularity = playlist.getAveragePopularity();
                 isPlaylistQuiz = true;
                 log.v("Playlist members initialized.");
@@ -614,10 +618,13 @@ public class Quiz implements Serializable {
                 noQuizHistory = true;
             }
             boolean addedRemaining = false;
-            if (!noQuizHistory && rawTracks.size() - quizHistory.size() < numQuestions) {
+            if (!noQuizHistory && rawTracks.size() - quizHistory.size() <= numQuestions) {
                 for (Track track : rawTracks) {
                     if (!quizHistory.containsValue(track.getId())) {
                         tracks.add(track);
+                    }
+                    else {
+                        skippedTracks.add(track);
                     }
                     if (!addedRemaining) {
                         addedRemaining = true;
@@ -632,7 +639,7 @@ public class Quiz implements Serializable {
 
             if (addedRemaining) {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
                     if (random < 0) {
                         log.e("bound must be positive");
@@ -642,7 +649,7 @@ public class Quiz implements Serializable {
                 }
             } else if (user.getDifficulty() == Difficulty.EASY) {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
                     Track track = rawTracks.get(random);
                     if (track.getPopularity() >= popularityThreshold) {
@@ -654,7 +661,7 @@ public class Quiz implements Serializable {
                 }
             } else if (user.getDifficulty() == Difficulty.MEDIUM) {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
                     Track track = rawTracks.get(random);
                     if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
@@ -666,7 +673,7 @@ public class Quiz implements Serializable {
                 }
             } else {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
                     Track track = rawTracks.get(random);
                     tracks.add(track);
@@ -674,7 +681,7 @@ public class Quiz implements Serializable {
                 }
             }
 
-            if (numQuestions - tracks.size() > 0) {
+            if (numQuestions + BUFFER - tracks.size() > 0) {
                 for (Track track : skippedTracks) {
                     tracks.add(track);
                     if (isEnoughData(tracks.size())) {

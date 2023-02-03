@@ -240,7 +240,6 @@ public class User implements Serializable {
         if (playlistHistory.get(topicId) == null) {
             playlistHistory.put(topicId, new TopicHistory());
             playlistHistory.get(topicId).setTotal(poolCount);
-            playlistHistory.get(topicId).setCount(tracks.size());
             newEntry = true;
         }
 
@@ -267,6 +266,10 @@ public class User implements Serializable {
                 playlistHistoryRef.child("trackIds").child(entry.getKey()).setValue(entry.getValue());
             }
             playlistHistoryRef.child("count").setValue(playlistHistory.get(topicId).getCount());
+        }
+
+        if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
+            playlistHistoryRef.child("trackIds").removeValue();
         }
     }
 
