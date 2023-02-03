@@ -8,6 +8,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.List;
+
+import model.Badge;
+import model.GoogleSignIn;
+import model.Quiz;
+import model.User;
+import service.FirebaseService;
+
 public class QuizResults extends AppCompatActivity {
 
     TextView userAccuracy;
@@ -38,9 +50,24 @@ public class QuizResults extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
+            new Thread(new Runnable() {
+                public void run() {
+                    //Testing Badges
+                    User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user.setPlaylistQuizCount(2);
+                    Quiz quiz = (Quiz) extras.getSerializable("quiz");
+                    Badge badge = new Badge(user, quiz);
+                    List<Badge> earnedBadges = badge.getEarnedBadges(getBaseContext());
+                }
+            }).start();
+
             score = extras.getInt("quizScore");
             accuracy = extras.getString("quizAccuracy");
         }

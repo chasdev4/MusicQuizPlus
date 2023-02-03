@@ -687,6 +687,7 @@ public class Quiz implements Serializable {
 
         return false;
     }
+
 /*
     //USED FOR TESTING
     public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
@@ -694,10 +695,17 @@ public class Quiz implements Serializable {
  */
 
     @Exclude
-    public Artist getArtist() { return artist;}
+    public QuizType getType() { return type; }
+
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+
+    @Exclude
+    public Artist getArtist() { return artist; }
 
     @Exclude
     public int getNumCorrect() { return numCorrect; }
+
 
     public Question getFirstQuestion() {
         return questions.get(0);

@@ -93,6 +93,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         if(currentQuestion == null)
         {
             Intent intent = new Intent(this, QuizResults.class);
+            intent.putExtra("quiz", playlistQuiz);
             intent.putExtra("quizScore", playlistQuiz.getScore());
             intent.putExtra("quizAccuracy", playlistQuiz.getAccuracy());
             startActivity(intent);
