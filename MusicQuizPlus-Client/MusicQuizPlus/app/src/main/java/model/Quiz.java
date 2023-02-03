@@ -443,9 +443,8 @@ public class Quiz implements Serializable {
             } else {
                 for (Map.Entry<String, String> generatedQuizHistoryEntry : user.getGeneratedQuizHistory().get(topicId).entrySet()) {
                     if (user.getGeneratedQuizHistory().get(topicId) == null
-                            || (!generatedQuizHistoryEntry.getValue().equals(generatedQuizEntry.getValue().getQuizId())
-                            || user.getGeneratedQuizHistory().isEmpty())
-                            && generatedQuizEntry.getValue().getDifficulty() == user.getDifficulty()) {
+                            || (!user.getGeneratedQuizHistory().get(topicId).containsValue(generatedQuizEntry.getValue().getQuizId())
+                            && generatedQuizEntry.getValue().getDifficulty() == user.getDifficulty())) {
                         // Found a new quiz, use it
                         Quiz quiz = FirebaseService.checkDatabase(db, "quizzes", generatedQuizEntry.getValue().getQuizId(), Quiz.class);
                         if (quiz != null) {
