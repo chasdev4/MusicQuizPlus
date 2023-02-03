@@ -207,12 +207,17 @@ public class User implements Serializable {
         }
 
         for (int i = 0; i < tracks.size(); i++) {
-            if (history.size() == HISTORY_LIMIT) {
-                history.removeFirst();
-                historyIds.removeFirst();
+            if (this.historyIds.contains(tracks.get(i).getId())) {
+                history.remove(tracks.get(i));
+                historyIds.remove(tracks.get(i).getId());
             }
-            history.addLast(tracks.get(i));
-            historyIds.addLast(tracks.get(i).getId());
+                if (history.size() == HISTORY_LIMIT) {
+                    history.removeFirst();
+                    historyIds.removeFirst();
+                }
+                history.addLast(tracks.get(i));
+                historyIds.addLast(tracks.get(i).getId());
+
         }
 
         this.historyIds = new ArrayList<>();
@@ -310,19 +315,34 @@ public class User implements Serializable {
         }
 
         // If there is no artist history for the current topic
+
         if (newEntry) {
             // Set the value since it's new
             artistHistory.get(artist.getId()).setAlbums(albumsMap);
             artistHistoryRef.setValue(artistHistory.get(artist.getId()));
+            for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
+                if (albumsMapEntry.getValue().getCount() == albumsMapEntry.getValue().getTotal()) {
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                }
+            }
         }
         else {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
-                for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
-                    String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
-                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").child(trackId.getKey()).setValue(trackId.getValue());
+                int count = albumsMapEntry.getValue().getCount()
+                        + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
+                if (albumsMapEntry.getValue().getTotal() > count) {
+                    for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
+                        String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
+                                .child(trackId.getKey()).setValue(trackId.getValue());
+                    }
+
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
+                    if (count == albumsMapEntry.getValue().getTotal()) {
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                        artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
+                    }
                 }
-                artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(
-                        albumsMapEntry.getValue().getCount() + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount());
             }
         }
     }

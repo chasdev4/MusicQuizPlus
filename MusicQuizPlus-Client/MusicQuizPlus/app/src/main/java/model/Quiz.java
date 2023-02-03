@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 import model.history.TopicHistory;
+import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -592,14 +593,23 @@ public class Quiz implements Serializable {
             if (this.type == QuizType.PLAYLIST
                     && user.getPlaylistHistory() != null
                     && user.getPlaylistHistory().size() > 0
-                    && user.getPlaylistHistory().containsKey(topicId)) {
+                    && user.getPlaylistHistory().containsKey(topicId)
+                    && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
                 quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
             } else if (this.type == QuizType.ARTIST
                     && user.getArtistHistory() != null
                     && user.getArtistHistory().size() > 0
                     && user.getArtistHistory().containsKey(topicId)) {
                 for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
-                    quizHistory.putAll(album.getValue().getTrackIds());
+                    if (album.getValue().getCount() == album.getValue().getTotal()) {
+                        Album artistAlbum = artist.getAlbum(album.getKey());
+                        for (String trackId : artistAlbum.getTrackIds()) {
+                            quizHistory.put(String.valueOf(artistAlbum.getTrackIds().indexOf(trackId)), trackId);
+                        }
+                    }
+                    else {
+                        quizHistory.putAll(album.getValue().getTrackIds());
+                    }
                 }
             } else {
                 noQuizHistory = true;
@@ -625,7 +635,10 @@ public class Quiz implements Serializable {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
-                    tracks.add(rawTracks.get(rnd.nextInt(random)));
+                    if (random < 0) {
+                        log.e("bound must be positive");
+                    }
+                    tracks.add(rawTracks.get(random));
                     rawTracks.remove(random);
                 }
             } else if (user.getDifficulty() == Difficulty.EASY) {

@@ -37,6 +37,9 @@ public class TopicHistory {
     public void setCount(int count) {this.count = count; }
     public void incrementCount() { count++; }
     public boolean addTrackId(String key, String trackId) {
+        if (total != 0 && total == count) {
+            return false;
+        }
         if (trackIds == null) {
             trackIds = new HashMap<>();
         }
