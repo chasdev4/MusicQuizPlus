@@ -29,10 +29,14 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.Quiz;
 import model.User;
+import model.item.Album;
+import model.item.Artist;
 import model.item.Playlist;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -136,27 +140,46 @@ public class MainActivity extends AppCompatActivity {
 
                     if (user != null) {
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
-                        user.initCollections(db);
-                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
-                        userPlaylist.initCollection(db);
-                        List<String> newTrackIds = new ArrayList<>();
-                        int i = 0;
-                        for (String trackId : userPlaylist.getTrackIds()) {
-                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
-                                log.e("Tracks are out of order.");
-                            }
-                            i++;
-                        }
-                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-                        quiz.end();
-                        log.d("Done.");
+//                        user.initCollections(db);
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
+//                        userPlaylist.initCollection(db);
+//                        List<String> newTrackIds = new ArrayList<>();
+//                        int i = 0;
+//                        for (String trackId : userPlaylist.getTrackIds()) {
+//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
+//                                log.e("Tracks are out of order.");
+//                            }
+//                            i++;
+//                        }
+//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                        quiz.end();
+//                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test out artist quiz generation
-//                        user.initCollections(db);
-//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-//                        artist.initCollections(db, user);
-//                        Quiz quiz = new Quiz(artist, user);
+                        user.initCollections(db);
+                        CountDownLatch countDownLatch = new CountDownLatch(1);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        artist.initCollections(db, user);
+                        countDownLatch.countDown();
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        countDownLatch = new CountDownLatch(1);
+                        artist.initTracks(db);
+                        countDownLatch.countDown();
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+
+                        Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+                        quiz.end();
+                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartPlaylist

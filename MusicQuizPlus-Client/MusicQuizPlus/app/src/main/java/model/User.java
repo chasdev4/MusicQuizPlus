@@ -106,6 +106,15 @@ public class User implements Serializable {
         }
         return null;
     }
+    @Exclude
+    public Artist getArtist(String artistId) {
+        for (Map.Entry<String, Artist> artist : artists.entrySet()) {
+            if (artist.getValue().getId().equals(artistId)) {
+                return artist.getValue();
+            }
+        }
+        return null;
+    }
     //#endregion
 
     //#region Mutators
@@ -260,8 +269,18 @@ public class User implements Serializable {
         DatabaseReference artistHistoryRef = db.child("users").child(uId).child("artistHistory").child(artist.getId());
 
         // If there is no artist history at all
-        if (artistHistory == null) {
+        if (artistHistory == null || artistHistory.size() == 0) {
             artistHistory = new HashMap<>();
+        }
+
+        boolean newEntry = false;
+        // If there is no Topic History
+        if (artistHistory.get(artist.getId()) == null) {
+            artistHistory.put(artist.getId(), new ArtistHistory());
+            artistHistory.get(artist.getId()).setAlbums(new HashMap<>());
+            artistHistory.get(artist.getId()).setAlbumsTotal(artist.getAlbumIds().size());
+            artistHistory.get(artist.getId()).setAlbumsCount(0);
+            newEntry = true;
         }
 
         // Convert the list to an albums map
@@ -271,6 +290,7 @@ public class User implements Serializable {
         for (Track track : tracks) {
             if (!albumsMap.containsKey(track.getAlbumId())) {
                 albumsMap.put(track.getAlbumId(), new TopicHistory());
+                albumsMap.get(track.getAlbumId()).setTrackIds(new HashMap<>());
                 albumsMap.get(track.getAlbumId()).setTotal(artist.getAlbumTrackCount(track.getAlbumId()));
                 albumsMap.get(track.getAlbumId()).setCount(0);
             }
@@ -282,13 +302,18 @@ public class User implements Serializable {
             boolean trackIdAdded = artistHistory.get(artist.getId()).addTrackId(key, tracks.get(i));
             if (trackIdAdded) {
                 albumsMap.get(tracks.get(i).getAlbumId()).getTrackIds().put(key, tracks.get(i).getId());
+                albumsMap.get(tracks.get(i).getAlbumId()).incrementCount();
+                if (albumsMap.get(tracks.get(i).getAlbumId()).getTotal() == 0) {
+                    albumsMap.get(tracks.get(i).getAlbumId()).setTotal(artist.getAlbum(tracks.get(i).getAlbumId()).getTrackIds().size());
+                }
             }
         }
+        artistHistory.get(artist.getId()).setAlbums(albumsMap);
 
         // If there is no artist history for the current topic
-        if (playlistHistory.get(artist.getId()) == null) {
+        if (newEntry) {
             // Set the value since it's new
-            artistHistoryRef.setValue(new ArtistHistory(albumsMap, poolCount, tracks.size()));
+            artistHistoryRef.setValue(artistHistory.get(artist.getId()));
         }
         else {
             for (Map.Entry<String, TopicHistory> entry : albumsMap.entrySet()) {
@@ -296,28 +321,6 @@ public class User implements Serializable {
             }
         }
     }
-
-//    public void updateQuizHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
-//        if (quizHistory == null) {
-//            quizHistory = new HashMap<>();
-//            quizHistory.put(topicId, new TopicHistory(tracks));
-//        }
-//        DatabaseReference quizHistoryRef = db.child("users").child(uId).child("quizHistory").child(topicId);
-//        for (int i = 0; i < tracks.size(); i++) {
-//            String key = quizHistoryRef.push().getKey();
-//            boolean trackIdAdded = quizHistory.get(topicId).addTrackId(key, tracks.get(i).getId());
-//            if (trackIdAdded) {
-//                quizHistory.get(topicId).incrementCount();
-//                quizHistoryRef.child(key).setValue(new TopicHistory(tracks));
-//            }
-//        }
-//    }
-//
-//    // Creates a new Quiz History of Topic Histories
-//    private void createQuizHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
-//        quizHistory = new HashMap<>();
-//        quizHistory.put(topicId, new TopicHistory(tracks, poolCount, ));
-//    }
 
     public void updateGeneratedQuizHistory(DatabaseReference db, String uId, String topicId, String quizId) {
         DatabaseReference generatedQuizHistoryRef = db.child("users").child(uId)

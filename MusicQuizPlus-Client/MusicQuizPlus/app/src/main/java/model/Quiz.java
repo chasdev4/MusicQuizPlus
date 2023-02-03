@@ -1,7 +1,5 @@
 package model;
 
-import android.util.Log;
-
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
@@ -15,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import model.history.GeneratedQuizHistory;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -463,7 +460,7 @@ public class Quiz implements Serializable {
         quizId = quiz.getQuizId();
         history = new ArrayList<>();
         for (Question question : quiz.getQuestions()) {
-            history.add(new Track(question.getTrackId()));
+            history.add(new Track(question.getTrackId(), question.getAlbumId()));
         }
 
     }
@@ -676,6 +673,7 @@ public class Quiz implements Serializable {
                 randomIndex = rnd.nextInt(tracks.size());
             }
 
+            String albumId = null;
             String correctTrackId = null;
             String previewUrl = null;
 
@@ -683,6 +681,7 @@ public class Quiz implements Serializable {
                 answers.set(answerIndex, featuredArtistTracks.get(randomIndex).getFeaturedArtistName());
 
                 // Remove the track from set
+                albumId = featuredArtistTracks.get(randomIndex).getAlbumId();
                 correctTrackId = featuredArtistTracks.get(randomIndex).getId();
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
                 history.add(featuredArtistTracks.get(randomIndex));
@@ -692,6 +691,7 @@ public class Quiz implements Serializable {
                 answers.set(answerIndex, getAnswerText(type, randomIndex));
 
                 // Remove the track from set
+                albumId = tracks.get(randomIndex).getAlbumId();
                 correctTrackId = tracks.get(randomIndex).getId();
                 previewUrl = tracks.get(randomIndex).getPreviewUrl();
                 history.add(tracks.get(randomIndex));
@@ -766,7 +766,7 @@ public class Quiz implements Serializable {
                     }
                 }
             }
-            questions.add(new Question(type, answers, answerIndex, correctTrackId, previewUrl));
+            questions.add(new Question(type, answers, answerIndex, correctTrackId, albumId, previewUrl));
         }
     }
 
@@ -785,20 +785,20 @@ public class Quiz implements Serializable {
         int count = 0;
         char[] str1 = a.toCharArray();
         char[] str2 = b.toCharArray();
-        boolean str1Longer = a.length() > a.length();
-        int length = (!str1Longer) ? b.length() : a.length();
+        boolean str1Longer = a.length() > b.length();
+        int length = (str1Longer) ? b.length() : a.length();
 
         for (int i = 0; i < length; i++) {
-            // TODO: Add a breakpoint to the catch block if it doesn't exist. Solve why the if statement throws an ArrayIndexOutOfBoundsException
-            try {
-                if (str1[i] == str2[i]) {
-                    count++;
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
-                log.e(e.getMessage());
-            }
+try {
+    if (str1[i] == str2[i]) {
+        count++;
+    } else {
+        break;
+    }
+}catch (Exception e) {
+    log.e("still not working");
+}
+
 
         }
 

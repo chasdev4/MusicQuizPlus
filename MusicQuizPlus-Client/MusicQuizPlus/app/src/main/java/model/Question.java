@@ -14,13 +14,15 @@ public class Question implements Serializable {
     private List<String> answers;
     private int answerIndex;
     private String trackId;
+    private String albumId;
     private String previewUrl;
 
-    public Question(QuestionType type, List<String> answers, int answerIndex, String trackId, String previewUrl) {
+    public Question(QuestionType type, List<String> answers, int answerIndex, String trackId, String albumId, String previewUrl) {
         this.type = type;
         this.answers = answers;
         this.answerIndex = answerIndex;
         this.trackId = trackId;
+        this.albumId = albumId;
         this.previewUrl = previewUrl;
 
     }
@@ -45,5 +47,9 @@ public class Question implements Serializable {
 
     public String getTrackId() {
         return trackId;
+    }
+
+    public String getAlbumId() {
+        return albumId;
     }
 }

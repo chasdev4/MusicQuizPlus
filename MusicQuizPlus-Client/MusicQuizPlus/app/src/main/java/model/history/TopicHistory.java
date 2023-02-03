@@ -31,6 +31,9 @@ public class TopicHistory {
 
     //#region Mutators
     public void setTrackIds(Map<String, String> trackIds) {
+        if (this.trackIds == null) {
+            trackIds = new HashMap<>();
+        }
         this.trackIds = trackIds;
     }
     public void setTotal(int total) { this.total = total; }

@@ -65,8 +65,9 @@ public class Track implements Serializable {
     }
 
     // Used for generated quizzes' questions
-    public Track(String id) {
+    public Track(String id, String albumId) {
         this.id = id;
+        this.albumId = albumId;
     }
 
     public Track() {

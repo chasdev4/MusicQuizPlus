@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.ExternalLink;
 import model.PhotoUrl;
@@ -21,6 +22,7 @@ import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
 import utils.FormatUtil;
+import utils.LogUtil;
 
 // SUMMARY
 // The Artist model stores artist information
@@ -42,6 +44,8 @@ public class Artist implements Serializable {
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
+
+    private static String TAG = "Artist.java";
 
     public Artist(String id, String name, List<PhotoUrl> photoUrl, List<String> singleIds,
                   List<String> albumIds, List<String> compilationIds, int followers, boolean followersKnown) {
@@ -161,7 +165,16 @@ public class Artist implements Serializable {
             averagePopularity += track.getPopularity();
         }
 
-        return averagePopularity / tracks.size();
+        return (tracks.size() == 0) ? 0 : averagePopularity / tracks.size();
+    }
+    @Exclude
+    public Album getAlbum(String albumId) {
+        for (Album a : albums) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
+        return null;
     }
     //#endregion
 
@@ -309,6 +322,8 @@ public class Artist implements Serializable {
 
     //#region Collection Initialization
     public void initCollections(DatabaseReference db, User user) {
+        LogUtil log = new LogUtil(TAG, "initCollections");
+
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.submit(new Runnable() {
             @Override
@@ -330,6 +345,53 @@ public class Artist implements Serializable {
 
             }
         });
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
+    }
+
+    public void initTracks(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initTracks");
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album single : singles) {
+                    if (single.isTrackIdsKnown()) {
+                        single.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album album : albums) {
+                    if (album.isTrackIdsKnown()) {
+                        album.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album compilation : compilations) {
+                    if (compilation.isTrackIdsKnown()) {
+                        compilation.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
 
     }
 
@@ -356,6 +418,8 @@ public class Artist implements Serializable {
                 break;
         }
     }
+
+
     //#endregion
 
 }
