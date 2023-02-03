@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 import model.history.TopicHistory;
 import model.item.Artist;
@@ -398,7 +399,11 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Mutators
-
+    private void addToHistory(Map<String, String> quizHistory, Track track) {
+        if (!quizHistory.containsValue(track.getId())) {
+            history.add(track);
+        }
+    }
     //#endregion
 
     public void init() {
@@ -434,8 +439,7 @@ public class Quiz implements Serializable {
                     newQuizInit(quiz);
                     return true;
                 }
-            }
-            else {
+            } else {
                 for (Map.Entry<String, String> generatedQuizHistoryEntry : user.getGeneratedQuizHistory().get(topicId).entrySet()) {
                     if (user.getGeneratedQuizHistory().get(topicId) == null
                             || (!generatedQuizHistoryEntry.getValue().equals(generatedQuizEntry.getValue().getQuizId())
@@ -457,7 +461,7 @@ public class Quiz implements Serializable {
     private void newQuizInit(Quiz quiz) {
         isNewQuiz = false;
         type = quiz.getType();
-        questions = quiz.questions;
+        questions = quiz.getQuestions();
         quizId = quiz.getQuizId();
         history = new ArrayList<>();
         for (Question question : quiz.getQuestions()) {
@@ -465,7 +469,6 @@ public class Quiz implements Serializable {
         }
 
     }
-
 
     private void generateQuiz() {
         // For logging
@@ -518,18 +521,12 @@ public class Quiz implements Serializable {
             return;
         }
 
-        // Should we ignore difficulty
-        boolean ignoreDifficulty = true;
-        // Enough data for the quiz, but not enough to be picky
-        boolean insufficientData = false;
-
         // User's difficulty
         difficulty = user.getDifficulty();
 
         // Calculate the popularity threshold and update ignoreDifficulty
         if (difficulty != Difficulty.HARD) {
             popularityThreshold = (int) (averagePopularity * .6);
-            ignoreDifficulty = false;
         }
 
         //  Get the number of tracks available
@@ -541,7 +538,6 @@ public class Quiz implements Serializable {
             // If a playlist quiz doesn't have enough data
             if (isPlaylistQuiz) {
                 numQuestions = numTracks - BUFFER;
-                insufficientData = true;
             }
             // If an artist quiz doesn't have enough data
             else {
@@ -571,79 +567,112 @@ public class Quiz implements Serializable {
             guessTrackCount -= newTotal - numQuestions;
         }
 
+
         // For random index selection
         Random rnd = new Random();
 
-        // TODO: Fix this after history is fixed
+        Map<String, String> quizHistory = new HashMap<>();
+
         // Prepare information for answers
-        if (insufficientData || ignoreDifficulty
-                || (this.type == QuizType.PLAYLIST && (user.getPlaylistHistory() == null || user.getPlaylistHistory().get(topicId) == null))
-                || (this.type == QuizType.ARTIST && user.getArtistHistory() == null || user.getArtistHistory().get(topicId) == null))
-        {
+        if (!isEnoughData(rawTracks.size())) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
-            getFeaturedArtistTracks(guessArtistCount);
+            if (this.type == QuizType.ARTIST) {
+                getFeaturedArtistTracks(guessArtistCount);
+            }
         } else {
-            log.v("Quiz history found. Separating tracks...");
-            List<Track> oldTracks = new ArrayList<>();
-            List<Track> hardTracks = new ArrayList<>();
+            // Old or hard tracks
+            List<Track> skippedTracks = new ArrayList<>();
 
             if (this.type == QuizType.ARTIST) {
                 getFeaturedArtistTracks(guessArtistCount);
             }
 
-            Map<String, String> quizHistory = null;
-
-            if (this.type == QuizType.PLAYLIST) {
+            boolean noQuizHistory = false;
+            if (this.type == QuizType.PLAYLIST
+                    && user.getPlaylistHistory() != null
+                    && user.getPlaylistHistory().size() > 0
+                    && user.getPlaylistHistory().containsKey(topicId)) {
                 quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            }
-            else {
-                quizHistory = new HashMap<>();
+            } else if (this.type == QuizType.ARTIST
+                    && user.getArtistHistory() != null
+                    && user.getArtistHistory().size() > 0
+                    && user.getArtistHistory().containsKey(topicId)) {
                 for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
                     quizHistory.putAll(album.getValue().getTrackIds());
                 }
+            } else {
+                noQuizHistory = true;
             }
-
-            for (Track track : rawTracks) {
-                boolean skip = false;
-                if (!ignoreDifficulty) {
-                    if (track.getPopularity() < popularityThreshold) {
-                        if (difficulty == Difficulty.EASY
-                                || (difficulty == Difficulty.MEDIUM
-                                && rnd.nextInt(2) == 1))
-                            skip = true;
-                    }
-                }
-                if (!skip) {
-                    if (quizHistory != null && quizHistory.containsValue(track.getId())) {
-                        oldTracks.add(track);
-                    } else {
+            boolean addedRemaining = false;
+            if (!noQuizHistory && rawTracks.size() - quizHistory.size() < numQuestions) {
+                for (Track track : rawTracks) {
+                    if (!quizHistory.containsValue(track.getId())) {
                         tracks.add(track);
                     }
-                } else {
-                    hardTracks.add(track);
+                    if (!addedRemaining) {
+                        addedRemaining = true;
+                    }
+                }
+                if (addedRemaining) {
+                    for (Track track : tracks) {
+                        rawTracks.remove(track);
+                    }
                 }
             }
 
-            // TODO: Update these when the FE validation plan in set
-            // While there isn't enough tracks, add old tracks
-            int i = 0;
-            while (tracks.size() < numQuestions + BUFFER
-                    || i < oldTracks.size() - 1) {
-                tracks.add(oldTracks.get(i));
-                i++;
+            if (addedRemaining) {
+                int size = tracks.size();
+                for (int i = 0; i < numQuestions - size; i++) {
+                    int random = rnd.nextInt(rawTracks.size());
+                    tracks.add(rawTracks.get(rnd.nextInt(random)));
+                    rawTracks.remove(random);
+                }
+            } else if (user.getDifficulty() == Difficulty.EASY) {
+                int size = tracks.size();
+                for (int i = 0; i < numQuestions - size; i++) {
+                    int random = rnd.nextInt(rawTracks.size());
+                    Track track = rawTracks.get(random);
+                    if (track.getPopularity() >= popularityThreshold) {
+                        tracks.add(track);
+                    } else {
+                        skippedTracks.add(track);
+                    }
+                    rawTracks.remove(track);
+                }
+            } else if (user.getDifficulty() == Difficulty.MEDIUM) {
+                int size = tracks.size();
+                for (int i = 0; i < numQuestions - size; i++) {
+                    int random = rnd.nextInt(rawTracks.size());
+                    Track track = rawTracks.get(random);
+                    if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
+                        tracks.add(track);
+                    } else {
+                        skippedTracks.add(track);
+                    }
+                    rawTracks.remove(track);
+                }
+            } else {
+                int size = tracks.size();
+                for (int i = 0; i < numQuestions - size; i++) {
+                    int random = rnd.nextInt(rawTracks.size());
+                    Track track = rawTracks.get(random);
+                    tracks.add(track);
+                    rawTracks.remove(track);
+                }
             }
 
-            // While there isn't enough tracks, add hard tracks
-            i = 0;
-            while (tracks.size() < numQuestions + BUFFER
-                    || i < hardTracks.size() - 1) {
-                tracks.add(hardTracks.get(i));
-                i++;
+            if (numQuestions - tracks.size() > 0) {
+                for (Track track : skippedTracks) {
+                    tracks.add(track);
+                    if (isEnoughData(tracks.size())) {
+                        break;
+                    }
+                }
             }
 
             // This code block shouldn't execute
-            if (tracks.size() < numQuestions + BUFFER) {
+            if (!isEnoughData(tracks.size() + BUFFER)) {
                 log.e("There isn't enough data for this quiz");
                 return;
             }
@@ -651,15 +680,15 @@ public class Quiz implements Serializable {
         }
 
         // Generate questions of each type
-        generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd);
-        generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd);
-        generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd);
-        generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd);
+        generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd, quizHistory);
+        generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd, quizHistory);
+        generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd, quizHistory);
+        generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd, quizHistory);
         Collections.shuffle(questions);
         log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), topicId));
     }
 
-    private void generateQuestions(QuestionType type, int count, Random rnd) {
+    private void generateQuestions(QuestionType type, int count, Random rnd, Map<String, String> quizHistory) {
         boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
         if (count < 1) {
             return;
@@ -695,7 +724,7 @@ public class Quiz implements Serializable {
                 albumId = featuredArtistTracks.get(randomIndex).getAlbumId();
                 correctTrackId = featuredArtistTracks.get(randomIndex).getId();
                 previewUrl = featuredArtistTracks.get(randomIndex).getPreviewUrl();
-                history.add(featuredArtistTracks.get(randomIndex));
+                addToHistory(quizHistory, featuredArtistTracks.get(randomIndex));
                 featuredArtistTracks.remove(randomIndex);
             } else {
                 // Assign the correct answer
@@ -705,7 +734,7 @@ public class Quiz implements Serializable {
                 albumId = tracks.get(randomIndex).getAlbumId();
                 correctTrackId = tracks.get(randomIndex).getId();
                 previewUrl = tracks.get(randomIndex).getPreviewUrl();
-                history.add(tracks.get(randomIndex));
+                addToHistory(quizHistory, tracks.get(randomIndex));
                 tracks.remove(randomIndex);
             }
 
@@ -781,6 +810,10 @@ public class Quiz implements Serializable {
         }
     }
 
+    private boolean isEnoughData(int size) {
+        return size >= numQuestions + BUFFER;
+    }
+
     private boolean namesMatch(String a, String b) {
         LogUtil log = new LogUtil(TAG, "namesMatch");
         // Return if either are empty
@@ -800,15 +833,15 @@ public class Quiz implements Serializable {
         int length = (str1Longer) ? b.length() : a.length();
 
         for (int i = 0; i < length; i++) {
-try {
-    if (str1[i] == str2[i]) {
-        count++;
-    } else {
-        break;
-    }
-}catch (Exception e) {
-    log.e("still not working");
-}
+            try {
+                if (str1[i] == str2[i]) {
+                    count++;
+                } else {
+                    break;
+                }
+            } catch (Exception e) {
+                log.e("still not working");
+            }
 
 
         }
@@ -857,8 +890,7 @@ try {
         if (answerIndex == questions.get(currentQuestionIndex).getAnswerIndex()) {
             score += BASE_SCORE;
             numCorrect++;
-        }
-        else {
+        } else {
             for (Track track : history) {
                 if (track.getId().equals(questions.get(currentQuestionIndex).getTrackId())) {
                     history.remove(track);

@@ -176,7 +176,6 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
 
-
                         Quiz quiz = new Quiz(artist, user, db, firebaseUser);
                         quiz.end();
                         log.d("Done.");

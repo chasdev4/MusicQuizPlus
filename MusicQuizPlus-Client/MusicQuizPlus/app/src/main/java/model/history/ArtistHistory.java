@@ -42,7 +42,6 @@ public class ArtistHistory {
         if (albums.get(track.getAlbumId()).getTrackIds().containsValue(track.getId())) {
             return false;
         }
-        albums.get(track.getAlbumId()).getTrackIds().put(key, track.getId());
-        return true;
+        return albums.get(track.getAlbumId()).addTrackId(key, track.getId());
     }
 }
