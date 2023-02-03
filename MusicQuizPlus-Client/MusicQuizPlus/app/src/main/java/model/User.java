@@ -59,44 +59,58 @@ public class User implements Serializable {
     public int getLevel() {
         return level;
     }
+
     public int getXp() {
         return xp;
     }
+
     public Difficulty getDifficulty() {
         return difficulty;
     }
+
     public Map<String, String> getAlbumIds() {
         return albumIds;
     }
+
     public Map<String, String> getArtistIds() {
         return artistIds;
     }
+
     public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
+
     public List<String> getHistoryIds() {
         return historyIds;
     }
+
     public Map<String, TopicHistory> getPlaylistHistory() {
         return playlistHistory;
     }
+
     public Map<String, ArtistHistory> getArtistHistory() {
         return artistHistory;
     }
-    public Map<String, Map<String, String>> getGeneratedQuizHistory() { return generatedQuizHistory; }
+
+    public Map<String, Map<String, String>> getGeneratedQuizHistory() {
+        return generatedQuizHistory;
+    }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
     }
+
     @Exclude
     public Map<String, Artist> getArtists() {
         return artists;
     }
+
     @Exclude
     public LinkedList<Track> getHistory() {
         return history;
     }
+
     @Exclude
     public Playlist getPlaylist(String playlistId) {
         for (Map.Entry<String, Playlist> playlist : playlists.entrySet()) {
@@ -106,6 +120,7 @@ public class User implements Serializable {
         }
         return null;
     }
+
     @Exclude
     public Artist getArtist(String artistId) {
         for (Map.Entry<String, Artist> artist : artists.entrySet()) {
@@ -121,22 +136,35 @@ public class User implements Serializable {
     public void setLevel(int level) {
         this.level = level;
     }
+
     public void setXp(int xp) {
         this.xp = xp;
     }
+
     public void setDifficulty(Difficulty difficulty) {
         this.difficulty = difficulty;
     }
-    public void setPlaylistHistory(Map<String, TopicHistory> playlistHistory) { this.playlistHistory = playlistHistory; }
-    public void setArtistHistory(Map<String, ArtistHistory> artistHistory) { this.artistHistory = artistHistory; }
-    public void setGeneratedQuizHistory(Map<String, Map<String, String>> generatedQuizHistory) { this.generatedQuizHistory = generatedQuizHistory; }
+
+    public void setPlaylistHistory(Map<String, TopicHistory> playlistHistory) {
+        this.playlistHistory = playlistHistory;
+    }
+
+    public void setArtistHistory(Map<String, ArtistHistory> artistHistory) {
+        this.artistHistory = artistHistory;
+    }
+
+    public void setGeneratedQuizHistory(Map<String, Map<String, String>> generatedQuizHistory) {
+        this.generatedQuizHistory = generatedQuizHistory;
+    }
 
     public void setPlaylists(Map<String, Playlist> playlists) {
         this.playlists = playlists;
     }
+
     public void setArtists(Map<String, Artist> artists) {
         this.artists = artists;
     }
+
     public void setHistory(LinkedList<Track> history) {
         this.history = history;
     }
@@ -149,6 +177,7 @@ public class User implements Serializable {
         albumIds.put(key, albumId);
         return true;
     }
+
     public boolean addArtistId(String key, String artistId) {
         if (artistIds.containsValue(artistId)) {
             return false;
@@ -156,6 +185,7 @@ public class User implements Serializable {
         artistIds.put(key, artistId);
         return true;
     }
+
     public boolean addPlaylistId(String key, String playlistId) {
         if (playlistIds.containsValue(playlistId)) {
             return false;
@@ -176,6 +206,7 @@ public class User implements Serializable {
         albumIds.remove(key);
         return key;
     }
+
     public String removeArtistId(String artistId) {
         String key = "";
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
@@ -187,6 +218,7 @@ public class User implements Serializable {
         artistIds.remove(key);
         return key;
     }
+
     public String removePlaylistId(String playlistId) {
         String key = "";
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
@@ -211,12 +243,12 @@ public class User implements Serializable {
                 history.remove(tracks.get(i));
                 historyIds.remove(tracks.get(i).getId());
             }
-                if (history.size() == HISTORY_LIMIT) {
-                    history.removeFirst();
-                    historyIds.removeFirst();
-                }
-                history.addLast(tracks.get(i));
-                historyIds.addLast(tracks.get(i).getId());
+            if (history.size() == HISTORY_LIMIT) {
+                history.removeFirst();
+                historyIds.removeFirst();
+            }
+            history.addLast(tracks.get(i));
+            historyIds.addLast(tracks.get(i).getId());
 
         }
 
@@ -260,8 +292,7 @@ public class User implements Serializable {
         if (newEntry) {
             // Set the value since it's new
             playlistHistoryRef.setValue(new TopicHistory(tracksMap, poolCount, tracks.size()));
-        }
-        else {
+        } else {
             for (Map.Entry<String, String> entry : tracksMap.entrySet()) {
                 playlistHistoryRef.child("trackIds").child(entry.getKey()).setValue(entry.getValue());
             }
@@ -328,8 +359,7 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                 }
             }
-        }
-        else {
+        } else {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 int count = albumsMapEntry.getValue().getCount()
                         + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
@@ -339,12 +369,11 @@ public class User implements Serializable {
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
                                 .child(trackId.getKey()).setValue(trackId.getValue());
                     }
-
-                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
-                    if (count == albumsMapEntry.getValue().getTotal()) {
-                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
-                        artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
-                    }
+                }
+                artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
+                if (count == albumsMapEntry.getValue().getTotal()) {
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                    artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
                 }
             }
         }
@@ -380,6 +409,7 @@ public class User implements Serializable {
         }
         log.i("Artists retrieved.");
     }
+
     private void initPlaylists(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         playlists = new HashMap<>();
@@ -388,6 +418,7 @@ public class User implements Serializable {
         }
         log.i("Playlists retrieved.");
     }
+
     private void initHistory(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         history = new LinkedList<>();
@@ -396,8 +427,7 @@ public class User implements Serializable {
         }
         if (history.size() > 0) {
             log.i("History retrieved.");
-        }
-        else {
+        } else {
             log.i("No history to retrieve.");
         }
     }

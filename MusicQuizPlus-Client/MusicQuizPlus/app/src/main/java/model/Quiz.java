@@ -58,6 +58,8 @@ public class Quiz implements Serializable {
     private DatabaseReference db;
     private FirebaseUser firebaseUser;
     private int poolCount;
+    private boolean addedRemaining;
+    private int remaining;
     //#endregion
 
     //#region Constants
@@ -279,6 +281,8 @@ public class Quiz implements Serializable {
         type = QuizType.PLAYLIST;
         questions = new ArrayList<>();
         isNewQuiz = true;
+        addedRemaining = false;
+        remaining = 0;
         init();
     }
 
@@ -293,6 +297,8 @@ public class Quiz implements Serializable {
         type = QuizType.ARTIST;
         questions = new ArrayList<>();
         isNewQuiz = true;
+        addedRemaining = false;
+        remaining = 0;
         init();
     }
 
@@ -617,11 +623,12 @@ public class Quiz implements Serializable {
             } else {
                 noQuizHistory = true;
             }
-            boolean addedRemaining = false;
+
             if (!noQuizHistory && rawTracks.size() - quizHistory.size() <= numQuestions) {
                 for (Track track : rawTracks) {
                     if (!quizHistory.containsValue(track.getId())) {
                         tracks.add(track);
+                        remaining++;
                     }
                     else {
                         skippedTracks.add(track);
@@ -730,6 +737,15 @@ public class Quiz implements Serializable {
                 randomIndex = rnd.nextInt(featuredArtistTracks.size());
             } else {
                 randomIndex = rnd.nextInt(tracks.size());
+            }
+
+            if (addedRemaining && !isFeaturedArtistQuestion) {
+                randomIndex = 0;
+
+                if (remaining == 0) {
+                    addedRemaining = false;
+                }
+                remaining--;
             }
 
             String albumId = null;
