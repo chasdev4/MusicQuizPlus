@@ -308,16 +308,21 @@ public class User implements Serializable {
                 }
             }
         }
-        artistHistory.get(artist.getId()).setAlbums(albumsMap);
 
         // If there is no artist history for the current topic
         if (newEntry) {
             // Set the value since it's new
+            artistHistory.get(artist.getId()).setAlbums(albumsMap);
             artistHistoryRef.setValue(artistHistory.get(artist.getId()));
         }
         else {
-            for (Map.Entry<String, TopicHistory> entry : albumsMap.entrySet()) {
-                artistHistoryRef.child("albums").child(entry.getKey()).setValue(entry.getValue());
+            for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
+                for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
+                    String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").child(trackId.getKey()).setValue(trackId.getValue());
+                }
+                artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(
+                        albumsMapEntry.getValue().getCount() + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount());
             }
         }
     }

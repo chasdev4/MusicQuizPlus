@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import model.history.TopicHistory;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -575,10 +576,9 @@ public class Quiz implements Serializable {
 
         // TODO: Fix this after history is fixed
         // Prepare information for answers
-        if (false)
-//        if (insufficientData || ignoreDifficulty
-//                || user.getQuizHistory() == null
-//                || user.getQuizHistory().get(topicId) == null)
+        if (insufficientData || ignoreDifficulty
+                || (this.type == QuizType.PLAYLIST && (user.getPlaylistHistory() == null || user.getPlaylistHistory().get(topicId) == null))
+                || (this.type == QuizType.ARTIST && user.getArtistHistory() == null || user.getArtistHistory().get(topicId) == null))
         {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
@@ -588,11 +588,22 @@ public class Quiz implements Serializable {
             List<Track> oldTracks = new ArrayList<>();
             List<Track> hardTracks = new ArrayList<>();
 
-            getFeaturedArtistTracks(guessArtistCount);
+            if (this.type == QuizType.ARTIST) {
+                getFeaturedArtistTracks(guessArtistCount);
+            }
 
-            // TODO: here
             Map<String, String> quizHistory = null;
-            //   Map<String, String> quizHistory = user.getQuizHistory().get(topicId).getTrackIds();
+
+            if (this.type == QuizType.PLAYLIST) {
+                quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
+            }
+            else {
+                quizHistory = new HashMap<>();
+                for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
+                    quizHistory.putAll(album.getValue().getTrackIds());
+                }
+            }
+
             for (Track track : rawTracks) {
                 boolean skip = false;
                 if (!ignoreDifficulty) {
