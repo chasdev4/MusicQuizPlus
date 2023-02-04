@@ -25,13 +25,14 @@ import model.item.Artist;
 import model.item.Playlist;
 import model.type.BadgeType;
 import model.type.QuizType;
+import service.FirebaseService;
 
 public class Badge {
 
     private String badgeID;
     private String badgeName;
     private String description;
-    private String photoURL;
+    private PhotoUrl photoURL;
     private BadgeType badgeType;
     private int badgeRank;
 
@@ -55,10 +56,16 @@ public class Badge {
     private Quiz quiz;
     private QuizType type;
     private List<String> badgeIds = new ArrayList<>();
+    private boolean allowDuplicates;
 
     DatabaseReference db = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
+    public Badge()
+    {
+
+    }
 
     public Badge(User user, Quiz quiz)
     {
@@ -67,7 +74,7 @@ public class Badge {
         this.type = quiz.getType();
     }
 
-    public Badge(String badgeID, String badgeName, String description, String photoURL, BadgeType badgeType, int badgeRank)
+    private Badge(String badgeID, String badgeName, String description, PhotoUrl photoURL, BadgeType badgeType, int badgeRank, boolean allowDuplicates)
     {
         this.badgeID = badgeID;
         this.badgeName = badgeName;
@@ -75,9 +82,10 @@ public class Badge {
         this.photoURL = photoURL;
         this.badgeType = badgeType;
         this.badgeRank = badgeRank;
+        this.allowDuplicates = allowDuplicates;
     }
 
-    public List<Badge> getEarnedBadges(Context context)
+    public /*List<Badge>*/void getEarnedBadges(Context context)
     {
         switch(type)
         {
@@ -118,34 +126,26 @@ public class Badge {
             for (Badge theBadge : earnedBadges)
             {
                 String key = db.child("users").child(firebaseUser.getUid()).child("badgeIds").push().getKey();
-                user.addBadgeId(key, theBadge.getBadgeID());
+                user.addBadgeId(key, theBadge.getBadgeID(), theBadge.allowDuplicates);
 
+                Badge badgeInDatabase = null;
+                badgeInDatabase = (Badge) FirebaseService.checkDatabase(db, "badges", theBadge.getBadgeID(), Badge.class);
 
-                DatabaseReference badgeRef = db.child("badges");
-                badgeRef.orderByValue().equalTo(theBadge.getBadgeID()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        if (!snapshot.exists()) {
-                            //add to data base
-                            //String dbKey = db.child("badges").push().getKey();
-                            db.child("badges").child(theBadge.getBadgeID()).setValue(theBadge);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
-
-
+                if(badgeInDatabase != null)
+                {
+                    //Badge is already in database
+                    continue;
+                }
+                else
+                {
+                    db.child("badges").child(theBadge.getBadgeID()).setValue(theBadge);
+                }
             }
         }
 
         updateBadgeIDsForUserInDatabase(context);
 
-        return earnedBadges;
+        //return earnedBadges;
     }
 
     private void updateBadgeIDsForUserInDatabase(Context context)
@@ -171,29 +171,30 @@ public class Badge {
         Badge badge = null;
 
         int score = quiz.getNumCorrect();
-        String photoURL = artist.getPhotoUrl().get(0).getUrl();
+        photoURL = artist.getPhotoUrl().get(0);
         String artistName = artist.getName();
+        allowDuplicates = true;
 
         if(score > 2 && score < 5)
         {
             String badgeName = String.format(Locale.ENGLISH, "I Like %s", artistName);
             String description = "User Has Got 3-4 Correct on an Artist Quiz";
             String uid = generateUniqueId(BadgeType.ARTIST, 1, artist.getId());
-            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 1);
+            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 1, allowDuplicates);
         }
         else if (score > 4 && score < 7)
         {
             String badgeName = String.format(Locale.ENGLISH, "I Love %s", artistName);
             String description = "User Has Got 5-6 Correct on an Artist Quiz";
             String uid = generateUniqueId(BadgeType.ARTIST, 2, artist.getId());
-            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 2);
+            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 2, allowDuplicates);
         }
         else if (score > 6 && score <= 10)
         {
             String badgeName = String.format(Locale.ENGLISH, "True %s Fan", artistName);
             String description = "User Has Got 7-10 Correct on an Artist Quiz";
             String uid = generateUniqueId(BadgeType.ARTIST, 3, artist.getId());
-            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 3);
+            badge = new Badge(uid, badgeName, description, photoURL, BadgeType.ARTIST, 3, allowDuplicates);
         }
 
         return badge;
@@ -295,6 +296,7 @@ public class Badge {
     private Badge getPerfectAccuracyBadge()
     {
         String uid;
+        allowDuplicates = true;
 
         if(type == QuizType.PLAYLIST)
         {
@@ -305,27 +307,27 @@ public class Badge {
             uid = generateUniqueId(BadgeType.PERFORMANCE, 0, artist.getId());
         }
 
-        return new Badge(uid, "Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", "photoURL", BadgeType.PERFORMANCE, 0);
+        return new Badge(uid, "Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", null, BadgeType.PERFORMANCE, 0, allowDuplicates);
     }
 
     private Badge getMilestoneBadge(int quizCount)
     {
         String qzType;
         String strQuiz;
-        String photoURL;
         String uid;
+        allowDuplicates = false;
 
         if(type == QuizType.PLAYLIST)
         {
             qzType = "Playlist";
-            photoURL = playlist.getPhotoUrl().get(0).getUrl();
+            photoURL = playlist.getPhotoUrl().get(0);
             badgeType = BadgeType.PLAYLIST_MILESTONE;
             uid = generateUniqueId(badgeType, quizCount, playlist.getId());
         }
         else
         {
             qzType = "Artist";
-            photoURL = artist.getPhotoUrl().get(0).getUrl();
+            photoURL = artist.getPhotoUrl().get(0);
             badgeType = BadgeType.ARTIST_MILESTONE;
             uid = generateUniqueId(badgeType, quizCount, artist.getId());
         }
@@ -341,19 +343,19 @@ public class Badge {
 
         String badgeName = String.format(Locale.ENGLISH, "%d %s %s Taken", quizCount, qzType, strQuiz);
         String description = String.format(Locale.ENGLISH, "User has taken %d %s %s", quizCount, qzType, strQuiz);
-        return new Badge(uid, badgeName, description, photoURL, badgeType, quizCount);
+        return new Badge(uid, badgeName, description, null, badgeType, quizCount, allowDuplicates);
     }
 
     public String generateUniqueId(BadgeType badgeType, int badgeRank, String topicId) {
 
         if(badgeType == BadgeType.PLAYLIST_MILESTONE || badgeType == BadgeType.ARTIST_MILESTONE)
         {
-            String uniqueID = "{ " + String.valueOf(badgeType.ordinal()) + " }-{ " + String.valueOf(badgeRank) + " }-{ " + badgeType + " }";
+            String uniqueID = String.valueOf(badgeType.ordinal()) + "-" + String.valueOf(badgeRank) + "-" + badgeType;
             badgeIds.add(uniqueID);
             return uniqueID;
         }
 
-        String uid = "{ " + String.valueOf(badgeType.ordinal()) + " }-{ " + String.valueOf(badgeRank) + " }-{ " + topicId + " }";
+        String uid = String.valueOf(badgeType.ordinal()) + "-" + String.valueOf(badgeRank) + "-" + topicId;
         badgeIds.add(uid);
         return uid;
     }
@@ -361,6 +363,8 @@ public class Badge {
     public String getBadgeID() {
         return badgeID;
     }
+
+    public PhotoUrl getPhotoURL() { return photoURL; }
 
     public String getBadgeName() {
         return badgeName;
