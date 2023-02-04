@@ -32,6 +32,7 @@ import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
+import model.Badge;
 import model.ValidationObject;
 import model.item.Playlist;
 
@@ -59,6 +60,8 @@ public class FirebaseService {
         final Artist[] artists = new Artist[1];
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
+        final Badge[] badges = new Badge[1];
+
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -80,6 +83,9 @@ public class FirebaseService {
                         break;
                     case "Track":
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
+                        break;
+                    case "Badge":
+                        badges[0] = (Badge)dataSnapshot.getValue(cls);
                         break;
                     default:
 
@@ -118,6 +124,8 @@ public class FirebaseService {
                 return (T) playlists[0];
             case "Track":
                 return (T) tracks[0];
+            case "Badge":
+                return (T) badges[0];
             default:
 
                 log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
