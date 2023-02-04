@@ -301,13 +301,15 @@ public class Badge {
         if(type == QuizType.PLAYLIST)
         {
             uid = generateUniqueId(BadgeType.PERFORMANCE, 0, playlist.getId());
+            photoURL = playlist.getPhotoUrl().get(0);
         }
         else
         {
             uid = generateUniqueId(BadgeType.PERFORMANCE, 0, artist.getId());
+            photoURL = artist.getPhotoUrl().get(0);
         }
 
-        return new Badge(uid, "Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", null, BadgeType.PERFORMANCE, 0, allowDuplicates);
+        return new Badge(uid, "Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", photoURL, BadgeType.PERFORMANCE, 0, allowDuplicates);
     }
 
     private Badge getMilestoneBadge(int quizCount)
@@ -350,12 +352,12 @@ public class Badge {
 
         if(badgeType == BadgeType.PLAYLIST_MILESTONE || badgeType == BadgeType.ARTIST_MILESTONE)
         {
-            String uniqueID = String.valueOf(badgeType.ordinal()) + "-" + String.valueOf(badgeRank) + "-" + badgeType;
+            String uniqueID = badgeType.ordinal() + "-" + badgeRank + "-" + badgeType;
             badgeIds.add(uniqueID);
             return uniqueID;
         }
 
-        String uid = String.valueOf(badgeType.ordinal()) + "-" + String.valueOf(badgeRank) + "-" + topicId;
+        String uid = badgeType.ordinal() + "-" + badgeRank + "-" + topicId;
         badgeIds.add(uid);
         return uid;
     }
