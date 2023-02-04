@@ -66,13 +66,19 @@ public class User implements Serializable {
 
     public Map<String, String> getBadgeIds() { return badgeIds; }
 
-    public boolean addBadgeId(String key, String badgeId){
-        if(badgeIds.containsValue(badgeId)){
-            return false;
+    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates){
+        if(allowDuplicates)
+        {
+            badgeIds.put(key, badgeId);
+            return true;
         }
 
-        badgeIds.put(key, badgeId);
-        return true;
+        if(!badgeIds.containsValue(badgeId)){
+            badgeIds.put(key, badgeId);
+            return true;
+        }
+
+        return false;
     }
 
     public String removeBadgeId(String badgeId) {
