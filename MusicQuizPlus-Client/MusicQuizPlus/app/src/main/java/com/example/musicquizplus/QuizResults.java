@@ -57,16 +57,21 @@ public class QuizResults extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
+            /*
+
             new Thread(new Runnable() {
                 public void run() {
+
                     //Testing Badges
                     User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    user.setPlaylistQuizCount(2);
+                    //user.setPlaylistQuizCount(2);
                     Quiz quiz = (Quiz) extras.getSerializable("quiz");
                     Badge badge = new Badge(user, quiz);
                     List<Badge> earnedBadges = badge.getEarnedBadges(getBaseContext());
                 }
             }).start();
+
+             */
 
             score = extras.getInt("quizScore");
             accuracy = extras.getString("quizAccuracy");
