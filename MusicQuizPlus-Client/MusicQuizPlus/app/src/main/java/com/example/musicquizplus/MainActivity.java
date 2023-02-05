@@ -140,25 +140,25 @@ public class MainActivity extends AppCompatActivity {
 
                     if (user != null) {
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
-                        user.initCollections(db);
-                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
-                        userPlaylist.initCollection(db);
-                        List<String> newTrackIds = new ArrayList<>();
-                        int i = 0;
-                        for (String trackId : userPlaylist.getTrackIds()) {
-                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
-                                log.e("Tracks are out of order.");
-                            }
-                            i++;
-                        }
-                        for (int k = 80; k > 0; k--) {
-                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
-                            userPlaylist.getTracks().remove(k + 19);
-                        }
-
-                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-                        quiz.end();
-                        log.d("Done.");
+//                        user.initCollections(db);
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
+//                        userPlaylist.initCollection(db);
+//                        List<String> newTrackIds = new ArrayList<>();
+//                        int i = 0;
+//                        for (String trackId : userPlaylist.getTrackIds()) {
+//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
+//                                log.e("Tracks are out of order.");
+//                            }
+//                            i++;
+//                        }
+//                        for (int k = 80; k > 0; k--) {
+//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
+//                            userPlaylist.getTracks().remove(k + 19);
+//                        }
+//
+//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                        quiz.end();
+//                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test out artist quiz generation

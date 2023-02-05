@@ -44,16 +44,11 @@ public class User implements Serializable {
 
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
+    private final static int MIN_LEVEL = 1;
+    private final static int MAX_LEVEL = 100;
+    private final static int MAX_XP = 100000;
 
-    public User() {
-        level = 1;
-        xp = 0;
-        difficulty = Difficulty.EASY;
-        albumIds = new HashMap<>();
-        artistIds = new HashMap<>();
-        playlistIds = new HashMap<>();
-        historyIds = new LinkedList<>();
-    }
+    public User() { }
 
     //#region Accessors
     public int getLevel() {
@@ -232,6 +227,7 @@ public class User implements Serializable {
     }
     //#endregion
 
+    //#region Update History
     public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
         LinkedList<String> historyIds = new LinkedList<>();
         for (String id : this.historyIds) {
@@ -392,6 +388,7 @@ public class User implements Serializable {
         generatedQuizHistory.get(topicId).put(key, quizId);
         generatedQuizHistoryRef.child(topicId).child(key).setValue(quizId);
     }
+    //#endregion
 
     //#region Collections initialization
     public void initCollections(DatabaseReference db) {
@@ -433,5 +430,16 @@ public class User implements Serializable {
     }
     //#endregion
 
+    //#region Progression
+    public void addXP(DatabaseReference db, FirebaseUser firebaseUser, int xp) {
+        this.xp += xp;
+        updateLevel(db, firebaseUser);
+    }
 
+    private void updateLevel(DatabaseReference db, FirebaseUser firebaseUser) {
+        if (xp > level / 2 * 1024) {
+
+            db.child("users").child(firebaseUser.getUid()).child("level").setValue(level);
+        }
+    }
 }
