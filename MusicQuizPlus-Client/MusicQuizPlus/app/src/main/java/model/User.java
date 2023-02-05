@@ -53,32 +53,19 @@ public class User implements Serializable {
     private final static int MAX_LEVEL = 100;
     private final static int MAX_XP = 100000;
 
-    public User() { }
-
-    //#region Accessors
-    public int getLevel() {
-        return level;
-    }
-
-    public int getXp() {
-        return xp;
-    }
-
     public User() {
         albumIds = new HashMap<>();
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
-        historyIds = new HashMap<>();
+        historyIds = new ArrayList<>();
         badgeIds = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
         level = 1;
         xp = 0;
         difficulty = Difficulty.EASY;
-
-    public Difficulty getDifficulty() {
-        return difficulty;
     }
+
 
     public User(User user) {
         albumIds = user.albumIds;
@@ -91,6 +78,15 @@ public class User implements Serializable {
         level = user.level;
         xp = user.xp;
         difficulty = user.difficulty;
+    }
+
+    //#region Accessors
+    public int getLevel() {
+        return level;
+    }
+
+    public int getXp() {
+        return xp;
     }
 
     public Map<String, String> getBadgeIds() { return badgeIds; }
@@ -137,7 +133,9 @@ public class User implements Serializable {
     public List<String> getHistoryIds() {
         return historyIds;
     }
-
+    public Difficulty getDifficulty() {
+        return difficulty;
+    }
     public Map<String, TopicHistory> getPlaylistHistory() {
         return playlistHistory;
     }
@@ -313,14 +311,6 @@ public class User implements Serializable {
     //USED FOR DEBUGGING
     public void setPlaylistQuizCount(int playlistQuizCount) {
         this.playlistQuizCount = playlistQuizCount;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
     }
 
     //#region Update History

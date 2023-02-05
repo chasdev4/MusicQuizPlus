@@ -945,9 +945,6 @@ public class Quiz implements Serializable {
  */
 
     @Exclude
-    public QuizType getType() { return type; }
-
-    @Exclude
     public Playlist getPlaylist() { return playlist; }
 
     @Exclude
@@ -955,20 +952,6 @@ public class Quiz implements Serializable {
 
     @Exclude
     public int getNumCorrect() { return numCorrect; }
-
-
-    public Question getFirstQuestion() {
-        return questions.get(0);
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public String getAccuracy() {
-        double accuracy = (double)numCorrect / numQuestions;
-        return String.valueOf(accuracy  * 100)  + "%";
-    }
 
 
     // Pass in the selected answer
