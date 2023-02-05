@@ -1,5 +1,7 @@
 package model;
 
+import com.google.firebase.database.Exclude;
+
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
@@ -934,6 +936,40 @@ public class Quiz implements Serializable {
 
         return false;
     }
+
+
+/*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+ */
+
+    @Exclude
+    public QuizType getType() { return type; }
+
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+
+    @Exclude
+    public Artist getArtist() { return artist; }
+
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
+
+
+    public Question getFirstQuestion() {
+        return questions.get(0);
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public String getAccuracy() {
+        double accuracy = (double)numCorrect / numQuestions;
+        return String.valueOf(accuracy  * 100)  + "%";
+    }
+
 
     // Pass in the selected answer
     // Returns the next question

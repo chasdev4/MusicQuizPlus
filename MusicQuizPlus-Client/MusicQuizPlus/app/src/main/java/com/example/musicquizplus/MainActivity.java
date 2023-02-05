@@ -32,12 +32,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import model.Badge;
+import model.GettingStarted;
 import model.GoogleSignIn;
+
+import model.PhotoUrl;
 import model.Quiz;
+import model.Search;
+import model.SearchResult;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
+import model.type.AlbumType;
+import model.type.Difficulty;
+
 import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.UserService;
@@ -139,6 +148,24 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
                     if (user != null) {
+/*
+                        //region TESTING BADGES
+
+                        user.initArtists(db);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        user.setArtistQuizCount(2);
+                        Quiz quiz = new Quiz(artist, user);
+                        quiz.setNumQuestions(10);
+                        quiz.setNumCorrect(10);
+                        Badge badge = new Badge(user, quiz);
+                        badge.getEarnedBadges(getBaseContext());
+                        int i = 0;
+
+                        //endregion
+ */
+
+
+
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
 //                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");

@@ -20,7 +20,12 @@ import java.util.List;
 
 import java.util.concurrent.CountDownLatch;
 
+
+import model.Badge;
+import model.ValidationObject;
+
 import model.Quiz;
+
 import model.item.Playlist;
 
 import model.User;
@@ -44,7 +49,9 @@ public class FirebaseService {
         final Artist[] artists = new Artist[1];
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
+        final Badge[] badges = new Badge[1];
         final Quiz[] quizzes = new Quiz[1];
+
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
@@ -66,6 +73,9 @@ public class FirebaseService {
                         break;
                     case "Track":
                         tracks[0] = (Track)dataSnapshot.getValue(cls);
+                        break;
+                    case "Badge":
+                        badges[0] = (Badge)dataSnapshot.getValue(cls);
                         break;
                     case "Quiz":
                         quizzes[0] = (Quiz) dataSnapshot.getValue(cls);
@@ -104,6 +114,8 @@ public class FirebaseService {
                 return (T) playlists[0];
             case "Track":
                 return (T) tracks[0];
+            case "Badge":
+                return (T) badges[0];
             case "Quiz":
                 return (T) quizzes[0];
             default:

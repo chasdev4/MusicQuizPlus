@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -19,6 +20,8 @@ import com.example.musicquizplus.HistoryView;
 import com.example.musicquizplus.R;
 
 import java.util.Objects;
+
+import model.GoogleSignIn;
 
 public class HistoryFragment extends Fragment {
 
@@ -30,6 +33,7 @@ public class HistoryFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
+        Button googleSignIn = view.findViewById(R.id.googleSignInButton);
         ListView listView = view.findViewById(R.id.historyListView);
         TextView userLevel = view.findViewById(R.id.userLevel);
         View noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
@@ -46,6 +50,14 @@ public class HistoryFragment extends Fragment {
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);
             noCurrentUser.setVisibility(View.VISIBLE);
+
+            googleSignIn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    GoogleSignIn signInWGoogle = new GoogleSignIn();
+                    signInWGoogle.signInWithGoogle(view, getActivity(), view.getContext());
+                }
+            });
         }
         else
         {
@@ -124,6 +136,7 @@ public class HistoryFragment extends Fragment {
                     entireGuestMessage.setLayoutParams(params);
                     alertDialog.getWindow().setLayout(1000, 1500); //Controlling width and height.
 
+                    Button signInWithGoogle = alertDialog.findViewById(R.id.googleSignInButton);
                     noThanksLink.setVisibility(View.VISIBLE);
                     noThanksLink.setPaintFlags(noThanksLink.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
                     cancelPopUp.setVisibility(View.VISIBLE);
@@ -131,6 +144,14 @@ public class HistoryFragment extends Fragment {
                     signUpHeader.setText(R.string.user_profile_signup_header);
                     linkGoogle.setTextSize(14);
                     accountBenefits.setTextSize(14);
+
+                    signInWithGoogle.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            GoogleSignIn googleSignIn = new GoogleSignIn();
+                            googleSignIn.signInWithGoogle(view, getActivity(), view.getContext());
+                        }
+                    });
 
                     noThanksLink.setOnClickListener(new View.OnClickListener() {
                         @Override

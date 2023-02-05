@@ -26,6 +26,11 @@ import utils.LogUtil;
 // The User model stores information tied to the current user
 
 public class User implements Serializable {
+
+    private Map<String, String> badgeIds;
+    private int playlistQuizCount;
+    private int artistQuizCount;
+
     private int level;
     private int xp;
     private Difficulty difficulty;
@@ -59,8 +64,62 @@ public class User implements Serializable {
         return xp;
     }
 
+    public User() {
+        albumIds = new HashMap<>();
+        artistIds = new HashMap<>();
+        playlistIds = new HashMap<>();
+        historyIds = new HashMap<>();
+        badgeIds = new HashMap<>();
+        playlistQuizCount = 0;
+        artistQuizCount = 0;
+        level = 1;
+        xp = 0;
+        difficulty = Difficulty.EASY;
+
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    public User(User user) {
+        albumIds = user.albumIds;
+        artistIds = user.artistIds;
+        playlistIds = user.playlistIds;
+        historyIds = user.historyIds;
+        badgeIds = user.badgeIds;
+        playlistQuizCount = user.playlistQuizCount;
+        artistQuizCount = user.artistQuizCount;
+        level = user.level;
+        xp = user.xp;
+        difficulty = user.difficulty;
+    }
+
+    public Map<String, String> getBadgeIds() { return badgeIds; }
+
+    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates){
+        if(allowDuplicates)
+        {
+            badgeIds.put(key, badgeId);
+            return true;
+        }
+
+        if(!badgeIds.containsValue(badgeId)){
+            badgeIds.put(key, badgeId);
+            return true;
+        }
+
+        return false;
+    }
+
+    public String removeBadgeId(String badgeId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
+            if (entry.getValue().equals(badgeId)) {
+                key = entry.getKey();
+            }
+        }
+
+        badgeIds.remove(key);
+        return key;
     }
 
     public Map<String, String> getAlbumIds() {
@@ -226,6 +285,43 @@ public class User implements Serializable {
         return key;
     }
     //#endregion
+
+
+    public void incrementArtistQuizCount()
+    {
+        artistQuizCount++;
+    }
+
+    public void incrementPlaylistQuizCount()
+    {
+        playlistQuizCount++;
+    }
+
+    public int getArtistQuizCount() {
+        return artistQuizCount;
+    }
+
+    //USED FOR DEBUGGING
+    public void setArtistQuizCount(int artistQuizCount) {
+        this.artistQuizCount = artistQuizCount;
+    }
+
+    public int getPlaylistQuizCount() {
+        return playlistQuizCount;
+    }
+
+    //USED FOR DEBUGGING
+    public void setPlaylistQuizCount(int playlistQuizCount) {
+        this.playlistQuizCount = playlistQuizCount;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
     //#region Update History
     public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {

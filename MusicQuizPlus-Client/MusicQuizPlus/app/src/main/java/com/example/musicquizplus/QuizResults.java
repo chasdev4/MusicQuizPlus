@@ -8,6 +8,19 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.List;
+
+import model.Badge;
+import model.GoogleSignIn;
+import model.Quiz;
+import model.Results;
+import model.User;
+import service.FirebaseService;
+
 public class QuizResults extends AppCompatActivity {
 
     TextView userAccuracy;
@@ -38,16 +51,27 @@ public class QuizResults extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            score = extras.getInt("quizScore");
-            accuracy = extras.getString("quizAccuracy");
+            new Thread(new Runnable() {
+                public void run() {
+                    //Testing Results Model
+                    User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    Quiz quiz = (Quiz) extras.getSerializable("quiz");
+                    Results results = new Results(user, quiz);
+                    List<Badge> earnedBadges = results.getEarnedBadges(getBaseContext());
+                    score = results.getScore();
+                    accuracy = results.getAccuracy();
+                    String scoreString = String.valueOf(score);
+                    userScore.setText(scoreString);
+                    userAccuracy.setText(accuracy);
+                }
+            }).start();
         }
-
-        String scoreString = String.valueOf(score);
-        userScore.setText(scoreString);
-        userAccuracy.setText(accuracy);
-
     }
 }
