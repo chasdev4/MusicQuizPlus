@@ -761,6 +761,7 @@ public class Quiz implements Serializable {
             String correctTrackId = null;
             String previewUrl = null;
 
+            Track removedTrack = tracks.get(randomIndex);
             if (isFeaturedArtistQuestion) {
                 answers.set(answerIndex, featuredArtistTracks.get(randomIndex).getFeaturedArtistName());
 
@@ -806,7 +807,7 @@ public class Quiz implements Serializable {
                 }
                 tempYear = year;
                 for (int j = 0; j < yearDown; j++) {
-                    tempYear -= rnd.nextInt(4) + 1;
+                    tempYear -= rnd.nextInt(4) + 3;
                     years.add(tempYear);
                 }
 
@@ -835,6 +836,23 @@ public class Quiz implements Serializable {
 
                         // Validate the new answer
                         boolean tryAgain = false;
+                        if (this.type == QuizType.PLAYLIST && type == QuestionType.GUESS_ARTIST
+                        && removedTrack.getArtistsMap().containsValue(answerText)) {
+                            for (Track track : tracks) {
+                                if (!removedTrack.getArtistsMap().containsValue(track.getArtistsMap().get(track.getArtistId()))) {
+                                    answerText = track.getArtistsMap().get(track.getArtistId());
+                                }
+                            }
+
+                            if (removedTrack.getArtistsMap().containsValue(answerText)) {
+                                for (Track track : history) {
+                                    if (!removedTrack.getArtistsMap().containsValue(track.getArtistsMap().get(track.getArtistId()))) {
+                                        answerText = track.getArtistsMap().get(track.getArtistId());
+                                    }
+                                }
+                            }
+                        }
+
                         for (int k = 0; k < 4; k++) {
                             if (answerText != null && answers.get(k) != null) {
                                 if (namesMatch(answers.get(k), answerText)) {
