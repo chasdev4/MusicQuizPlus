@@ -30,7 +30,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
 
     Button answerA, answerB, answerC, answerD;
     TextView currentQuestionType;
-    Quiz playlistQuiz;
+    Quiz quiz;
     QuestionType type;
     String[] answers;
     int index;
@@ -63,8 +63,8 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            playlistQuiz = (Quiz) extras.getSerializable("playlistQuiz");
-            currentQuestion = playlistQuiz.getFirstQuestion();
+            quiz = (Quiz) extras.getSerializable("playlistQuiz");
+            currentQuestion = quiz.getFirstQuestion();
         }
 
         type = currentQuestion.getType();
@@ -88,14 +88,12 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         Button btnClicked = (Button) view;
         index = findIndex(btnClicked);
 
-        currentQuestion = playlistQuiz.nextQuestion(index);
+        currentQuestion = quiz.nextQuestion(index);
 
         if(currentQuestion == null)
         {
             Intent intent = new Intent(this, QuizResults.class);
-            intent.putExtra("quiz", playlistQuiz);
-            intent.putExtra("quizScore", playlistQuiz.getScore());
-            intent.putExtra("quizAccuracy", playlistQuiz.getAccuracy());
+            intent.putExtra("quiz", quiz);
             startActivity(intent);
         }
         else if (currentQuestion != null)

@@ -85,7 +85,7 @@ public class Badge {
         this.allowDuplicates = allowDuplicates;
     }
 
-    public /*List<Badge>*/void getEarnedBadges(Context context)
+    public List<Badge> getEarnedBadges(Context context)
     {
         switch(type)
         {
@@ -145,7 +145,7 @@ public class Badge {
 
         updateBadgeIDsForUserInDatabase(context);
 
-        //return earnedBadges;
+        return earnedBadges;
     }
 
     private void updateBadgeIDsForUserInDatabase(Context context)

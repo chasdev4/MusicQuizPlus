@@ -17,6 +17,7 @@ import java.util.List;
 import model.Badge;
 import model.GoogleSignIn;
 import model.Quiz;
+import model.Results;
 import model.User;
 import service.FirebaseService;
 
@@ -57,29 +58,20 @@ public class QuizResults extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            /*
-
             new Thread(new Runnable() {
                 public void run() {
-
-                    //Testing Badges
+                    //Testing Results Model
                     User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    //user.setPlaylistQuizCount(2);
                     Quiz quiz = (Quiz) extras.getSerializable("quiz");
-                    Badge badge = new Badge(user, quiz);
-                    List<Badge> earnedBadges = badge.getEarnedBadges(getBaseContext());
+                    Results results = new Results(user, quiz);
+                    List<Badge> earnedBadges = results.getEarnedBadges(getBaseContext());
+                    score = results.getScore();
+                    accuracy = results.getAccuracy();
+                    String scoreString = String.valueOf(score);
+                    userScore.setText(scoreString);
+                    userAccuracy.setText(accuracy);
                 }
             }).start();
-
-             */
-
-            score = extras.getInt("quizScore");
-            accuracy = extras.getString("quizAccuracy");
         }
-
-        String scoreString = String.valueOf(score);
-        userScore.setText(scoreString);
-        userAccuracy.setText(accuracy);
-
     }
 }
