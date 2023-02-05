@@ -804,7 +804,7 @@ public class Quiz implements Serializable {
                 List<Integer> years = new ArrayList<>();
                 int tempYear = year;
                 for (int j = 0; j < yearUp; j++) {
-                    tempYear += rnd.nextInt(4) + 1;
+                    tempYear += rnd.nextInt(4) + 3;
                     years.add(tempYear);
                 }
                 tempYear = year;
