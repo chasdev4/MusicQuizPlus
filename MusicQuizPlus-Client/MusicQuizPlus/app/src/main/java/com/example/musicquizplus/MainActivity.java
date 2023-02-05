@@ -10,7 +10,6 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -29,12 +28,14 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import model.Badge;
 import model.GettingStarted;
 import model.GoogleSignIn;
+
 import model.PhotoUrl;
 import model.Quiz;
 import model.Search;
@@ -45,10 +46,9 @@ import model.item.Artist;
 import model.item.Playlist;
 import model.type.AlbumType;
 import model.type.Difficulty;
+
 import service.FirebaseService;
 import service.SpotifyService;
-import service.firebase.AlbumService;
-import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
 
@@ -168,23 +168,49 @@ public class MainActivity extends AppCompatActivity {
 
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
-//
-//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DX4Wsb4d7NKfP");
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
 //                        userPlaylist.initCollection(db);
+//                        List<String> newTrackIds = new ArrayList<>();
+//                        int i = 0;
 //                        for (String trackId : userPlaylist.getTrackIds()) {
-//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)))) {
+//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
 //                                log.e("Tracks are out of order.");
 //                            }
+//                            i++;
 //                        }
-//                        Quiz quiz = new Quiz(userPlaylist, user);
+//                        for (int k = 80; k > 0; k--) {
+//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
+//                            userPlaylist.getTracks().remove(k + 19);
+//                        }
+//
+//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                        quiz.end();
 //                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test out artist quiz generation
 //                        user.initCollections(db);
+//                        CountDownLatch countDownLatch = new CountDownLatch(1);
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
 //                        artist.initCollections(db, user);
-//                        Quiz quiz = new Quiz(artist, user);
+//                        countDownLatch.countDown();
+//                        try {
+//                            countDownLatch.await();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        countDownLatch = new CountDownLatch(1);
+//                        artist.initTracks(db);
+//                        countDownLatch.countDown();
+//                        try {
+//                            countDownLatch.await();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+//                        quiz.end();
+//                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test heartPlaylist

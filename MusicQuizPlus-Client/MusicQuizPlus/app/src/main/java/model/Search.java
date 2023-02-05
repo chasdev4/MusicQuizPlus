@@ -257,12 +257,12 @@ public class Search {
                     jsonObject.get("name").getAsString(),
                     albumOfTrack.get("uri").getAsString(),
                     albumOfTrack.get("name").getAsString(),
+                    false,
                     artistId,
                     artistsMap,
                     0,
                     false,
                     null,
-                    false,
                     null,
                     jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean()));
 

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.ExternalLink;
 import model.PhotoUrl;
@@ -21,6 +22,7 @@ import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
 import utils.FormatUtil;
+import utils.LogUtil;
 
 // SUMMARY
 // The Artist model stores artist information
@@ -43,6 +45,8 @@ public class Artist implements Serializable {
     private List<Album> albums;
     private List<Album> compilations;
 
+    private static String TAG = "Artist.java";
+
     public Artist(String id, String name, List<PhotoUrl> photoUrl, List<String> singleIds,
                   List<String> albumIds, List<String> compilationIds, int followers, boolean followersKnown) {
         this.id = id;
@@ -63,6 +67,126 @@ public class Artist implements Serializable {
 
     }
 
+    //#region Accessors
+    public String getId() { return id; }
+    public String getName() {
+        return name;
+    }
+    public List<PhotoUrl> getPhotoUrl() {
+        return photoUrl;
+    }
+    public String getBio() { return bio; }
+    public List<ExternalLink> getExternalLinks() {
+        return externalLinks;
+    }
+    public String getLatest() {
+        return latest;
+    }
+    public List<String> getSingleIds() { return singleIds; }
+    public List<String> getAlbumIds() { return albumIds; }
+    public List<String> getCompilationIds() {
+        return compilationIds;
+    }
+    public int getFollowers() {
+        return followers;
+    }
+    public boolean isFollowersKnown() {
+        return followersKnown;
+    }
+
+    @Exclude
+    public List<Album> getSingles() { return singles; }
+    @Exclude
+    public List<Album> getAlbums() { return albums; }
+    @Exclude
+    public List<Album> getCompilations() { return compilations; }
+    @Exclude
+    public List<Track> getTracks() {
+        return getAllTracks();
+    }
+    @Exclude
+    private List<Track> getAllTracks() {
+        List<Track> tracks = new ArrayList<>();
+
+        if (singles != null) {
+            for (Album album : singles) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (albums != null) {
+            for (Album album : albums) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+        if (compilations != null) {
+            for (Album album : compilations) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    tracks.addAll(album.getTracks());
+                }
+            }
+        }
+
+        return tracks;
+    }
+    @Exclude
+    public List<String> getFeaturedArtists(List<Track> trackList) {
+        List<String> featuredArtistNames = new ArrayList<>();
+
+        for (Track track : trackList) {
+            if (track.getArtistsMap().size() > 1) {
+                for (Map.Entry<String, String> feat : track.getArtistsMap().entrySet()) {
+                    if (!feat.getKey().equals(track.getArtistId()) && !featuredArtistNames.contains(feat.getValue())) {
+                        featuredArtistNames.add(feat.getValue());
+                    }
+                }
+            }
+        }
+
+        return featuredArtistNames;
+    }
+    @Exclude
+    public int getAlbumTrackCount(String albumId) {
+        for (Album album : albums) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
+        return -1;
+    }
+    @Exclude
+    public int getAveragePopularity(List<Track> tracks) {
+        int averagePopularity = 0;
+
+        for (Track track : tracks) {
+            averagePopularity += track.getPopularity();
+        }
+
+        return (tracks.size() == 0) ? 0 : averagePopularity / tracks.size();
+    }
+    @Exclude
+    public Album getAlbum(String albumId) {
+        for (Album a : albums) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
+        return null;
+    }
+    //#endregion
+
+    //#region Mutators
+    public void setFollowers(int followers) { this.followers = followers; }
+    public void setFollowersKnown(boolean followersKnown) {
+        this.followersKnown = followersKnown;
+    }
+
+    //#endregion
+
+    //#region Data Extraction
     // Extract information from the Artist Overview JsonObject into the model
     private void extractArtist(JsonObject jsonObject) {
         JsonObject jsonArtist = jsonObject.getAsJsonObject("data").getAsJsonObject("artist");
@@ -194,108 +318,12 @@ public class Artist implements Serializable {
                 false,
                 album.getAsJsonObject("date").get("year").getAsString());
     }
+    //#endregion
 
-    public List<PhotoUrl> getPhotoUrl() {
-        return photoUrl;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public List<ExternalLink> getExternalLinks() {
-        return externalLinks;
-    }
-
-    public String getLatest() {
-        return latest;
-    }
-
-    @Exclude
-    public List<Album> getSingles() {
-        return singles;
-    }
-
-    @Exclude
-    public List<Album> getAlbums() {
-        return albums;
-    }
-
-    @Exclude
-    public List<Album> getCompilations() {
-        return compilations;
-    }
-
-    public List<String> getSingleIds() {
-        return singleIds;
-    }
-
-    public List<String> getAlbumIds() {
-        return albumIds;
-    }
-
-    public List<String> getCompilationIds() {
-        return compilationIds;
-    }
-
-    public int getFollowers() {
-        return followers;
-    }
-
-    public void setFollowers(int followers) {
-        this.followers = followers;
-    }
-
-    public boolean isFollowersKnown() {
-        return followersKnown;
-    }
-
-    public void setFollowersKnown(boolean followersKnown) {
-        this.followersKnown = followersKnown;
-    }
-
-    @Exclude
-    public List<Track> getTracks() {
-        return getAllTracks();
-    }
-
-    private List<Track> getAllTracks() {
-        List<Track> tracks = new ArrayList<>();
-
-        if (singles != null) {
-            for (Album album : singles) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-        if (albums != null) {
-            for (Album album : albums) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-        if (compilations != null) {
-            for (Album album : compilations) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    tracks.addAll(album.getTracks());
-                }
-            }
-        }
-
-        return tracks;
-    }
-
+    //#region Collection Initialization
     public void initCollections(DatabaseReference db, User user) {
+        LogUtil log = new LogUtil(TAG, "initCollections");
+
         ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.submit(new Runnable() {
             @Override
@@ -317,6 +345,53 @@ public class Artist implements Serializable {
 
             }
         });
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
+    }
+
+    public void initTracks(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "initTracks");
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album single : singles) {
+                    if (single.isTrackIdsKnown()) {
+                        single.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album album : albums) {
+                    if (album.isTrackIdsKnown()) {
+                        album.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (Album compilation : compilations) {
+                    if (compilation.isTrackIdsKnown()) {
+                        compilation.initCollection(db);
+                    }
+                }
+            }
+        });
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
 
     }
 
@@ -344,29 +419,7 @@ public class Artist implements Serializable {
         }
     }
 
-    public int getAveragePopularity(List<Track> tracks) {
-        int averagePopularity = 0;
 
-        for (Track track : tracks) {
-            averagePopularity += track.getPopularity();
-        }
+    //#endregion
 
-        return averagePopularity / tracks.size();
-    }
-
-    public List<String> getFeaturedArtists(List<Track> trackList) {
-        List<String> featuredArtistNames = new ArrayList<>();
-
-        for (Track track : trackList) {
-            if (track.getArtistsMap().size() > 1) {
-                for (Map.Entry<String, String> feat : track.getArtistsMap().entrySet()) {
-                    if (!feat.getKey().equals(track.getArtistId()) && !featuredArtistNames.contains(feat.getValue())) {
-                        featuredArtistNames.add(feat.getValue());
-                    }
-                }
-            }
-        }
-
-        return featuredArtistNames;
-    }
 }

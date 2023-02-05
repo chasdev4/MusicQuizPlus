@@ -9,41 +9,30 @@ import com.example.musicquizplus.ArtistsAdapter;
 import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import java.util.concurrent.CountDownLatch;
 
+
 import model.Badge;
 import model.ValidationObject;
+
+import model.Quiz;
+
 import model.item.Playlist;
 
-import model.PhotoUrl;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Track;
-import model.type.Severity;
 import utils.LogUtil;
-import utils.ValidationUtil;
 
 // SUMMARY
 // Static methods for Firebase management
@@ -61,6 +50,7 @@ public class FirebaseService {
         final Playlist[] playlists = new Playlist[1];
         final Track[] tracks = new Track[1];
         final Badge[] badges = new Badge[1];
+        final Quiz[] quizzes = new Quiz[1];
 
         db.child(child).child(id).addListenerForSingleValueEvent(new ValueEventListener() {
 
@@ -87,8 +77,10 @@ public class FirebaseService {
                     case "Badge":
                         badges[0] = (Badge)dataSnapshot.getValue(cls);
                         break;
+                    case "Quiz":
+                        quizzes[0] = (Quiz) dataSnapshot.getValue(cls);
+                        break;
                     default:
-
                         log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                         break;
                 }
@@ -105,8 +97,6 @@ public class FirebaseService {
 
         try {
             done.await();
-
-
         } catch(InterruptedException e) {
             e.printStackTrace();
         }
@@ -126,8 +116,9 @@ public class FirebaseService {
                 return (T) tracks[0];
             case "Badge":
                 return (T) badges[0];
+            case "Quiz":
+                return (T) quizzes[0];
             default:
-
                 log.w(String.format("checkDatabase: unsupported class %s.", cls.getSimpleName()));
                 break;
         }
@@ -216,96 +207,26 @@ public class FirebaseService {
             }
         });
 
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child(dbChild);
-//        reference.addValueEventListener(new ValueEventListener() {
+    // NOTE: Modify this method if you absolutely need to fix database children
+//    private static void removeFeaturedArtist(DatabaseReference db) {
+//        db.child("tracks").addValueEventListener(new ValueEventListener() {
 //            @Override
 //            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                //itemsList.clear();
-//
-//                String description = null;
-//                String id = null;
-//                String name = null;
-//                String owner = null;
-//                String photoUrl = null;
-//
 //                for (DataSnapshot dataSnapshot : snapshot.getChildren())
 //                {
-//                    for (DataSnapshot dss : dataSnapshot.getChildren())
-//                    {
-//                        String key = dss.getKey();
-//
-//                        if(Objects.equals(key, "_description"))
-//                        {
-//                            description = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "id"))
-//                        {
-//                            id = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "name"))
-//                        {
-//                            name = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "_owner"))
-//                        {
-//                            owner = Objects.requireNonNull(dss.getValue()).toString();
-//                        }
-//                        else if(Objects.equals(key, "photoUrl"))
-//                        {
-//                            for (DataSnapshot photoUrlSnapshot : dss.getChildren())
-//                            {
-//                                String uriKey = photoUrlSnapshot.getKey();
-//
-//                                if(Objects.equals(uriKey, "0"))
-//                                {
-//                                    for (DataSnapshot urlSnapshot : photoUrlSnapshot.getChildren())
-//                                    {
-//                                        String UrlKey = urlSnapshot.getKey();
-//
-//                                        if(Objects.equals(UrlKey, "url"))
-//                                        {
-//                                            photoUrl = Objects.requireNonNull(urlSnapshot.getValue()).toString();
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
+//                    if (dataSnapshot.hasChild("featuredArtistName")) {
+//                        db.child("tracks").child(dataSnapshot.getKey()).child("featuredArtistName").removeValue();
 //                    }
-//                    String finalPhotoUrl = photoUrl;
-//                    Playlist playlistToAdd = new Playlist(
-//                            id,
-//                            name,
-//                            new ArrayList<PhotoUrl>() {{
-//                            add(new PhotoUrl(finalPhotoUrl, 0, 0));
-//                        }},
-//                            owner,
-//                            description);
-//                    itemsList.add(playlistToAdd);
 //                }
-//
-//                customAdapter.notifyDataSetChanged();
 //            }
-//
 //
 //            @Override
 //            public void onCancelled(@NonNull DatabaseError error) {
 //
 //            }
 //        });
-    }
+//    }
+
 }
