@@ -47,6 +47,7 @@ public class Quiz implements Serializable {
     private Artist artist;
     private List<Track> tracks = new ArrayList<>();
     private List<Track> history = new ArrayList<>();
+    private List<Track> wrong = new ArrayList<>();
     private int numQuestions;
     private int currentQuestionIndex;
     private int score;
@@ -928,7 +929,7 @@ public class Quiz implements Serializable {
         } else {
             for (Track track : history) {
                 if (track.getId().equals(questions.get(currentQuestionIndex).getTrackId())) {
-                    history.remove(track);
+                    wrong.add(track);
                     break;
                 }
             }
@@ -959,6 +960,9 @@ public class Quiz implements Serializable {
         }
 
         user.updateHistoryIds(db, firebaseUser.getUid(), history);
+        for (Track track : wrong) {
+            history.remove(track);
+        }
         if (this.type == QuizType.PLAYLIST) {
             user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
         } else {
