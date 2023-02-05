@@ -12,7 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.CountDownLatch;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import model.history.TopicHistory;
 import model.item.Album;
@@ -61,6 +62,11 @@ public class Quiz implements Serializable {
     private int poolCount;
     private boolean addedRemaining;
     private int remaining;
+    private long questionTime;
+    private Timer questionTimer;
+    private long multiplierTime;
+    private Timer multiplierTimer;
+    private double currentMultiplier;
     //#endregion
 
     //#region Constants
@@ -266,6 +272,11 @@ public class Quiz implements Serializable {
     private final double GUESS_ARTIST_ALBUM_CHANCE = .2;
     private final double GUESS_ARTIST_CHANCE = .2;
     private final double GUESS_YEAR_CHANCE = .1;
+    private final double QUESTION_INTERVAL = 20;
+    private final double MIN_MULTIPLIER = 1;
+    private final double MAX_MULTIPLIER = 2;
+    private final double MULTIPLIER_INTERVAL = 5;
+    private final double MULTIPLIER_RATE = .25;
     private final int BUFFER = 5;
     private final int BASE_SCORE = 100;
     //#endregion
@@ -284,6 +295,10 @@ public class Quiz implements Serializable {
         isNewQuiz = true;
         addedRemaining = false;
         remaining = 0;
+        questionTime = -1;
+        questionTimer = new Timer();
+        multiplierTimer = new Timer();
+        currentMultiplier = 1;
         init();
     }
 
@@ -300,11 +315,15 @@ public class Quiz implements Serializable {
         isNewQuiz = true;
         addedRemaining = false;
         remaining = 0;
+        questionTime = -1;
+        questionTimer = new Timer();
+        multiplierTimer = new Timer();
+        currentMultiplier = 1;
         init();
     }
 
     public Quiz() {
-
+        questionTimer = new Timer();
     }
     //#endregion
 
@@ -480,13 +499,13 @@ public class Quiz implements Serializable {
     private void generateQuiz() {
         // For logging
         LogUtil log = new LogUtil(TAG, "generateQuiz");
-        log.v(String.format("Creating a%s quiz.", (this.type == QuizType.PLAYLIST) ? " playlist" : "n artist"));
+        boolean isPlaylistQuiz = this.type == QuizType.PLAYLIST; // Boolean to track the type once
+        log.v(String.format("Creating a%s quiz.", (isPlaylistQuiz) ? " playlist" : "n artist"));
 
         featuredArtistTracks = new ArrayList<>();
 
         // Local variables that are set depending on the quiz type.
         List<ValidationObject> validationObjects = new ArrayList<>();   // For null checking
-        boolean isPlaylistQuiz = false; // Boolean to track the type once
         Class cls = null;               // Class needed for validation object
         List<Track> rawTracks = new ArrayList<>();   // All tracks from playlist or hearted albums of artist
         Map<Integer, Track> playlistTracks = null;
@@ -505,7 +524,6 @@ public class Quiz implements Serializable {
                     rawTracks.add(playlistTracks.get(i));
                 }
                 averagePopularity = playlist.getAveragePopularity();
-                isPlaylistQuiz = true;
                 log.v("Playlist members initialized.");
                 break;
             case ARTIST:
@@ -543,32 +561,22 @@ public class Quiz implements Serializable {
         //  Get the number of tracks available
         int numTracks = rawTracks.size();
 
-        // TODO: Update and rethink this to work with the front-end quiz validation plan
         // If there are isn't enough data
         if (numTracks < numQuestions + BUFFER) {
-            // If a playlist quiz doesn't have enough data
-            if (isPlaylistQuiz) {
-                numQuestions = numTracks - BUFFER;
-            }
-            // If an artist quiz doesn't have enough data
-            else {
-
-            }
-
+            numQuestions = numTracks - BUFFER;
         }
 
         // Calculate the number of each question type
         int guessTrackCount = (int) (numQuestions * GUESS_TRACK_CHANCE);
         int guessAlbumCount = (int) (numQuestions * guessAlbumChance);
         int guessArtistCount = 0;
-        switch (this.type) {
-            case PLAYLIST:
-                guessArtistCount = (int) (numQuestions * GUESS_ARTIST_CHANCE);
-                break;
-            case ARTIST:
-                guessArtistCount = (int) featuredArtistsNames.size() / 4;
-                break;
+        if (isPlaylistQuiz) {
+            guessArtistCount = (int) (numQuestions * GUESS_ARTIST_CHANCE);
         }
+        else {
+            guessArtistCount = (int) featuredArtistsNames.size() / 4;
+        }
+
         int guessYearCount = (int) (numQuestions * GUESS_YEAR_CHANCE);
         int newTotal = guessTrackCount + guessAlbumCount + guessArtistCount + guessYearCount;
 
@@ -588,25 +596,25 @@ public class Quiz implements Serializable {
         if (!isEnoughData(rawTracks.size())) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
-            if (this.type == QuizType.ARTIST) {
+            if (!isPlaylistQuiz) {
                 getFeaturedArtistTracks(guessArtistCount);
             }
         } else {
             // Old or hard tracks
             List<Track> skippedTracks = new ArrayList<>();
 
-            if (this.type == QuizType.ARTIST) {
+            if (!isPlaylistQuiz) {
                 getFeaturedArtistTracks(guessArtistCount);
             }
 
             boolean noQuizHistory = false;
-            if (this.type == QuizType.PLAYLIST
+            if (isPlaylistQuiz
                     && user.getPlaylistHistory() != null
                     && user.getPlaylistHistory().size() > 0
                     && user.getPlaylistHistory().containsKey(topicId)
                     && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
                 quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            } else if (this.type == QuizType.ARTIST
+            } else if (!isPlaylistQuiz
                     && user.getArtistHistory() != null
                     && user.getArtistHistory().size() > 0
                     && user.getArtistHistory().containsKey(topicId)) {
@@ -913,18 +921,30 @@ public class Quiz implements Serializable {
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
         LogUtil log = new LogUtil(TAG, "nextQuestion");
+        questionTimer.cancel();
+        multiplierTimer.cancel();
         if (!updateTest(answerIndex)) {
             log.i("No more questions!");
             return null;
         }
         Question question = questions.get(currentQuestionIndex);
+        questionTime = System.nanoTime();
+        scheduleQuestionTimer();
+        scheduleMultiplierTimer();
         log.i(String.format("Returning question #%s: %s", String.valueOf(currentQuestionIndex + 1), question.getType().toString()));
         return question;
     }
 
     private boolean updateTest(int answerIndex) {
         if (answerIndex == questions.get(currentQuestionIndex).getAnswerIndex()) {
-            score += BASE_SCORE;
+            long elapsed = System.nanoTime() - questionTime;
+            double seconds = (double)elapsed / 1_000_000_000.0;
+            multiplierTime += QUESTION_INTERVAL - seconds;
+            if (multiplierTime > 25) {
+                multiplierTime = 25;
+            }
+            double reactionTimeBonus = 1 - (seconds / QUESTION_INTERVAL);
+            score += BASE_SCORE * (currentMultiplier + reactionTimeBonus);
             numCorrect++;
         } else {
             for (Track track : history) {
@@ -939,6 +959,52 @@ public class Quiz implements Serializable {
         }
         currentQuestionIndex++;
         return true;
+    }
+
+    // Call this method to begin the quiz
+    public void start() {
+        multiplierTime = (int)MAX_MULTIPLIER;
+        questionTime = System.nanoTime();
+
+        scheduleMultiplierTimer();
+        scheduleQuestionTimer();
+    }
+
+    private void scheduleMultiplierTimer() {
+        multiplierTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (multiplierTime > 0) {
+                    multiplierTime--;
+                }
+
+                if (multiplierTime < 5) {
+                    currentMultiplier = MIN_MULTIPLIER;
+                }
+                else if (multiplierTime < 10) {
+                    currentMultiplier = 1.25;
+                }
+                else if (multiplierTime < 15) {
+                    currentMultiplier = 1.5;
+                }
+                else if (multiplierTime < 20) {
+                    currentMultiplier = 1.75;
+                }
+                else {
+                    currentMultiplier = MAX_MULTIPLIER;
+                }
+            }
+        }, 1000, 1000);
+    }
+
+    private void scheduleQuestionTimer() {
+        int delay = (int)QUESTION_INTERVAL * 1000;
+        questionTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                updateTest(-1);
+            }
+        },delay);
     }
 
     // Call this method after the quiz is complete
