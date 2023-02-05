@@ -32,7 +32,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
     TextView currentQuestionType;
     Quiz playlistQuiz;
     QuestionType type;
-    String[] answers;
+    List<String> answers;
     int index;
     String audioURL;
     MediaPlayer mediaPlayer;
@@ -74,10 +74,10 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         mediaPlayer = playAudio(audioURL);
 
         currentQuestionType.setText(type.toString());
-        answerA.setText(answers[0]);
-        answerB.setText(answers[1]);
-        answerC.setText(answers[2]);
-        answerD.setText(answers[3]);
+        answerA.setText(answers.get(0));
+        answerB.setText(answers.get(1));
+        answerC.setText(answers.get(2));
+        answerD.setText(answers.get(3));
     }
 
     @Override
@@ -106,10 +106,10 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             mediaPlayer = playAudio(audioURL);
 
             currentQuestionType.setText(type.toString());
-            answerA.setText(answers[0]);
-            answerB.setText(answers[1]);
-            answerC.setText(answers[2]);
-            answerD.setText(answers[3]);
+            answerA.setText(answers.get(0));
+            answerB.setText(answers.get(1));
+            answerC.setText(answers.get(2));
+            answerD.setText(answers.get(3));
         }
     }
 

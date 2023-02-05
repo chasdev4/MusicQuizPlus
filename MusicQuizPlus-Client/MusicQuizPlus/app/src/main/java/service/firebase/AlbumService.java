@@ -164,12 +164,12 @@ public class AlbumService {
                     jsonTrack.get("name").getAsString(),
                     album.getId(),
                     album.getName(),
+                    true,
                     artistId,
                     artistsMap,
                     0,
                     false,
                     null,
-                    true,
                     album.getYear(),
                     jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
             album.addTrackId(track.getId());

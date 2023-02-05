@@ -78,13 +78,15 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         }
 
         final Quiz[] playlistQuiz = new Quiz[1];
-        User user = new User();
+        // TODO: Get the user from the root of the app
+        // User user = new User();
 
         new Thread(new Runnable() {
             public void run() {
 
                 playlist.initCollection(reference);
-                playlistQuiz[0] = new Quiz(playlist, user);
+                // TODO: Pass in our DatabaseReference
+               // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
 
             }
         }).start();
