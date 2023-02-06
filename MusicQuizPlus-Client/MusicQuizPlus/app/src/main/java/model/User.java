@@ -1,9 +1,16 @@
 package model;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,9 +18,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import model.history.ArtistHistory;
-import model.history.GeneratedQuizHistory;
 import model.history.TopicHistory;
 import model.item.Artist;
 import model.item.Playlist;
@@ -26,11 +33,8 @@ import utils.LogUtil;
 // The User model stores information tied to the current user
 
 public class User implements Serializable {
-
-    private Map<String, String> badgeIds;
-    private int playlistQuizCount;
-    private int artistQuizCount;
-
+    private String name;
+    private String photoUrl;
     private int level;
     private int xp;
     private Settings settings;
@@ -38,20 +42,26 @@ public class User implements Serializable {
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
     private List<String> historyIds;
+    private Map<String, String> badgeIds;
     private Map<String, TopicHistory> playlistHistory;
     private Map<String, ArtistHistory> artistHistory;
     private Map<String, Map<String, String>> generatedQuizHistory;
+    private int playlistQuizCount;
+    private int artistQuizCount;
 
-    // Excluded from Database
+    //#region Excluded members
     private Map<String, Playlist> playlists;
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
+    //#endregion
 
+    //#region Constants
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
     private final static int MIN_LEVEL = 1;
     private final static int MAX_LEVEL = 100;
     private final static int MAX_XP = 100000;
+    //#endregion
 
     public User() {
         albumIds = new HashMap<>();
@@ -66,8 +76,27 @@ public class User implements Serializable {
         settings = new Settings();
     }
 
+    public User(FirebaseUser firebaseUser, Settings settings) {
+        name = firebaseUser.getDisplayName();
+        photoUrl = firebaseUser.getPhotoUrl().toString();
+        level = 1;
+        xp = 0;
+        this.settings = settings;
+        albumIds = new HashMap<>();
+        artistIds = new HashMap<>();
+        playlistIds = new HashMap<>();
+        historyIds = new ArrayList<>();
+        badgeIds = new HashMap<>();
+        playlistHistory = new HashMap<>();
+        artistHistory = new HashMap<>();
+        generatedQuizHistory = new HashMap<>();
+        playlistQuizCount = 0;
+        artistQuizCount = 0;
+    }
 
     public User(User user) {
+        name = user.name;
+        photoUrl = user.photoUrl;
         albumIds = user.albumIds;
         artistIds = user.artistIds;
         playlistIds = user.playlistIds;
@@ -81,6 +110,8 @@ public class User implements Serializable {
     }
 
     //#region Accessors
+    public String getName() { return name; }
+    public String getPhotoUrl() { return photoUrl; }
     public int getLevel() {
         return level;
     }
@@ -88,7 +119,6 @@ public class User implements Serializable {
         return xp;
     }
     public Settings getSettings() { return settings; }
-    public Map<String, String> getBadgeIds() { return badgeIds; }
     public Map<String, String> getAlbumIds() {
         return albumIds;
     }
@@ -101,10 +131,7 @@ public class User implements Serializable {
     public List<String> getHistoryIds() {
         return historyIds;
     }
-    @Exclude
-    public Difficulty getDifficulty() {
-        return settings.getDifficulty();
-    }
+    public Map<String, String> getBadgeIds() { return badgeIds; }
     public Map<String, TopicHistory> getPlaylistHistory() {
         return playlistHistory;
     }
@@ -112,6 +139,17 @@ public class User implements Serializable {
         return artistHistory;
     }
     public Map<String, Map<String, String>> getGeneratedQuizHistory() { return generatedQuizHistory; }
+    public int getArtistQuizCount() {
+        return artistQuizCount;
+    }
+    public int getPlaylistQuizCount() {
+        return playlistQuizCount;
+    }
+
+    @Exclude
+    public Difficulty getDifficulty() {
+        return settings.getDifficulty();
+    }
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
@@ -271,35 +309,48 @@ public class User implements Serializable {
 
         return false;
     }
-    //#endregion
-
-
-    public void incrementArtistQuizCount()
-    {
-        artistQuizCount++;
-    }
-
-    public void incrementPlaylistQuizCount()
-    {
-        playlistQuizCount++;
-    }
-
-    public int getArtistQuizCount() {
-        return artistQuizCount;
-    }
 
     //USED FOR DEBUGGING
     public void setArtistQuizCount(int artistQuizCount) {
         this.artistQuizCount = artistQuizCount;
     }
-
-    public int getPlaylistQuizCount() {
-        return playlistQuizCount;
-    }
-
     //USED FOR DEBUGGING
-    public void setPlaylistQuizCount(int playlistQuizCount) {
-        this.playlistQuizCount = playlistQuizCount;
+    public void setPlaylistQuizCount(int playlistQuizCount) { this.playlistQuizCount = playlistQuizCount; }
+    public void incrementArtistQuizCount()
+    {
+        artistQuizCount++;
+    }
+    public void incrementPlaylistQuizCount()
+    {
+        playlistQuizCount++;
+    }
+    //#endregion
+
+    public boolean delete(FirebaseUser firebaseUser, DatabaseReference db) {
+        if (firebaseUser == null) {
+            return false;
+        }
+        return deleteUser(firebaseUser, db);
+    }
+    private boolean deleteUser(FirebaseUser firebaseUser, DatabaseReference db) {
+        final boolean[] result = {false};
+
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        db.child("users").child(firebaseUser.getUid()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    result[0] = true;
+                }
+                countDownLatch.countDown();
+            }
+        });
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return result[0];
     }
 
     //#region Update History
@@ -517,4 +568,5 @@ public class User implements Serializable {
             db.child("users").child(firebaseUser.getUid()).child("level").setValue(level);
         }
     }
+    //#endregion
 }

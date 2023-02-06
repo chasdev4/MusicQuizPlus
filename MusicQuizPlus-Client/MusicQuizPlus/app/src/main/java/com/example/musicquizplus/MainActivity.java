@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
     private User user;
     private DatabaseReference db;
-    private FirebaseFirestore firestore;
     private FirebaseUser firebaseUser;
     private GoogleSignIn googleSignIn;
     private Button signInWithGoogleButton;
@@ -96,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         googleSignIn = new GoogleSignIn();
-        firestore = FirebaseFirestore.getInstance();
         db = FirebaseDatabase.getInstance().getReference();
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
@@ -276,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
 //                        log.d("Done.");
                         //#endregion
                     } else {
-                        UserService.createUser(firebaseUser, firestore, db);
+                        UserService.createUser(firebaseUser, db);
                     }
                 }
             }).start();

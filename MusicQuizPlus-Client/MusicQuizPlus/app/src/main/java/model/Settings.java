@@ -128,8 +128,8 @@ public class Settings {
         }
     }
 
-    public void deleteAccount(FirebaseFirestore firestore) {
-        UserService.deleteUser(firebaseUser, firestore, db);
+    public boolean deleteAccount() {
+        return user.delete(firebaseUser, db);
     }
 
     public void signOut() {
