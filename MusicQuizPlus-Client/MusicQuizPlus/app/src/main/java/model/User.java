@@ -33,7 +33,7 @@ public class User implements Serializable {
 
     private int level;
     private int xp;
-    private Difficulty difficulty;
+    private Settings settings;
     private Map<String, String> albumIds;
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
@@ -63,7 +63,7 @@ public class User implements Serializable {
         artistQuizCount = 0;
         level = 1;
         xp = 0;
-        difficulty = Difficulty.EASY;
+        settings = new Settings();
     }
 
 
@@ -77,92 +77,53 @@ public class User implements Serializable {
         artistQuizCount = user.artistQuizCount;
         level = user.level;
         xp = user.xp;
-        difficulty = user.difficulty;
+        settings = user.settings;
     }
 
     //#region Accessors
     public int getLevel() {
         return level;
     }
-
     public int getXp() {
         return xp;
     }
-
+    public Settings getSettings() { return settings; }
     public Map<String, String> getBadgeIds() { return badgeIds; }
-
-    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates){
-        if(allowDuplicates)
-        {
-            badgeIds.put(key, badgeId);
-            return true;
-        }
-
-        if(!badgeIds.containsValue(badgeId)){
-            badgeIds.put(key, badgeId);
-            return true;
-        }
-
-        return false;
-    }
-
-    public String removeBadgeId(String badgeId) {
-        String key = "";
-        for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
-            if (entry.getValue().equals(badgeId)) {
-                key = entry.getKey();
-            }
-        }
-
-        badgeIds.remove(key);
-        return key;
-    }
-
     public Map<String, String> getAlbumIds() {
         return albumIds;
     }
-
     public Map<String, String> getArtistIds() {
         return artistIds;
     }
-
     public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
-
     public List<String> getHistoryIds() {
         return historyIds;
     }
+    @Exclude
     public Difficulty getDifficulty() {
-        return difficulty;
+        return settings.getDifficulty();
     }
     public Map<String, TopicHistory> getPlaylistHistory() {
         return playlistHistory;
     }
-
     public Map<String, ArtistHistory> getArtistHistory() {
         return artistHistory;
     }
-
-    public Map<String, Map<String, String>> getGeneratedQuizHistory() {
-        return generatedQuizHistory;
-    }
-
+    public Map<String, Map<String, String>> getGeneratedQuizHistory() { return generatedQuizHistory; }
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
     }
-
     @Exclude
     public Map<String, Artist> getArtists() {
         return artists;
     }
-
     @Exclude
     public LinkedList<Track> getHistory() {
         return history;
     }
-
     @Exclude
     public Playlist getPlaylist(String playlistId) {
         for (Map.Entry<String, Playlist> playlist : playlists.entrySet()) {
@@ -172,7 +133,6 @@ public class User implements Serializable {
         }
         return null;
     }
-
     @Exclude
     public Artist getArtist(String artistId) {
         for (Map.Entry<String, Artist> artist : artists.entrySet()) {
@@ -194,7 +154,7 @@ public class User implements Serializable {
     }
 
     public void setDifficulty(Difficulty difficulty) {
-        this.difficulty = difficulty;
+        settings.setDifficulty(difficulty);
     }
 
     public void setPlaylistHistory(Map<String, TopicHistory> playlistHistory) {
@@ -208,6 +168,10 @@ public class User implements Serializable {
     public void setGeneratedQuizHistory(Map<String, Map<String, String>> generatedQuizHistory) {
         this.generatedQuizHistory = generatedQuizHistory;
     }
+
+    public void setPlaylistIds(Map<String, String> playlistIds) { this.playlistIds = playlistIds; }
+    public void setArtistIds(Map<String, String> artistIds) { this.artistIds = artistIds; }
+    public void setHistoryIds(List<String> historyIds) { this.historyIds = historyIds; }
 
     public void setPlaylists(Map<String, Playlist> playlists) {
         this.playlists = playlists;
@@ -228,6 +192,17 @@ public class User implements Serializable {
 
         albumIds.put(key, albumId);
         return true;
+    }
+    public String removeBadgeId(String badgeId) {
+        String key = "";
+        for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
+            if (entry.getValue().equals(badgeId)) {
+                key = entry.getKey();
+            }
+        }
+
+        badgeIds.remove(key);
+        return key;
     }
 
     public boolean addArtistId(String key, String artistId) {
@@ -281,6 +256,20 @@ public class User implements Serializable {
 
         playlistIds.remove(key);
         return key;
+    }
+    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates){
+        if(allowDuplicates)
+        {
+            badgeIds.put(key, badgeId);
+            return true;
+        }
+
+        if(!badgeIds.containsValue(badgeId)){
+            badgeIds.put(key, badgeId);
+            return true;
+        }
+
+        return false;
     }
     //#endregion
 

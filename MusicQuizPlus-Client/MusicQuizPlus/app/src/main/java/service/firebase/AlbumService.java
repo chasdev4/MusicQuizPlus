@@ -180,8 +180,7 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public static void unheartalbum(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
-                                    SpotifyService spotifyService) {
+    public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
         LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
         // Null check
@@ -191,7 +190,6 @@ public class AlbumService {
                 add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
                 add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
                 add(new ValidationObject(album, Album.class, Severity.HIGH));
-                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {

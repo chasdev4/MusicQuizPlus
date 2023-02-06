@@ -11,8 +11,8 @@ android {
         applicationId "com.example.musicquizplus"
         minSdk 21
         targetSdk 32
-        versionCode 1
-        versionName "1.0"
+        versionCode 31
+        versionName "0.03.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -183,7 +183,12 @@ public class Artist implements Serializable {
     public void setFollowersKnown(boolean followersKnown) {
         this.followersKnown = followersKnown;
     }
-
+    public void setAlbumIds(List<String> albumIds) { this.albumIds = albumIds; }
+    public void setSingleIds(List<String> singleIds) { this.singleIds = singleIds; }
+    public void setCompilationIds(List<String> compilationIds) { this.compilationIds = compilationIds; }
+    public void setAlbums(List<Album> albums) { this.albums = albums; }
+    public void setSingles(List<Album> singles) { this.singles = singles; }
+    public void setCompilations(List<Album> compilations) { this.compilations = compilations; }
     //#endregion
 
     //#region Data Extraction
@@ -418,6 +423,7 @@ public class Artist implements Serializable {
                 break;
         }
     }
+
 
 
     //#endregion

@@ -130,55 +130,55 @@ public class PlaylistService {
     }
 
     // Use this sparingly!! Very expensive on the Spotify API, also is set to false for writing
-    public static void createDefaultPlaylists(DatabaseReference db, SpotifyService spotifyService) {
-        JsonArray jsonArray = spotifyService.getDefaultPlaylists();
-        for (int i = 0; i < jsonArray.size(); i++) {
-            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
-            String playlistId = jsonObject.get("uri").getAsString();
-            if (!blacklist.contains(playlistId)) {
-                JsonObject info = spotifyService.getPlaylistInfo(playlistId);
-
-                List<PhotoUrl> photoUrl = new ArrayList<>();
-                JsonArray imageArray = info.get("images").getAsJsonArray();
-
-
-                for (int j = 0; j < imageArray.size(); j++) {
-                    JsonObject image = imageArray.get(j).getAsJsonObject();
-                    double width = image.get("width").isJsonNull() ? 0 : image.get("width").getAsDouble();
-                    double height = image.get("height").isJsonNull() ? 0 : image.get("height").getAsDouble();
-                    if (width == 0 || height == 0) {
-                        width = 0;
-                        height = 0;
-                    }
-                    photoUrl.add(new PhotoUrl(
-                            image.get("url").getAsString(),
-                            width,
-                            height
-                    ));
-                }
-
-                Playlist playlist = new Playlist(
-                        playlistId,
-                        jsonObject.get("name").getAsString(),
-                        photoUrl,
-                        "Spotify",
-                        FormatUtil.removeHtml(info.get("description").getAsString())
-                );
-                playlist = populatePlaylistTracks(db, playlist, spotifyService);
-
-                String key = db.child("default_playlists").push().getKey();
-                db.child("default_playlists")
-                        .child(key)
-                        .setValue(playlistId);
-
-                db.child("playlists")
-                        .child(playlistId)
-                        .setValue(playlist);
-
-                savePlaylistTracks(db, playlist);
-            }
-        }
-    }
+//    public static void createDefaultPlaylists(DatabaseReference db, SpotifyService spotifyService) {
+//        JsonArray jsonArray = spotifyService.getDefaultPlaylists();
+//        for (int i = 0; i < jsonArray.size(); i++) {
+//            JsonObject jsonObject = jsonArray.get(i).getAsJsonObject();
+//            String playlistId = jsonObject.get("uri").getAsString();
+//            if (!blacklist.contains(playlistId)) {
+//                JsonObject info = spotifyService.getPlaylistInfo(playlistId);
+//
+//                List<PhotoUrl> photoUrl = new ArrayList<>();
+//                JsonArray imageArray = info.get("images").getAsJsonArray();
+//
+//
+//                for (int j = 0; j < imageArray.size(); j++) {
+//                    JsonObject image = imageArray.get(j).getAsJsonObject();
+//                    double width = image.get("width").isJsonNull() ? 0 : image.get("width").getAsDouble();
+//                    double height = image.get("height").isJsonNull() ? 0 : image.get("height").getAsDouble();
+//                    if (width == 0 || height == 0) {
+//                        width = 0;
+//                        height = 0;
+//                    }
+//                    photoUrl.add(new PhotoUrl(
+//                            image.get("url").getAsString(),
+//                            width,
+//                            height
+//                    ));
+//                }
+//
+//                Playlist playlist = new Playlist(
+//                        playlistId,
+//                        jsonObject.get("name").getAsString(),
+//                        photoUrl,
+//                        "Spotify",
+//                        FormatUtil.removeHtml(info.get("description").getAsString())
+//                );
+//                playlist = populatePlaylistTracks(db, playlist, spotifyService);
+//
+//                String key = db.child("default_playlists").push().getKey();
+//                db.child("default_playlists")
+//                        .child(key)
+//                        .setValue(playlistId);
+//
+//                db.child("playlists")
+//                        .child(playlistId)
+//                        .setValue(playlist);
+//
+//                savePlaylistTracks(db, playlist);
+//            }
+//        }
+//    }
 
 
     // When the user "hearts" a playlist
@@ -261,8 +261,7 @@ public class PlaylistService {
         }
     }
 
-    public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
-                               SpotifyService spotifyService) {
+    public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist) {
         LogUtil log = new LogUtil(TAG, "unheartPlaylist");
 
         // Null check
@@ -272,7 +271,6 @@ public class PlaylistService {
                 add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
                 add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
                 add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
-                add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {

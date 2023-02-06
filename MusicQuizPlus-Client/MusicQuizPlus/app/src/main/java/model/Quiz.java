@@ -385,6 +385,17 @@ public class Quiz implements Serializable {
     }
 
     @Exclude
+    private boolean isIgnoreSettingsEnabled() {
+        switch (type) {
+            case PLAYLIST:
+                return user.getSettings().isIgnorePlaylistDifficulty();
+            case ARTIST:
+                return user.getSettings().isIgnoreArtistDifficulty();
+        }
+        return false;
+    }
+
+    @Exclude
     public Question getFirstQuestion() {
         return questions.get(0);
     }
@@ -556,7 +567,7 @@ public class Quiz implements Serializable {
         difficulty = user.getDifficulty();
 
         // Calculate the popularity threshold and update ignoreDifficulty
-        if (difficulty != Difficulty.HARD) {
+        if (difficulty != Difficulty.HARD && !isIgnoreSettingsEnabled()) {
             popularityThreshold = (int) (averagePopularity * .6);
         }
 
@@ -665,7 +676,7 @@ public class Quiz implements Serializable {
                     tracks.add(rawTracks.get(random));
                     rawTracks.remove(random);
                 }
-            } else if (user.getDifficulty() == Difficulty.EASY) {
+            } else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -677,7 +688,7 @@ public class Quiz implements Serializable {
                     }
                     rawTracks.remove(track);
                 }
-            } else if (user.getDifficulty() == Difficulty.MEDIUM) {
+            } else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -724,6 +735,8 @@ public class Quiz implements Serializable {
         Collections.shuffle(questions);
         log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), topicId));
     }
+
+
 
     private void generateQuestions(QuestionType type, int count, Random rnd, Map<String, String> quizHistory) {
         boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
