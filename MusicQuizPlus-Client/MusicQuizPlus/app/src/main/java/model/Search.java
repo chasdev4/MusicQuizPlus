@@ -1,6 +1,5 @@
 package model;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -20,6 +19,7 @@ import model.type.AlbumType;
 import model.type.SearchFilter;
 import service.SpotifyService;
 import utils.LogUtil;
+import utils.ValidationUtil;
 
 // SUMMARY
 // The Search Results model maintains lists of items models retrieved from the Spotify API
@@ -35,6 +35,7 @@ public class Search {
     private List<Artist> artists;
     private List<Playlist> playlists;
     private List<Track> tracks;
+    private List<Album> trackAlbums;
     private SearchFilter currentFilter;
 
     final private static String TAG = "SearchResults.java";
@@ -46,28 +47,120 @@ public class Search {
 
     }
 
-    public void search(int offset) {
+    public void execute(int offset) {
         JsonObject json = spotifyService.search(searchTerm, limit, offset);
         init(json);
     }
 
+    //#region Accessors
     public List<Album> getAlbums() {
         return albums;
     }
-
     public List<Artist> getArtists() {
         return artists;
     }
-
     public List<Playlist> getPlaylists() {
         return playlists;
     }
-
     public List<Track> getTracks() {
         return tracks;
     }
+    public SearchFilter getCurrentFilter() { return currentFilter; }
+    public List<SearchResult> getAll() {
+        LogUtil log = new LogUtil(TAG, "getAll");
+        if (all.size() == 0) {
+            ExecutorService executorService = Executors.newFixedThreadPool(4);
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Artist artist : artists) {
+                        all.add(new SearchResult(SearchFilter.ARTIST, artist));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Album album : albums) {
+                        all.add(new SearchResult(SearchFilter.ALBUM, album));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Track track : tracks) {
+                        all.add(new SearchResult(SearchFilter.TRACK, track));
+                    }
+                }
+            });
+            executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    for (Playlist playlist : playlists) {
+                        all.add(new SearchResult(SearchFilter.PLAYLIST, playlist));
+                    }
+                }
+            });
 
-    // Retrieve All Search Results
+            executorService.shutdown();
+            try {
+                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                log.e(e.getMessage());
+            }
+        }
+        return all;
+    }
+    public TrackResult getTrackResult(Track track) {
+        List<Album> titleMatch = new ArrayList<>();
+        List<String> titleMatchIds = new ArrayList<>();
+        List<Album> suggested = new ArrayList<>();
+        List<String> suggestedIds = new ArrayList<>();
+        for (Album trackAlbum : trackAlbums) {
+            if (track.getArtistId().equals(trackAlbum.getArtistId())) {
+                if (ValidationUtil.namesMatch(track.getName(), trackAlbum.getTracks().get(0).getName(), TAG)) {
+                    if (suggestedIds.contains(trackAlbum.getId())) {
+                        suggestedIds.remove(trackAlbum.getId());
+                        suggested.remove(trackAlbum);
+                    }
+                    titleMatchIds.add(trackAlbum.getId());
+                    titleMatch.add(trackAlbum);
+                }
+                else {
+                    if (!titleMatchIds.contains(trackAlbum.getId())) {
+                        suggestedIds.add(trackAlbum.getId());
+                        suggested.add(trackAlbum);
+                    }
+                }
+            }
+        }
+
+        for (Album album : albums) {
+            for (Album suggest : suggested) {
+                if (suggest.getArtistId().equals(album.getArtistId())
+                        && !suggest.getId().equals(album.getId())
+                && !titleMatchIds.contains(album.getId())) {
+                    suggested.add(album);
+                }
+            }
+        }
+
+        TrackResult trackResult = new TrackResult(track.getName(), track.getId(), track.getArtistName(), titleMatch, suggested);
+        return trackResult;
+    }
+    //#endregion
+
+    //#region Mutators
+    public void setCurrentFilter(SearchFilter currentFilter) {
+        this.currentFilter = currentFilter;
+    }
+    public void setAll(List<SearchResult> all) {
+        this.all = all;
+    }
+    //#endregion
+
+    //#region Data Extraction
     private void init(JsonObject json) {
         LogUtil log = new LogUtil(TAG, "init");
         all = new ArrayList<>();
@@ -233,6 +326,7 @@ public class Search {
         LogUtil log = new LogUtil(TAG, "extractTracks");
 
         tracks = new ArrayList<>();
+        trackAlbums = new ArrayList<>();
 
         // Loop through and store all the tracks
         JsonArray jsonArray = json.getAsJsonObject("tracks").getAsJsonArray("items");
@@ -266,66 +360,33 @@ public class Search {
                     null,
                     jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean()));
 
+            List<PhotoUrl> photoUrl = new ArrayList<>();
+            JsonArray imageArray = albumOfTrack.getAsJsonObject("coverArt").getAsJsonArray("sources");
+            for (int j = 0; j < imageArray.size(); j++) {
+                JsonObject image = imageArray.get(i).getAsJsonObject();
+                photoUrl.add(new PhotoUrl(
+                        image.get("url").getAsString(),
+                        image.get("width").getAsDouble(),
+                        image.get("height").getAsDouble()
+                ));
+            }
+
+            trackAlbums.add(new Album(
+                    albumOfTrack.get("uri").getAsString(),
+                    albumOfTrack.get("name").getAsString(),
+                    photoUrl,
+                    artistId,
+                    artistsMap,
+                    new ArrayList<>() {
+                        {
+                            add(tracks.get(tracks.size() - 1));
+                        }
+                    }
+            ));
         }
         log.v("Track results extracted from JsonObject.");
     }
+    //#endregion
 
-    public SearchFilter getCurrentFilter() {
-        return currentFilter;
-    }
 
-    public void setCurrentFilter(SearchFilter currentFilter) {
-        this.currentFilter = currentFilter;
-    }
-
-    public List<SearchResult> getAll() {
-        LogUtil log = new LogUtil(TAG, "getAll");
-        if (all.size() == 0) {
-            ExecutorService executorService = Executors.newFixedThreadPool(4);
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (Artist artist : artists) {
-                        all.add(new SearchResult(SearchFilter.ARTIST, artist));
-                    }
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (Album album : albums) {
-                        all.add(new SearchResult(SearchFilter.ALBUM, album));
-                    }
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (Track track : tracks) {
-                        all.add(new SearchResult(SearchFilter.TRACK, track));
-                    }
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    for (Playlist playlist : playlists) {
-                        all.add(new SearchResult(SearchFilter.PLAYLIST, playlist));
-                    }
-                }
-            });
-
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                log.e(e.getMessage());
-            }
-        }
-        return all;
-    }
-
-    public void setAll(List<SearchResult> all) {
-        this.all = all;
-    }
 }

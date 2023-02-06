@@ -47,6 +47,20 @@ public class Album {
         this.year = year;
     }
 
+    // Used for track result page
+    public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId, Map<String, String> artistsMa, List<Track> tracks) {
+        this.id = id;
+        this.name = name;
+        this.photoUrl = photoUrl;
+        this.artistId = artistId;
+        this.artistsMap = artistsMap;
+        trackIds = new ArrayList<>();
+        trackIdsKnown = false;
+        followers = 0;
+        followersKnown = false;
+        this.tracks = tracks;
+    }
+
     public Album() {
 
     }

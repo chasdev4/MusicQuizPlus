@@ -10,6 +10,7 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -27,26 +28,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
-import model.Badge;
-import model.GettingStarted;
 import model.GoogleSignIn;
 
-import model.PhotoUrl;
-import model.Quiz;
 import model.Search;
 import model.SearchResult;
+import model.TrackResult;
 import model.User;
-import model.item.Album;
-import model.item.Artist;
-import model.item.Playlist;
-import model.type.AlbumType;
-import model.type.Difficulty;
 
+import model.item.Track;
 import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.UserService;
@@ -89,12 +80,13 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-//                        final short limit = 30;
-//                        Search search = new Search("Morrissey", 30, spotifyService);
-//                        search.search(0);
-//                        List<SearchResult> searchResults = search.getAll();
-//
-//                        Log.d(TAG,"done");
+                        final short limit = 30;
+                        Search search = new Search("Morrissey", 30, spotifyService);
+                        search.execute(0);
+                        List<Track> trackList = search.getTracks();
+                        TrackResult result = search.getTrackResult(trackList.get(0));
+
+                        Log.d(TAG,"done");
 
 
                     }
