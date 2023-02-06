@@ -63,9 +63,7 @@ public class Artist implements Serializable {
         extractArtist(jsonObject);
     }
 
-    public Artist() {
-
-    }
+    public Artist() { }
 
     //#region Accessors
     public String getId() { return id; }

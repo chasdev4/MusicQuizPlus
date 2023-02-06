@@ -66,11 +66,6 @@ public class Settings {
     public User getUser() {
         return user;
     }
-
-    @Exclude
-    public String getVersionNumber() {
-        return versionNumber;
-    }
     //#endregion
 
     //#region Mutators
@@ -141,6 +136,7 @@ public class Settings {
         googleSignIn.signOut();
     }
 
+    @Exclude
     public int getVersion(Context context) {
         try {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
