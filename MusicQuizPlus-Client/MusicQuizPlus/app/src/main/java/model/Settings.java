@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,6 +128,8 @@ public class Settings {
     }
 
     public boolean deleteAccount() {
+        unheartAllPlaylists();
+        unheartAllAlbums();
         return user.delete(firebaseUser, db);
     }
 
@@ -145,5 +146,25 @@ public class Settings {
             return 0;
         }
 
+    }
+
+    public void close(Settings oldSettings) {
+        if (firebaseUser == null) {
+            return;
+        }
+        Map<String, Object> updates = new HashMap<>();
+        String userPath = "users/" + firebaseUser.getUid() + "/settings/";
+        if (!oldSettings.difficulty.equals(difficulty)) {
+            updates.put(userPath+"difficulty", difficulty);
+        }
+        if (!oldSettings.ignorePlaylistDifficulty != ignorePlaylistDifficulty) {
+            updates.put(userPath+"ignorePlaylistDifficulty", ignorePlaylistDifficulty);
+        }
+        if (!oldSettings.ignoreArtistDifficulty != ignoreArtistDifficulty) {
+            updates.put(userPath+"ignoreArtistDifficulty", ignoreArtistDifficulty);
+        }
+        if (updates.size() > 0) {
+            db.updateChildren(updates);
+        }
     }
 }
