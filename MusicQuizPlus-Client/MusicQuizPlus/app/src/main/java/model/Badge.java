@@ -44,7 +44,7 @@ public class Badge {
         3 = Gold
 
         Badge Ranks For Milestone Badges:
-        Rank = Number of Quizzes Taken (Given for 1, 3, 10, 25, and every 50 after that
+        Rank = Number of Quizzes Taken (Given for 1, 3, 10, 25, and every 50 after that)
 
         Perfect Accuracy Badge's will have rank of 0
     */
@@ -57,6 +57,7 @@ public class Badge {
     private QuizType type;
     private List<String> badgeIds = new ArrayList<>();
     private boolean allowDuplicates;
+    private boolean completedCollection;
 
     DatabaseReference db = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -91,14 +92,22 @@ public class Badge {
         {
             case ARTIST:
                 artist = quiz.getArtist();
-                Badge badge = getArtistBadge(artist);
                 user.incrementArtistQuizCount();
+                completedCollection = quiz.getCompletedCollection();
+
+                if(completedCollection)
+                {
+                    //Get completed album badge
+                }
+
+                Badge badge = getArtistBadge();
 
                 if(badge != null)
                 {
                     //There is an artist badge to be awarded
                     earnedBadges.add(badge);
                 }
+
                 break;
 
             case PLAYLIST:
@@ -107,6 +116,14 @@ public class Badge {
                 playlist = quiz.getPlaylist();
                 //getPlaylistBadge(quiz);
                 user.incrementPlaylistQuizCount();
+                completedCollection = quiz.getCompletedCollection();
+
+                if(completedCollection)
+                {
+                    //Get completed playlist badge
+                    earnedBadges.add(getCompletedPlaylistBadge());
+                }
+
                 break;
         }
 
@@ -156,17 +173,29 @@ public class Badge {
                 addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(context, "User has been updated..", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Updated (From Badge Model)..", Toast.LENGTH_SHORT).show();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(context, "Failed to update the user data..", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Failed to update (From Badge Model)..", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private Badge getArtistBadge(Artist artist)
+    private Badge getCompletedPlaylistBadge()
+    {
+        allowDuplicates = false;
+
+        String uid = generateUniqueId(BadgeType.PLAYLIST, 0, playlist.getId());
+        photoURL = playlist.getPhotoUrl().get(0);
+        badgeName = String.format(Locale.ENGLISH, "You Know %s", playlist.getName());
+        description = String.format(Locale.ENGLISH, "User has completed all songs in %s", playlist.getName());
+
+        return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
+    }
+
+    private Badge getArtistBadge()
     {
         Badge badge = null;
 
@@ -343,12 +372,12 @@ public class Badge {
             strQuiz = "Quizzes";
         }
 
-        String badgeName = String.format(Locale.ENGLISH, "%d %s %s Taken", quizCount, qzType, strQuiz);
-        String description = String.format(Locale.ENGLISH, "User has taken %d %s %s", quizCount, qzType, strQuiz);
+        badgeName = String.format(Locale.ENGLISH, "%d %s %s Taken", quizCount, qzType, strQuiz);
+        description = String.format(Locale.ENGLISH, "User has taken %d %s %s", quizCount, qzType, strQuiz);
         return new Badge(uid, badgeName, description, null, badgeType, quizCount, allowDuplicates);
     }
 
-    public String generateUniqueId(BadgeType badgeType, int badgeRank, String topicId) {
+    private String generateUniqueId(BadgeType badgeType, int badgeRank, String topicId) {
 
         if(badgeType == BadgeType.PLAYLIST_MILESTONE || badgeType == BadgeType.ARTIST_MILESTONE)
         {
