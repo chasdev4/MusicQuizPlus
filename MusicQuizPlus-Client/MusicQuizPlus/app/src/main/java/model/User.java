@@ -47,6 +47,8 @@ public class User implements Serializable {
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
     private boolean completedCollection = false;
+    private List<String> completedCollectionIDs;
+
 
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
@@ -148,6 +150,9 @@ public class User implements Serializable {
     public Map<String, Map<String, String>> getGeneratedQuizHistory() {
         return generatedQuizHistory;
     }
+
+    @Exclude
+    public List<String> getCompletedCollectionIDs() { return completedCollectionIDs; }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
@@ -443,6 +448,8 @@ public class User implements Serializable {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 if (albumsMapEntry.getValue().getCount() == albumsMapEntry.getValue().getTotal()) {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                    completedCollection = true;
+                    completedCollectionIDs.add(albumsMapEntry.getKey());
                 }
             }
         } else {
@@ -461,6 +468,7 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
                     completedCollection = true;
+                    completedCollectionIDs.add(albumsMapEntry.getKey());
                 }
             }
         }
