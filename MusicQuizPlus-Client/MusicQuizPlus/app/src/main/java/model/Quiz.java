@@ -69,6 +69,7 @@ public class Quiz implements Serializable {
     private long multiplierTime;
     private Timer multiplierTimer;
     private double currentMultiplier;
+    private boolean completedCollection;
     //#endregion
 
     //#region Constants
@@ -344,6 +345,10 @@ public class Quiz implements Serializable {
 
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    public boolean getCompletedCollection() {
+        return completedCollection;
     }
 
     @Exclude
@@ -1067,9 +1072,9 @@ public class Quiz implements Serializable {
             history.remove(track);
         }
         if (this.type == QuizType.PLAYLIST) {
-            user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
+            completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
         } else {
-            user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
+            completedCollection = user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
         }
         user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
