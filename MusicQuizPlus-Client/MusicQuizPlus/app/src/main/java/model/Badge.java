@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
+import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.type.BadgeType;
@@ -98,6 +99,16 @@ public class Badge {
                 if(completedCollection)
                 {
                     //Get completed album badge
+                    List<String> completedCollectionIDs = quiz.getCompletedCollectionIDs();
+                    List<Album> completedAlbums = new ArrayList<>();
+
+                    for (String albumID : completedCollectionIDs){
+                        completedAlbums.add(FirebaseService.checkDatabase(db, "albums", albumID, Album.class));
+                    }
+
+                    for (Album album : completedAlbums){
+                        earnedBadges.add(getCompletedAlbumBadge(album));
+                    }
                 }
 
                 Badge badge = getArtistBadge();
@@ -112,9 +123,7 @@ public class Badge {
 
             case PLAYLIST:
 
-                //TODO: Get playlist badges
                 playlist = quiz.getPlaylist();
-                //getPlaylistBadge(quiz);
                 user.incrementPlaylistQuizCount();
                 completedCollection = quiz.getCompletedCollection();
 
@@ -181,6 +190,18 @@ public class Badge {
                         Toast.makeText(context, "Failed to update (From Badge Model)..", Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+    private Badge getCompletedAlbumBadge(Album album)
+    {
+        allowDuplicates = false;
+
+        String uid = generateUniqueId(BadgeType.ARTIST, 0, album.getId());
+        photoURL = album.getPhotoUrl().get(0);
+        badgeName = String.format(Locale.ENGLISH, "You Know %s", album.getName());
+        description = String.format(Locale.ENGLISH, "User has completed all songs in %s", album.getName());
+
+        return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
     }
 
     private Badge getCompletedPlaylistBadge()
