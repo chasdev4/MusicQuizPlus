@@ -70,6 +70,7 @@ public class Quiz implements Serializable {
     private Timer multiplierTimer;
     private double currentMultiplier;
     private boolean completedCollection;
+    private List<String> completedCollectionIDs;
     //#endregion
 
     //#region Constants
@@ -347,8 +348,14 @@ public class Quiz implements Serializable {
         return difficulty;
     }
 
+    @Exclude
     public boolean getCompletedCollection() {
         return completedCollection;
+    }
+
+    @Exclude
+    public List<String> getCompletedCollectionIDs() {
+        return user.getCompletedCollectionIDs();
     }
 
     @Exclude
@@ -1075,6 +1082,10 @@ public class Quiz implements Serializable {
             completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
         } else {
             completedCollection = user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
+            if(completedCollection)
+            {
+                completedCollectionIDs.addAll(user.getCompletedCollectionIDs());
+            }
         }
         user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
