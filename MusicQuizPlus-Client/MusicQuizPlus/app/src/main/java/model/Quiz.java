@@ -326,6 +326,7 @@ public class Quiz implements Serializable {
         multiplierTimer = new Timer();
         currentMultiplier = 1;
         quickReaction = 0;
+        this.user.initArtistTrackCount();
         init();
     }
 
