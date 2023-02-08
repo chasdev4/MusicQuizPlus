@@ -48,7 +48,8 @@ public class User implements Serializable {
     private LinkedList<Track> history;
     private boolean completedCollection = false;
     private List<String> completedCollectionIDs;
-
+    private int artistTrackCount;
+    private boolean allSongsKnown;
 
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
@@ -150,6 +151,12 @@ public class User implements Serializable {
     public Map<String, Map<String, String>> getGeneratedQuizHistory() {
         return generatedQuizHistory;
     }
+
+    @Exclude
+    public boolean getAllSongsKnown() {return allSongsKnown;}
+
+    @Exclude
+    public int getArtistTrackCount() { return artistTrackCount; }
 
     @Exclude
     public List<String> getCompletedCollectionIDs() { return completedCollectionIDs; }
@@ -450,12 +457,14 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     completedCollection = true;
                     completedCollectionIDs.add(albumsMapEntry.getKey());
+                    artistTrackCount += albumsMapEntry.getValue().getCount();
                 }
             }
         } else {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 int count = albumsMapEntry.getValue().getCount()
                         + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
+                artistTrackCount += count;
                 if (albumsMapEntry.getValue().getTotal() > count) {
                     for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
                         String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
@@ -472,6 +481,7 @@ public class User implements Serializable {
                 }
             }
         }
+
         return completedCollection;
     }
 
@@ -526,6 +536,22 @@ public class User implements Serializable {
             log.i("History retrieved.");
         } else {
             log.i("No history to retrieve.");
+        }
+    }
+
+    public void initArtistTrackCount()
+    {
+        for( Map.Entry<String, ArtistHistory> item : artistHistory.entrySet() )
+        {
+            if(item.getValue().getAlbumsTotal() == item.getValue().getAlbumsCount())
+            {
+                allSongsKnown = true;
+            }
+
+            for ( Map.Entry<String, TopicHistory> a :  item.getValue().getAlbums().entrySet())
+            {
+                artistTrackCount += a.getValue().getCount();
+            }
         }
     }
     //#endregion
