@@ -316,6 +316,14 @@ public class Quiz implements Serializable {
         questions = quiz.getQuestions();
         quizId = quiz.getQuizId();
         history = new ArrayList<>();
+        if (type == QuizType.PLAYLIST) {
+            poolCount = playlist.getTrackIds().size();
+        }
+        else {
+            poolCount = artist.getTracks().size();
+        }
+        String child = (type == QuizType.PLAYLIST) ? "playlists" : "artists";
+
         for (Question question : quiz.getQuestions()) {
             history.add(new Track(question.getTrackId(), question.getAlbumId()));
         }
@@ -786,7 +794,7 @@ public class Quiz implements Serializable {
     }
 
     private void scheduleQuestionTimer() {
-        int delay = (int)QUESTION_INTERVAL * 1000;
+        int delay = (int)(QUESTION_INTERVAL * 1000) + 1;
         questionTimer.schedule(new TimerTask() {
             @Override
             public void run() {

@@ -171,16 +171,18 @@ public class MainActivity extends AppCompatActivity {
 //                            userPlaylist.getTracks().remove(k + 19);
 //                        }
 //
-//                        Random rnd = new Random(6);
+//                        Random rnd = new Random();
 //                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
 //                        Question question = quiz.getFirstQuestion();
 //                        quiz.start();
+//                        i = 1;
 //                        while (question != null) {
-//                            log.d(String.valueOf(quiz.currentQuestionIndex));
+//                            log.d(String.valueOf(i));
+//                            i++;
 //                            CountDownLatch cdl = new CountDownLatch(1);
-//                            int index = question.getAnswerIndex();
+//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
 //                            try {
-//                                Thread.sleep(21000);
+//                                Thread.sleep(rnd.nextInt(1) * 1000);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
