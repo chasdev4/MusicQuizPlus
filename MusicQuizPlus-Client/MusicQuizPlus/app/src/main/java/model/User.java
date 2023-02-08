@@ -374,7 +374,7 @@ public class User implements Serializable {
 
     private void initLevels() {
         int xp = 0;
-        for (int i = 1; i <= 100; i++) {
+        for (int i = MIN_LEVEL; i <= MAX_LEVEL; i++) {
             xp += (int)doEquation(i);
             LEVELS.put(i, xp);
         }
@@ -615,7 +615,15 @@ public class User implements Serializable {
 
     //#region Progression
     public void addXP(DatabaseReference db, FirebaseUser firebaseUser, int xp) {
-        this.xp += xp;
+        if (this.xp == LEVELS.get(MAX_LEVEL) && level == MAX_LEVEL) {
+            return;
+        }
+        if (this.xp + xp >= LEVELS.get(MAX_LEVEL)) {
+            this.xp = LEVELS.get(MAX_LEVEL);
+        }
+        else {
+            this.xp += xp;
+        }
         updateLevelAndDb(db, firebaseUser);
     }
 
@@ -624,7 +632,7 @@ public class User implements Serializable {
         if (xp >= LEVELS.get(level + 1)) {
             // Determine how many levels (could be more than one early game)
             int i = 1;
-            while (xp >= LEVELS.get(i + 1)) {
+            while (i < LEVELS.size() && xp >= LEVELS.get(i + 1)) {
                 i++;
             }
             level = i;
