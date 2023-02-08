@@ -210,7 +210,7 @@ public class Badge {
 
         uid = generateUniqueId(BadgeType.ARTIST, 0, album.getId());
         photoURL = album.getPhotoUrl().get(0);
-        badgeName = String.format(Locale.ENGLISH, "You Know %s", album.getName());
+        badgeName = String.format(Locale.ENGLISH, "%s Master", album.getName());
         description = String.format(Locale.ENGLISH, "User has completed all songs in %s", album.getName());
 
         return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
@@ -220,8 +220,8 @@ public class Badge {
     {
         allowDuplicates = false;
 
-        uid = generateUniqueId(BadgeType.PLAYLIST, 0, playlist.getId());
-        badgeName = String.format(Locale.ENGLISH, "You Know %s", playlist.getName());
+        uid = generateUniqueId(BadgeType.PLAYLIST, 0, topicID);
+        badgeName = String.format(Locale.ENGLISH, "%s Master", playlist.getName());
         description = String.format(Locale.ENGLISH, "User has completed all songs in %s", playlist.getName());
 
         return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
