@@ -242,6 +242,12 @@ public class Quiz implements Serializable {
         }
         return null;
     }
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+    @Exclude
+    public Artist getArtist() { return artist; }
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
     //#endregion
 
     //#region Mutators
@@ -252,6 +258,7 @@ public class Quiz implements Serializable {
     }
     //#endregion
 
+    //#region Pre-Quiz
     public void init() {
         // Initialize non-final members
         currentQuestionIndex = 0;
@@ -697,22 +704,9 @@ public class Quiz implements Serializable {
         return size >= numQuestions + BUFFER;
     }
 
-/*
-    //USED FOR TESTING
-    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
-    public void setNumCorrect(int correct) { numCorrect = correct; }
- */
+    //#endregion
 
-    @Exclude
-    public Playlist getPlaylist() { return playlist; }
-
-    @Exclude
-    public Artist getArtist() { return artist; }
-
-    @Exclude
-    public int getNumCorrect() { return numCorrect; }
-
-
+    //#region During Quiz
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
@@ -764,15 +758,6 @@ public class Quiz implements Serializable {
         return true;
     }
 
-    // Call this method to begin the quiz
-    public void start() {
-        multiplierTime = (int)MAX_MULTIPLIER;
-        questionTime = System.nanoTime();
-
-        scheduleMultiplierTimer();
-        scheduleQuestionTimer();
-    }
-
     private void scheduleMultiplierTimer() {
         multiplierTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -810,17 +795,28 @@ public class Quiz implements Serializable {
         },delay,500);
     }
 
-    private void calculateXp() {
-        xp = (int)(score / 4 + 100);
-        // TODO: Add bonus XP from badges to xp
-    }
+    // Call this method to begin the quiz
+    public void start() {
+        multiplierTime = (int)MAX_MULTIPLIER;
+        questionTime = System.nanoTime();
 
+        scheduleMultiplierTimer();
+        scheduleQuestionTimer();
+    }
+    //#endregion
+
+    //#region Post Quiz
     // Call this method after the quiz is complete
     public void end() {
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
+    }
+
+    private void calculateXp() {
+        xp = (int)(score / 4 + 100);
+        // TODO: Add bonus XP from badges to xp
     }
 
     private void updateDatabase() {
@@ -851,4 +847,11 @@ public class Quiz implements Serializable {
         }
         user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
+    //#endregion
+
+    /*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+ */
 }
