@@ -615,6 +615,9 @@ public class User implements Serializable {
 
     //#region Progression
     public void addXP(DatabaseReference db, FirebaseUser firebaseUser, int xp) {
+        if (xp <= 0) {
+            return;
+        }
         if (this.xp == LEVELS.get(MAX_LEVEL) && level == MAX_LEVEL) {
             return;
         }

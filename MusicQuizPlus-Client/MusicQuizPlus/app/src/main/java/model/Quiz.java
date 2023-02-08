@@ -69,6 +69,7 @@ public class Quiz implements Serializable {
     private long multiplierTime;
     private Timer multiplierTimer;
     private double currentMultiplier;
+    private int xp;     // XP gained during the session
     //#endregion
 
     //#region Constants
@@ -84,7 +85,7 @@ public class Quiz implements Serializable {
     private final double MULTIPLIER_INTERVAL = 5;
     private final double MULTIPLIER_RATE = .25;
     private final int BUFFER = 5;
-    private final int BASE_SCORE = 100;
+    private final int BASE_SCORE = 250;
     //#endregion
 
     //#region Constructors
@@ -695,9 +696,6 @@ public class Quiz implements Serializable {
         return size >= numQuestions + BUFFER;
     }
 
-
-
-
 /*
     //USED FOR TESTING
     public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
@@ -720,6 +718,8 @@ public class Quiz implements Serializable {
         LogUtil log = new LogUtil(TAG, "nextQuestion");
         questionTimer.cancel();
         multiplierTimer.cancel();
+        questionTimer = new Timer();
+        multiplierTimer = new Timer();
         if (!updateTest(answerIndex)) {
             log.i("No more questions!");
             return null;
@@ -741,7 +741,7 @@ public class Quiz implements Serializable {
                 multiplierTime = 25;
             }
             double reactionTimeBonus = 1 - (seconds / QUESTION_INTERVAL);
-            score += BASE_SCORE * (currentMultiplier + reactionTimeBonus);
+            score += (int)(BASE_SCORE * (currentMultiplier + reactionTimeBonus));
             numCorrect++;
         } else {
             for (Track track : history) {
@@ -801,7 +801,7 @@ public class Quiz implements Serializable {
             public void run() {
                 updateTest(-1);
             }
-        },delay);
+        },delay,500);
     }
 
     // Call this method after the quiz is complete
@@ -810,6 +810,13 @@ public class Quiz implements Serializable {
     }
 
     private void updateDatabase() {
+        // Calculate xp earned + 100 for taking the test
+        xp = (int)(score / 4 + 100);
+        // TODO: Add bonus XP from badges to xp
+
+        // Update the user's xp / level
+        user.addXP(db, firebaseUser, xp);
+
         String key = null;
 
         if (isNewQuiz) {
