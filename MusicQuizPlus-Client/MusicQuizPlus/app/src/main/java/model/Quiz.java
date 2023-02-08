@@ -388,6 +388,25 @@ public class Quiz implements Serializable {
         }
     }
 
+    /*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+    public void setQuickReactions(int num) { quickReactions = num; }
+    */
+
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+
+    @Exclude
+    public Artist getArtist() { return artist; }
+
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
+
+    @Exclude
+    public int getQuickReaction() { return quickReaction; }
+
     @Exclude
     public int getScore() {
         return score;
@@ -951,23 +970,6 @@ public class Quiz implements Serializable {
 
         return false;
     }
-
-
-/*
-    //USED FOR TESTING
-    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
-    public void setNumCorrect(int correct) { numCorrect = correct; }
- */
-
-    @Exclude
-    public Playlist getPlaylist() { return playlist; }
-
-    @Exclude
-    public Artist getArtist() { return artist; }
-
-    @Exclude
-    public int getNumCorrect() { return numCorrect; }
-
 
     // Pass in the selected answer
     // Returns the next question
