@@ -52,7 +52,7 @@ public class Quiz implements Serializable {
     private List<Track> history = new ArrayList<>();
     private List<Track> wrong = new ArrayList<>();
     private int numQuestions;
-    public int currentQuestionIndex;
+    private int currentQuestionIndex;
     private int score;
     private int numCorrect;
     private int popularityThreshold;
