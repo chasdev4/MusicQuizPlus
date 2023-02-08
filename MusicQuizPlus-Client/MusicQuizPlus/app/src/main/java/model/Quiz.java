@@ -991,6 +991,12 @@ public class Quiz implements Serializable {
         if (answerIndex == questions.get(currentQuestionIndex).getAnswerIndex()) {
             long elapsed = System.nanoTime() - questionTime;
             double seconds = (double)elapsed / 1_000_000_000.0;
+
+            if(seconds <= 5.0)
+            {
+                quickReaction++;
+            }
+
             multiplierTime += QUESTION_INTERVAL - seconds;
             if (multiplierTime > 25) {
                 multiplierTime = 25;
