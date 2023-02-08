@@ -52,7 +52,7 @@ public class Quiz implements Serializable {
     private List<Track> history = new ArrayList<>();
     private List<Track> wrong = new ArrayList<>();
     private int numQuestions;
-    private int currentQuestionIndex;
+    public int currentQuestionIndex;
     private int score;
     private int numCorrect;
     private int popularityThreshold;
@@ -70,6 +70,7 @@ public class Quiz implements Serializable {
     private Timer multiplierTimer;
     private double currentMultiplier;
     private int xp;     // XP gained during the session
+    private boolean timeUp = false;
     //#endregion
 
     //#region Constants
@@ -720,6 +721,11 @@ public class Quiz implements Serializable {
         multiplierTimer.cancel();
         questionTimer = new Timer();
         multiplierTimer = new Timer();
+        if (timeUp) {
+            answerIndex = -1;
+            timeUp =false;
+        }
+
         if (!updateTest(answerIndex)) {
             log.i("No more questions!");
             return null;
@@ -799,7 +805,7 @@ public class Quiz implements Serializable {
         questionTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                updateTest(-1);
+                timeUp = true;
             }
         },delay,500);
     }
