@@ -28,15 +28,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 
+import model.Question;
+import model.Quiz;
 import model.Search;
 import model.SearchResult;
 import model.TrackResult;
 import model.User;
 
+import model.item.Playlist;
 import model.item.Track;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -79,13 +85,14 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-                        final short limit = 30;
-                        Search search = new Search("Morrissey", 30, spotifyService);
-                        search.execute(0);
-                        List<Track> trackList = search.getTracks();
-                        TrackResult result = search.getTrackResult(trackList.get(0));
-
-                        Log.d(TAG,"done");
+                        //#region DEBUG: Search
+//                        Search search = new Search("Morrissey", 30, spotifyService);
+//                        search.execute(0);
+//                        List<Track> trackList = search.getTracks();
+//                        TrackResult result = search.getTrackResult(trackList.get(0));
+//
+//                        Log.d(TAG,"done");
+                        //#endregion
 
 
                     }
@@ -124,6 +131,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
+
+        // Delete me
+//        double xp = 0;
+//        double total = 0;
+//        for (int i = 1; i < 101; i++) {
+//            xp = Math.log(i) * 2500;
+//            total += xp;
+//            log.d(String.format("Level: %s | XP: %s | Total: %s", String.valueOf(i),String.valueOf((int)xp), String.valueOf((int)total)));
+//        }
+
         this.firebaseUser = firebaseUser;
         // TODO: Update the state of app depending if the user is logged in or not
         if (this.firebaseUser != null) {
@@ -136,8 +153,51 @@ public class MainActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 public void run() {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-
                     if (user != null) {
+                        //#region DEBUG: Playlist Quiz Sandbox
+//                        user.initCollections(db);
+//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
+//                        userPlaylist.initCollection(db);
+//                        List<String> newTrackIds = new ArrayList<>();
+//                        int i = 0;
+//                        for (String trackId : userPlaylist.getTrackIds()) {
+//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
+//                                log.e("Tracks are out of order.");
+//                            }
+//                            i++;
+//                        }
+//                        for (int k = 80; k > 0; k--) {
+//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
+//                            userPlaylist.getTracks().remove(k + 19);
+//                        }
+//
+//                        Random rnd = new Random(6);
+//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                        Question question = quiz.getFirstQuestion();
+//                        quiz.start();
+//                        while (question != null) {
+//                            log.d(String.valueOf(quiz.currentQuestionIndex));
+//                            CountDownLatch cdl = new CountDownLatch(1);
+//                            int index = question.getAnswerIndex();
+//                            try {
+//                                Thread.sleep(21000);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                            question = quiz.nextQuestion(index);
+//                            cdl.countDown();
+//
+//                            try {
+//                                cdl.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//
+//                        quiz.end();
+//                        log.d("Done.");
+                        //#endregion
+
 /*
                         //region TESTING BADGES
 
