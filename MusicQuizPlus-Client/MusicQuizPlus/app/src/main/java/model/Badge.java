@@ -121,14 +121,15 @@ public class Badge {
                         earnedBadges.add(getCompletedAlbumBadge(album));
                     }
                 }
+/*
+                badgeToAdd = getArtistBadge();
 
-                Badge badge = getArtistBadge();
-
-                if(badge != null)
+                if(badgeToAdd != null)
                 {
                     //There is an artist badge to be awarded
-                    earnedBadges.add(badge);
+                    earnedBadges.add(badgeToAdd);
                 }
+ */
 
                 break;
 
@@ -227,6 +228,7 @@ public class Badge {
         return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
     }
 
+    /*
     private Badge getArtistBadge()
     {
         badgeToAdd = null;
@@ -259,6 +261,7 @@ public class Badge {
 
         return badgeToAdd;
     }
+     */
 
     private Badge checkForMilestoneBadge()
     {
