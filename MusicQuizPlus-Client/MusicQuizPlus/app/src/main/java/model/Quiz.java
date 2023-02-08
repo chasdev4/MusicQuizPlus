@@ -70,7 +70,8 @@ public class Quiz implements Serializable {
     private Timer multiplierTimer;
     private double currentMultiplier;
     private boolean completedCollection;
-    private List<String> completedCollectionIDs;
+    private List<String> completedCollectionIDs = new ArrayList<>();
+    private int quickReaction;
     //#endregion
 
     //#region Constants
@@ -303,6 +304,7 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
+        quickReaction = 0;
         init();
     }
 
@@ -323,6 +325,7 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
+        quickReaction = 0;
         init();
     }
 
@@ -355,7 +358,7 @@ public class Quiz implements Serializable {
 
     @Exclude
     public List<String> getCompletedCollectionIDs() {
-        return user.getCompletedCollectionIDs();
+        return completedCollectionIDs;
     }
 
     @Exclude
