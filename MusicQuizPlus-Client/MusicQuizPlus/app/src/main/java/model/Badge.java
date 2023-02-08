@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -40,9 +41,9 @@ public class Badge {
     /*
         Badge Ranks For Artist Badges:
         0 = Badge Rank Not Applicable (Completing an Album/Playlist)
-        1 = 3-4 Correct On Artist Quiz
-        2 = 5-6 Correct On Artist Quiz
-        3 = 7-10 Correct On Artist Quiz
+        1 = 3,5,10 Songs Known
+        2 = 25 and 50 Songs Known
+        3 = Every 50 Songs Known after 50
 
         Badge Ranks For Milestone Badges:
         Rank = Number of Quizzes Taken (Given for 1, 3, 10, 25, and every 50 after that)
@@ -68,6 +69,7 @@ public class Badge {
     private String topicID;
     private String uid;
     private Badge badgeToAdd;
+    private int bonusXP;
 
     DatabaseReference db = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -106,6 +108,13 @@ public class Badge {
                 completedCollection = quiz.getCompletedCollection();
                 topicID = artist.getId();
                 photoURL = artist.getPhotoUrl().get(0);
+                int totalCount = user.getArtistTrackCount();
+
+                badgeToAdd = checkForArtistBadge(totalCount);
+                if(badgeToAdd != null)
+                {
+                    earnedBadges.add(badgeToAdd);
+                }
 
                 if(completedCollection)
                 {
@@ -130,7 +139,6 @@ public class Badge {
                     earnedBadges.add(badgeToAdd);
                 }
  */
-
                 break;
 
             case PLAYLIST:
@@ -145,7 +153,6 @@ public class Badge {
                     //Get completed playlist badge
                     earnedBadges.add(getCompletedPlaylistBadge());
                 }
-
                 break;
         }
 
@@ -187,6 +194,48 @@ public class Badge {
         return earnedBadges;
     }
 
+    private Badge checkForArtistBadge(int totalCount) {
+        badgeToAdd = null;
+        allowDuplicates = false;
+        badgeType = BadgeType.ARTIST;
+        String artistName = artist.getName();
+
+        if(user.getAllSongsKnown())
+        {
+            badgeName = String.format(Locale.ENGLISH, "True %s Fan", artistName);
+            description = String.format(Locale.ENGLISH, "You know ALL %s songs!", artistName);
+            uid = generateUniqueId(badgeType, 4, topicID);
+            bonusXP += 1000;
+            badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 4, allowDuplicates);
+        }
+        else if(totalCount == 3 || totalCount == 5 || totalCount == 10)
+        {
+            badgeName = String.format(Locale.ENGLISH, "I Know %s", artistName);
+            description = String.format(Locale.ENGLISH, "You know %d %s songs!", totalCount, artistName);
+            uid = generateUniqueId(badgeType, 1, topicID);
+            bonusXP += 100;
+            badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 1, allowDuplicates);
+        }
+        else if(totalCount == 25 || totalCount == 50)
+        {
+            badgeName = String.format(Locale.ENGLISH, "I Like %s", artistName);
+            description = String.format(Locale.ENGLISH, "You know %d %s songs!", totalCount, artistName);
+            uid = generateUniqueId(badgeType, 2, topicID);
+            bonusXP += 250;
+            badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 2, allowDuplicates);
+        }
+        else if (totalCount % 50 == 0)
+        {
+            badgeName = String.format(Locale.ENGLISH, "I Love %s", artistName);
+            description = String.format(Locale.ENGLISH, "You know %d %s songs!", totalCount, artistName);
+            uid = generateUniqueId(badgeType, 3, topicID);
+            bonusXP += 500;
+            badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 3, allowDuplicates);
+        }
+
+        return badgeToAdd;
+    }
+
     private void updateBadgeIDsForUserInDatabase(Context context)
     {
         User updatedUser = new User(user);
@@ -208,23 +257,21 @@ public class Badge {
     private Badge getCompletedAlbumBadge(Album album)
     {
         allowDuplicates = false;
-
         uid = generateUniqueId(BadgeType.ARTIST, 0, album.getId());
         photoURL = album.getPhotoUrl().get(0);
         badgeName = String.format(Locale.ENGLISH, "%s Master", album.getName());
         description = String.format(Locale.ENGLISH, "User has completed all songs in %s", album.getName());
-
+        bonusXP += 500;
         return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
     }
 
     private Badge getCompletedPlaylistBadge()
     {
         allowDuplicates = false;
-
         uid = generateUniqueId(BadgeType.PLAYLIST, 0, topicID);
         badgeName = String.format(Locale.ENGLISH, "%s Master", playlist.getName());
         description = String.format(Locale.ENGLISH, "User has completed all songs in %s", playlist.getName());
-
+        bonusXP += 500;
         return new Badge(uid, badgeName, description, photoURL, BadgeType.PLAYLIST, 0, allowDuplicates);
     }
 
@@ -274,31 +321,37 @@ public class Badge {
                 if(user.getArtistQuizCount() == 1)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getArtistQuizCount() == 3)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getArtistQuizCount() == 5)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getArtistQuizCount() == 10)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
-                else if(user.getArtistQuizCount() == 25)
+                else if(user.getArtistQuizCount() == 25 || user.getPlaylistQuizCount() == 50)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 250;
                     break;
                 }
                 else if((user.getArtistQuizCount() % 50) == 0)
                 {
                     badgeToAdd = getMilestoneBadge(user.getArtistQuizCount());
+                    bonusXP += 500;
                     break;
                 }
 
@@ -307,31 +360,37 @@ public class Badge {
                 if(user.getPlaylistQuizCount() == 1)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getPlaylistQuizCount() == 3)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getPlaylistQuizCount() == 5)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
                 else if(user.getPlaylistQuizCount() == 10)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 100;
                     break;
                 }
-                else if(user.getPlaylistQuizCount() == 25)
+                else if(user.getPlaylistQuizCount() == 25 || user.getPlaylistQuizCount() == 50)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 250;
                     break;
                 }
                 else if((user.getPlaylistQuizCount() % 50) == 0)
                 {
                     badgeToAdd = getMilestoneBadge(user.getPlaylistQuizCount());
+                    bonusXP += 500;
                     break;
                 }
         }
@@ -369,6 +428,7 @@ public class Badge {
             uid = generateUniqueId(badgeType, 1, topicID);
             badgeName = "3-4 Quick Reactions";
             description = "User had 3-4 Quick Reactions";
+            bonusXP += 100;
             badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 1, allowDuplicates);
         }
         else if(numOfQuickReactions > 4 && numOfQuickReactions < 10)
@@ -376,6 +436,7 @@ public class Badge {
             uid = generateUniqueId(badgeType, 2, topicID);
             badgeName = "5-9 Quick Reactions";
             description = "User had 5-9 Quick Reactions";
+            bonusXP += 250;
             badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 2, allowDuplicates);
         }
         else if(numOfQuickReactions == 10)
@@ -383,6 +444,7 @@ public class Badge {
             uid = generateUniqueId(badgeType, 3, topicID);
             badgeName = String.format(Locale.ENGLISH, "%d Quick Reactions", numOfQuickReactions);
             description = String.format(Locale.ENGLISH, "User had %d Quick Reactions", numOfQuickReactions);
+            bonusXP += 500;
             badgeToAdd = new Badge(uid, badgeName, description, photoURL, badgeType, 3, allowDuplicates);
         }
 
@@ -393,6 +455,7 @@ public class Badge {
     {
         uid = generateUniqueId(BadgeType.PERFORMANCE, 0, topicID);
         allowDuplicates = true;
+        bonusXP += 500;
         return new Badge(uid, "Perfect Accuracy", "User Obtained A Perfect Score On A Quiz", photoURL, BadgeType.PERFORMANCE, 0, allowDuplicates);
     }
 
@@ -406,13 +469,11 @@ public class Badge {
         {
             qzType = "Playlist";
             badgeType = BadgeType.PLAYLIST_MILESTONE;
-            uid = generateUniqueId(badgeType, quizCount, topicID);
         }
         else
         {
             qzType = "Artist";
             badgeType = BadgeType.ARTIST_MILESTONE;
-            uid = generateUniqueId(badgeType, quizCount, topicID);
         }
 
         if(quizCount == 1)
@@ -424,6 +485,7 @@ public class Badge {
             strQuiz = "Quizzes";
         }
 
+        uid = generateUniqueId(badgeType, quizCount, topicID);
         badgeName = String.format(Locale.ENGLISH, "%d %s %s Taken", quizCount, qzType, strQuiz);
         description = String.format(Locale.ENGLISH, "User has taken %d %s %s", quizCount, qzType, strQuiz);
         return new Badge(uid, badgeName, description, null, badgeType, quizCount, allowDuplicates);
@@ -442,6 +504,9 @@ public class Badge {
         badgeIds.add(uid);
         return uid;
     }
+
+    @Exclude
+    public int getBonusXP() { return bonusXP; }
 
     public String getBadgeID() {
         return badgeID;
