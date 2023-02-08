@@ -810,15 +810,20 @@ public class Quiz implements Serializable {
         },delay,500);
     }
 
+    private void calculateXp() {
+        xp = (int)(score / 4 + 100);
+        // TODO: Add bonus XP from badges to xp
+    }
+
     // Call this method after the quiz is complete
     public void end() {
-        updateDatabase();
+        calculateXp();
+        if (firebaseUser != null) {
+            updateDatabase();
+        }
     }
 
     private void updateDatabase() {
-        // Calculate xp earned + 100 for taking the test
-        xp = (int)(score / 4 + 100);
-        // TODO: Add bonus XP from badges to xp
 
         // Update the user's xp / level
         user.addXP(db, firebaseUser, xp);
