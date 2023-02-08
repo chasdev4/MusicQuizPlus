@@ -148,6 +148,7 @@ public class Settings {
 
     }
 
+    // Create a copy of settings before modification, pass it here
     public void close(Settings oldSettings) {
         if (firebaseUser == null) {
             return;

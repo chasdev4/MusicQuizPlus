@@ -5,12 +5,9 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,6 +50,7 @@ public class User implements Serializable {
     private Map<String, Playlist> playlists;
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
+    private double xpToNextLevel;
     //#endregion
 
     //#region Constants
@@ -60,7 +58,7 @@ public class User implements Serializable {
     private final static int HISTORY_LIMIT = 50;
     private final static int MIN_LEVEL = 1;
     private final static int MAX_LEVEL = 100;
-    private final static int MAX_XP = 100000;
+    private final static Map<Integer, Integer> LEVELS = new HashMap<>();
     //#endregion
 
     public User() {
@@ -71,15 +69,16 @@ public class User implements Serializable {
         badgeIds = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
-        level = 1;
+        level = MIN_LEVEL;
         xp = 0;
         settings = new Settings();
+        initLevels();
     }
 
     public User(FirebaseUser firebaseUser, Settings settings) {
         name = firebaseUser.getDisplayName();
         photoUrl = firebaseUser.getPhotoUrl().toString();
-        level = 1;
+        level = MIN_LEVEL;
         xp = 0;
         this.settings = settings;
         albumIds = new HashMap<>();
@@ -92,6 +91,7 @@ public class User implements Serializable {
         generatedQuizHistory = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        initLevels();
     }
 
     public User(User user) {
@@ -107,41 +107,66 @@ public class User implements Serializable {
         level = user.level;
         xp = user.xp;
         settings = user.settings;
+        initLevels();
     }
 
     //#region Accessors
-    public String getName() { return name; }
-    public String getPhotoUrl() { return photoUrl; }
+    public String getName() {
+        return name;
+    }
+
+    public String getPhotoUrl() {
+        return photoUrl;
+    }
+
     public int getLevel() {
         return level;
     }
+
     public int getXp() {
         return xp;
     }
-    public Settings getSettings() { return settings; }
+
+    public Settings getSettings() {
+        return settings;
+    }
+
     public Map<String, String> getAlbumIds() {
         return albumIds;
     }
+
     public Map<String, String> getArtistIds() {
         return artistIds;
     }
+
     public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
+
     public List<String> getHistoryIds() {
         return historyIds;
     }
-    public Map<String, String> getBadgeIds() { return badgeIds; }
+
+    public Map<String, String> getBadgeIds() {
+        return badgeIds;
+    }
+
     public Map<String, TopicHistory> getPlaylistHistory() {
         return playlistHistory;
     }
+
     public Map<String, ArtistHistory> getArtistHistory() {
         return artistHistory;
     }
-    public Map<String, Map<String, String>> getGeneratedQuizHistory() { return generatedQuizHistory; }
+
+    public Map<String, Map<String, String>> getGeneratedQuizHistory() {
+        return generatedQuizHistory;
+    }
+
     public int getArtistQuizCount() {
         return artistQuizCount;
     }
+
     public int getPlaylistQuizCount() {
         return playlistQuizCount;
     }
@@ -150,18 +175,22 @@ public class User implements Serializable {
     public Difficulty getDifficulty() {
         return settings.getDifficulty();
     }
+
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
     }
+
     @Exclude
     public Map<String, Artist> getArtists() {
         return artists;
     }
+
     @Exclude
     public LinkedList<Track> getHistory() {
         return history;
     }
+
     @Exclude
     public Playlist getPlaylist(String playlistId) {
         for (Map.Entry<String, Playlist> playlist : playlists.entrySet()) {
@@ -171,6 +200,7 @@ public class User implements Serializable {
         }
         return null;
     }
+
     @Exclude
     public Artist getArtist(String artistId) {
         for (Map.Entry<String, Artist> artist : artists.entrySet()) {
@@ -179,6 +209,11 @@ public class User implements Serializable {
             }
         }
         return null;
+    }
+
+    @Exclude
+    public double getXpToNextLevel() {
+        return xpToNextLevel;
     }
     //#endregion
 
@@ -207,9 +242,17 @@ public class User implements Serializable {
         this.generatedQuizHistory = generatedQuizHistory;
     }
 
-    public void setPlaylistIds(Map<String, String> playlistIds) { this.playlistIds = playlistIds; }
-    public void setArtistIds(Map<String, String> artistIds) { this.artistIds = artistIds; }
-    public void setHistoryIds(List<String> historyIds) { this.historyIds = historyIds; }
+    public void setPlaylistIds(Map<String, String> playlistIds) {
+        this.playlistIds = playlistIds;
+    }
+
+    public void setArtistIds(Map<String, String> artistIds) {
+        this.artistIds = artistIds;
+    }
+
+    public void setHistoryIds(List<String> historyIds) {
+        this.historyIds = historyIds;
+    }
 
     public void setPlaylists(Map<String, Playlist> playlists) {
         this.playlists = playlists;
@@ -231,6 +274,7 @@ public class User implements Serializable {
         albumIds.put(key, albumId);
         return true;
     }
+
     public String removeBadgeId(String badgeId) {
         String key = "";
         for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
@@ -295,14 +339,14 @@ public class User implements Serializable {
         playlistIds.remove(key);
         return key;
     }
-    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates){
-        if(allowDuplicates)
-        {
+
+    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates) {
+        if (allowDuplicates) {
             badgeIds.put(key, badgeId);
             return true;
         }
 
-        if(!badgeIds.containsValue(badgeId)){
+        if (!badgeIds.containsValue(badgeId)) {
             badgeIds.put(key, badgeId);
             return true;
         }
@@ -314,17 +358,29 @@ public class User implements Serializable {
     public void setArtistQuizCount(int artistQuizCount) {
         this.artistQuizCount = artistQuizCount;
     }
+
     //USED FOR DEBUGGING
-    public void setPlaylistQuizCount(int playlistQuizCount) { this.playlistQuizCount = playlistQuizCount; }
-    public void incrementArtistQuizCount()
-    {
+    public void setPlaylistQuizCount(int playlistQuizCount) {
+        this.playlistQuizCount = playlistQuizCount;
+    }
+
+    public void incrementArtistQuizCount() {
         artistQuizCount++;
     }
-    public void incrementPlaylistQuizCount()
-    {
+
+    public void incrementPlaylistQuizCount() {
         playlistQuizCount++;
     }
+
+    private void initLevels() {
+        int xp = 0;
+        for (int i = 1; i <= 100; i++) {
+            xp += (int)doEquation(i);
+            LEVELS.put(i, xp);
+        }
+    }
     //#endregion
+
 
     public boolean delete(FirebaseUser firebaseUser, DatabaseReference db) {
         if (firebaseUser == null) {
@@ -332,6 +388,7 @@ public class User implements Serializable {
         }
         return deleteUser(firebaseUser, db);
     }
+
     private boolean deleteUser(FirebaseUser firebaseUser, DatabaseReference db) {
         final boolean[] result = {false};
 
@@ -559,14 +616,30 @@ public class User implements Serializable {
     //#region Progression
     public void addXP(DatabaseReference db, FirebaseUser firebaseUser, int xp) {
         this.xp += xp;
-        updateLevel(db, firebaseUser);
+        updateLevelAndDb(db, firebaseUser);
     }
 
-    private void updateLevel(DatabaseReference db, FirebaseUser firebaseUser) {
-        if (xp > level / 2 * 1024) {
+    private void updateLevelAndDb(DatabaseReference db, FirebaseUser firebaseUser) {
+        Map<String, Object> updates = new HashMap<>();
+        if (xp >= LEVELS.get(level + 1)) {
+            // Determine how many levels (could be more than one early game)
+            int i = 1;
+            while (xp >= LEVELS.get(i + 1)) {
+                i++;
+            }
+            level = i;
 
-            db.child("users").child(firebaseUser.getUid()).child("level").setValue(level);
+            updates.put("users/" + firebaseUser.getUid() + "/level/", level);
         }
+        updates.put("users/" + firebaseUser.getUid() + "/xp", xp);
+        db.updateChildren(updates);
+    }
+
+    private double doEquation(int level) {
+        if (level == 0) {
+            level = this.level;
+        }
+        return Math.log(level) * 2500;
     }
     //#endregion
 }
