@@ -44,6 +44,7 @@ public class Artist implements Serializable {
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
+    private List<String> years;
 
     private static String TAG = "Artist.java";
 
@@ -94,6 +95,8 @@ public class Artist implements Serializable {
         return followersKnown;
     }
 
+    @Exclude
+    public List<String> getYears() { return years; }
     @Exclude
     public List<Album> getSingles() { return singles; }
     @Exclude
@@ -277,6 +280,15 @@ public class Artist implements Serializable {
                 }
             }
         }
+
+        JsonArray jArray = discography.getAsJsonObject("albums").getAsJsonArray("items");
+        for(int i = 0; i < jArray.size(); i++)
+        {
+            JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
+            String year = date.get("year").getAsString();
+            years.add(year);
+        }
+
     }
 
     // Extract information from the album JsonObject created in extractArtist
