@@ -23,6 +23,7 @@ import service.firebase.PlaylistService;
 import service.firebase.UserService;
 
 public class Settings {
+    //#region Members
     private Difficulty difficulty;
     private boolean ignorePlaylistDifficulty;
     private boolean ignoreArtistDifficulty;
@@ -31,7 +32,9 @@ public class Settings {
     private FirebaseUser firebaseUser;
     private DatabaseReference db;
     private GoogleSignIn googleSignIn;
+    //#endregion
 
+    //#region Constructors
     public Settings(Difficulty difficulty, User user, FirebaseUser firebaseUser, boolean ignorePlaylistDifficulty, boolean ignoreArtistDifficulty, DatabaseReference db, String versionNumber, GoogleSignIn googleSignIn) {
         this.difficulty = difficulty;
         this.user = user;
@@ -47,6 +50,7 @@ public class Settings {
         ignorePlaylistDifficulty = false;
         ignoreArtistDifficulty = false;
     }
+    //#endregion
 
     //#region Accessors
     public Difficulty getDifficulty() {
@@ -64,6 +68,16 @@ public class Settings {
     @Exclude
     public User getUser() {
         return user;
+    }
+    @Exclude
+    public int getVersion(Context context) {
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+            return pInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return 0;
+        }
+
     }
     //#endregion
 
@@ -87,6 +101,7 @@ public class Settings {
     }
     //#endregion
 
+    //#region Methods
     public void unheartAllPlaylists() {
         for (Map.Entry<String, Playlist> playlist : user.getPlaylists().entrySet()) {
             PlaylistService.unheart(user, firebaseUser, db, playlist.getValue());
@@ -133,26 +148,16 @@ public class Settings {
         return user.delete(firebaseUser, db);
     }
 
-    public void signOut() {
-        googleSignIn.signOut();
-    }
-
-    @Exclude
-    public int getVersion(Context context) {
-        try {
-            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
-            return pInfo.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            return 0;
-        }
-
-    }
+    public void signOut() { googleSignIn.signOut(); }
 
     // Create a copy of settings before modification, pass it here
     public void close(Settings oldSettings) {
         if (firebaseUser == null) {
+            // TODO: Save difficulty locally
+            // Note: This might need to be done from an activity
             return;
         }
+        // Update the database
         Map<String, Object> updates = new HashMap<>();
         String userPath = "users/" + firebaseUser.getUid() + "/settings/";
         if (!oldSettings.difficulty.equals(difficulty)) {
@@ -168,4 +173,5 @@ public class Settings {
             db.updateChildren(updates);
         }
     }
+    //#endregion
 }

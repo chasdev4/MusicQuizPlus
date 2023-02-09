@@ -1,8 +1,11 @@
 package com.example.musicquizplus;
 
+import static android.app.PendingIntent.getActivity;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -122,20 +125,21 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
-
         this.firebaseUser = firebaseUser;
-        // TODO: Update the state of app depending if the user is logged in or not
-        if (this.firebaseUser != null) {
-            // User is signed in
-            signInWithGoogleButton.setVisibility(View.GONE);
-            log.d(firebaseUser.getDisplayName());
-            log.d(firebaseUser.getEmail());
+        new Thread(new Runnable() {
+            public void run() {
+
+                // If the user is signed in
+                if (firebaseUser != null) {
+                    // User is signed in
+                    signInWithGoogleButton.setVisibility(View.GONE);
+                    log.d(firebaseUser.getDisplayName());
+                    log.d(firebaseUser.getEmail());
 
 
-            new Thread(new Runnable() {
-                public void run() {
                     defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    // If there is a database entry for the suer
                     if (user != null) {
                         //#region DEBUG: Playlist Quiz Sandbox
 //                        user.initCollections(db);
@@ -183,9 +187,8 @@ public class MainActivity extends AppCompatActivity {
 //                        log.d("Done.");
                         //#endregion
 
+                        //#region TESTING BADGES
 /*
-                        //region TESTING BADGES
-
                         user.initArtists(db);
                         Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
                         user.setArtistQuizCount(2);
@@ -195,11 +198,8 @@ public class MainActivity extends AppCompatActivity {
                         Badge badge = new Badge(user, quiz);
                         badge.getEarnedBadges(getBaseContext());
                         int i = 0;
-
-                        //endregion
- */
-
-
+*/
+                        //#endregion
 
                         //#region DEBUG: Uncomment me to test out playlist quiz generation
 //                        user.initCollections(db);
@@ -304,31 +304,28 @@ public class MainActivity extends AppCompatActivity {
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
                         //#endregion
 
-
                         //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
 //                    AlbumService.unheartalbum(user, firebaseUser, db, album, spotifyService);
                         //#endregion
 
-
-
-
-
                         //#region DO NOT USE unless absolutely necessary
 //                        PlaylistService.createDefaultPlaylists(db, spotifyService);
 //                        log.d("Done.");
                         //#endregion
-                    } else {
+                    }
+                    // No database entry create one
+                    else {
                         UserService.createUser(firebaseUser, db, defaultPlaylistIds);
                     }
+
                 }
-            }).start();
-
-
-        } else {
-            // No user is signed in
-            signInWithGoogleButton.setVisibility(View.VISIBLE);
-        }
+                // No user is signed in
+                else {
+                    signInWithGoogleButton.setVisibility(View.VISIBLE);
+                }
+            }
+        }).start();
     }
 
     @Override
