@@ -75,7 +75,7 @@ public class User implements Serializable {
         initLevels();
     }
 
-    public User(FirebaseUser firebaseUser, Settings settings) {
+    public User(FirebaseUser firebaseUser, Settings settings, Map<String, String> playlistIds) {
         name = firebaseUser.getDisplayName();
         photoUrl = firebaseUser.getPhotoUrl().toString();
         level = MIN_LEVEL;
@@ -83,7 +83,7 @@ public class User implements Serializable {
         this.settings = settings;
         albumIds = new HashMap<>();
         artistIds = new HashMap<>();
-        playlistIds = new HashMap<>();
+        this.playlistIds = playlistIds;
         historyIds = new ArrayList<>();
         badgeIds = new HashMap<>();
         playlistHistory = new HashMap<>();

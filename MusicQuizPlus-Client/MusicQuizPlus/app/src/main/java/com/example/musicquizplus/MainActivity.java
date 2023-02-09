@@ -10,7 +10,6 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
 import android.view.View;
 
 import androidx.navigation.NavController;
@@ -21,31 +20,21 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.musicquizplus.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map;
 
 import model.GoogleSignIn;
 
-import model.Question;
-import model.Quiz;
-import model.Search;
-import model.SearchResult;
-import model.TrackResult;
 import model.User;
 
-import model.item.Playlist;
-import model.item.Track;
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
 
@@ -60,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignIn googleSignIn;
     private Button signInWithGoogleButton;
     private SpotifyService spotifyService;
+    private Map<String, String> defaultPlaylistIds;
 
     private final String TAG = "MainActivity.java";
 
@@ -123,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+
         // Check if user is signed in (non-null) and update UI accordingly.
         // googleSignIn.signOut();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
@@ -131,15 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
-
-        // Delete me
-//        double xp = 0;
-//        double total = 0;
-//        for (int i = 1; i < 101; i++) {
-//            xp = Math.log(i) * 2500;
-//            total += xp;
-//            log.d(String.format("Level: %s | XP: %s | Total: %s", String.valueOf(i),String.valueOf((int)xp), String.valueOf((int)total)));
-//        }
 
         this.firebaseUser = firebaseUser;
         // TODO: Update the state of app depending if the user is logged in or not
@@ -152,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
             new Thread(new Runnable() {
                 public void run() {
+                    defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     if (user != null) {
                         //#region DEBUG: Playlist Quiz Sandbox
@@ -336,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
 //                        log.d("Done.");
                         //#endregion
                     } else {
-                        UserService.createUser(firebaseUser, db);
+                        UserService.createUser(firebaseUser, db, defaultPlaylistIds);
                     }
                 }
             }).start();
