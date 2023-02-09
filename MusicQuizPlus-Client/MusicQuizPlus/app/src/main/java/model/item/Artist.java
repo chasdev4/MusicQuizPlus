@@ -1,7 +1,5 @@
 package model.item;
 
-import android.text.Html;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
@@ -44,7 +42,7 @@ public class Artist implements Serializable {
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
-    private List<String> years;
+    private Map<Integer, Integer> decadesMap;
 
     private static String TAG = "Artist.java";
 
@@ -96,7 +94,7 @@ public class Artist implements Serializable {
     }
 
     @Exclude
-    public List<String> getYears() { return years; }
+    public Map<Integer, Integer> getDecadesMap() { return decadesMap; }
     @Exclude
     public List<Album> getSingles() { return singles; }
     @Exclude
@@ -285,8 +283,19 @@ public class Artist implements Serializable {
         for(int i = 0; i < jArray.size(); i++)
         {
             JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
-            String year = date.get("year").getAsString();
-            years.add(year);
+            int year = date.get("year").getAsInt();
+            //yearsOfAlbumReleases.add(year);
+            int decade = (year/10)*10;
+            if(decadesMap.containsKey(decade))
+            {
+                int val = decadesMap.get(decade);
+                val++;
+                decadesMap.put(decade, val);
+            }
+            else
+            {
+                decadesMap.put(decade, 1);
+            }
         }
 
     }
