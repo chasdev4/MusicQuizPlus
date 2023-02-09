@@ -28,14 +28,16 @@ public class ArtistHistory {
     public void setAlbumsTotal(int albumsTotal) { this.albumsTotal = albumsTotal; }
     public void setAlbumsCount(int albumsCount) { this.albumsCount = albumsCount; }
 
-    public boolean addTrackId(String key, Track track) {
-        if (albums == null || albums.size() == 0) {
+    public boolean addTrackId(String key, Track track, int total) {
+        if (albums == null) {
             albums = new HashMap<>();
-            albums.put(track.getAlbumId(), new TopicHistory());
-            albums.get(track.getAlbumId()).setTrackIds(new HashMap<>());
         }
 
-        if (albums.get(track.getAlbumId()).getTrackIds() == null) {
+        if (!albums.containsKey(track.getAlbumId())) {
+            albums.put(track.getAlbumId(), new TopicHistory(total));
+        }
+
+        if (albums.get(track.getAlbumId()).isTrackIdsNull()) {
             albums.get(track.getAlbumId()).setTrackIds(new HashMap<>());
         }
 

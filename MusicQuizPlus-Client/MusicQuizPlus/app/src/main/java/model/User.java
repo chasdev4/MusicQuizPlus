@@ -517,7 +517,7 @@ public class User implements Serializable {
         // Add track ids to each album
         for (int i = 0; i < tracks.size(); i++) {
             String key = artistHistoryRef.child(tracks.get(i).getAlbumId()).push().getKey();
-            boolean trackIdAdded = artistHistory.get(artist.getId()).addTrackId(key, tracks.get(i));
+            boolean trackIdAdded = artistHistory.get(artist.getId()).addTrackId(key, tracks.get(i), albumsMap.get(tracks.get(i).getAlbumId()).getTotal());
             if (trackIdAdded) {
                 albumsMap.get(tracks.get(i).getAlbumId()).getTrackIds().put(key, tracks.get(i).getId());
                 albumsMap.get(tracks.get(i).getAlbumId()).incrementCount();
@@ -528,7 +528,6 @@ public class User implements Serializable {
         }
 
         // If there is no artist history for the current topic
-
         if (newEntry) {
             // Set the value since it's new
             artistHistory.get(artist.getId()).setAlbums(albumsMap);
@@ -538,7 +537,8 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                 }
             }
-        } else {
+        }
+        else {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 int count = albumsMapEntry.getValue().getCount()
                         + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
@@ -548,6 +548,7 @@ public class User implements Serializable {
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
                                 .child(trackId.getKey()).setValue(trackId.getValue());
                     }
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
                 }
                 artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
                 if (count == albumsMapEntry.getValue().getTotal()) {

@@ -29,14 +29,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 
+import model.PhotoUrl;
+import model.Question;
+import model.Quiz;
 import model.User;
 
+import model.item.Album;
+import model.item.Artist;
+import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
@@ -243,7 +254,31 @@ public class MainActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
 //
+//                        int i = 1;
+//                        Random rnd = new Random();
 //                        Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+//                        Question question = quiz.getFirstQuestion();
+//                        quiz.start();
+//                        while (question != null) {
+//                            log.d(String.valueOf(i));
+//                            i++;
+//                            CountDownLatch cdl = new CountDownLatch(1);
+////                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                            int index = question.getAnswerIndex();
+//                            try {
+//                                Thread.sleep(rnd.nextInt(1) * 1000);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                            question = quiz.nextQuestion(index);
+//                            cdl.countDown();
+//
+//                            try {
+//                                cdl.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
 //                        quiz.end();
 //                        log.d("Done.");
                         //#endregion

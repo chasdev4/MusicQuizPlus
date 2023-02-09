@@ -1,5 +1,7 @@
 package model.history;
 
+import com.google.firebase.database.Exclude;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +19,16 @@ public class TopicHistory {
         this.count = count;
     }
 
-    public TopicHistory() {
+    public TopicHistory(int total) {
+        this.total = total;
+        count=0;
+        trackIds = new HashMap<>();
+    }
 
+    public TopicHistory() {
+        trackIds = new HashMap<>();
+        total = 0;
+        count = 0;
     }
 
     //#region Accessors
@@ -27,6 +37,10 @@ public class TopicHistory {
     }
     public int getTotal() { return total; }
     public int getCount() { return count; }
+    @Exclude
+    public boolean isTrackIdsNull() {
+        return trackIds == null;
+    }
     //#endregion
 
     //#region Mutators
