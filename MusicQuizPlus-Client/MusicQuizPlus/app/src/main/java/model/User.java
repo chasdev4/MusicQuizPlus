@@ -110,6 +110,24 @@ public class User implements Serializable {
         initLevels();
     }
 
+    public User(int difficulty, Map<String, String> playlistIds) {
+        name = "";
+        level = MIN_LEVEL;
+        xp = 0;
+        settings.setDifficulty(Difficulty.values()[difficulty]);
+        albumIds = new HashMap<>();
+        artistIds = new HashMap<>();
+        this.playlistIds = playlistIds;
+        historyIds = new ArrayList<>();
+        badgeIds = new HashMap<>();
+        playlistHistory = new HashMap<>();
+        artistHistory = new HashMap<>();
+        generatedQuizHistory = new HashMap<>();
+        playlistQuizCount = 0;
+        artistQuizCount = 0;
+        initLevels();
+    }
+
     //#region Accessors
     public String getName() {
         return name;
@@ -179,6 +197,14 @@ public class User implements Serializable {
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
+    }
+    @Exclude
+    public List<Playlist> getPlaylistsAsList() {
+        List<Playlist> lists = new ArrayList<>();
+        for (Map.Entry<String, Playlist> entry : playlists.entrySet()) {
+            lists.add(entry.getValue());
+        }
+        return lists;
     }
 
     @Exclude
