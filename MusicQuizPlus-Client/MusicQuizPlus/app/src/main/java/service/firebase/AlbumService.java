@@ -105,8 +105,10 @@ public class AlbumService {
         if (!album1.isFollowersKnown()) {
             updates.put("albums/"+album.getId()+"/followersKnown", true);
         }
-        updates.put("artists/"+artistId+"/followers", ServerValue.increment(1));
-        updates.put("artists/"+artistId+"/followersKnown", true);
+        if (!user.getArtistIds().containsValue(artistId)) {
+            updates.put("artists/" + artistId + "/followers", ServerValue.increment(1));
+            updates.put("artists/" + artistId + "/followersKnown", true);
+        }
 
         db.updateChildren(updates);
     }
