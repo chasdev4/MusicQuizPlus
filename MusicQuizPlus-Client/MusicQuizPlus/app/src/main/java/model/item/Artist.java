@@ -42,7 +42,8 @@ public class Artist implements Serializable {
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
-    private Map<Integer, Integer> decadesMap;
+    private Map<Integer, Integer> decadesMap = new HashMap<>();
+    private List<Integer> sortedDecades;
 
     private static String TAG = "Artist.java";
 
@@ -92,6 +93,7 @@ public class Artist implements Serializable {
     public boolean isFollowersKnown() {
         return followersKnown;
     }
+    public List<Integer> getSortedDecades() { return sortedDecades; }
 
     @Exclude
     public Map<Integer, Integer> getDecadesMap() { return decadesMap; }
@@ -284,7 +286,6 @@ public class Artist implements Serializable {
         {
             JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
             int year = date.get("year").getAsInt();
-            //yearsOfAlbumReleases.add(year);
             int decade = (year/10)*10;
             if(decadesMap.containsKey(decade))
             {
@@ -298,6 +299,34 @@ public class Artist implements Serializable {
             }
         }
 
+        decadesMapToSortedList();
+
+    }
+
+    private List<Integer> addSmallestToList(Map<Integer, Integer> decadesMap, List<Integer> sortedList)
+    {
+        int minVal = 1000000;
+        int minKey = 0;
+
+        for(Map.Entry<Integer, Integer> entry : decadesMap.entrySet())
+        {
+            if(entry.getValue() < minVal)
+            {
+                minVal = entry.getValue();
+                minKey = entry.getKey();
+            }
+        }
+        sortedList.add(0, minKey);
+        return sortedList;
+    }
+
+    private void decadesMapToSortedList() {
+        int size = decadesMap.size();
+        for(int i = 0; i < size; i++)
+        {
+            sortedDecades = addSmallestToList(decadesMap, sortedDecades);
+            decadesMap.remove(sortedDecades.get(0));
+        }
     }
 
     // Extract information from the album JsonObject created in extractArtist
