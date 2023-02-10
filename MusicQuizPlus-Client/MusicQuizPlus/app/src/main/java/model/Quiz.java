@@ -271,7 +271,7 @@ public class Quiz implements Serializable {
         numQuestions = 10;
         difficulty = user.getDifficulty();
 
-        if (!retrieveQuiz()) {
+        if (type == QuizType.ARTIST || !retrieveQuiz()) {
             generateQuiz();
         }
     }
@@ -841,7 +841,8 @@ public class Quiz implements Serializable {
 
         String key = null;
 
-        if (isNewQuiz) {
+        // Artist Quizzes aren't saved to database
+        if (isNewQuiz && type == QuizType.PLAYLIST) {
             // Save the new quiz up to the database
             db.child("quizzes").child(quizId).setValue(this);
 
