@@ -254,32 +254,42 @@ public class MainActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
 //
-//                        int i = 1;
-//                        Random rnd = new Random();
-//                        Quiz quiz = new Quiz(artist, user, db, firebaseUser);
-//                        Question question = quiz.getFirstQuestion();
-//                        quiz.start();
-//                        while (question != null) {
-//                            log.d(String.valueOf(i));
-//                            i++;
-//                            CountDownLatch cdl = new CountDownLatch(1);
+//                        for (int p = 0; p < 15; p++) {
+//                            countDownLatch = new CountDownLatch(1);
+//                            int i = 1;
+//                            Random rnd = new Random();
+//                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+//                            Question question = quiz.getFirstQuestion();
+//                            quiz.start();
+//                            while (question != null) {
+//                                log.d(String.valueOf(i));
+//                                i++;
+//                                CountDownLatch cdl = new CountDownLatch(1);
 ////                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
-//                            int index = question.getAnswerIndex();
-//                            try {
-//                                Thread.sleep(rnd.nextInt(1) * 1000);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
+//                                int index = question.getAnswerIndex();
+//                                try {
+//                                    Thread.sleep(rnd.nextInt(1) * 1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                question = quiz.nextQuestion(index);
+//                                cdl.countDown();
+//
+//                                try {
+//                                    cdl.await();
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
 //                            }
-//                            question = quiz.nextQuestion(index);
-//                            cdl.countDown();
+//                            quiz.end();
+//                            countDownLatch.countDown();
 //
 //                            try {
-//                                cdl.await();
+//                                countDownLatch.await();
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
 //                        }
-//                        quiz.end();
 //                        log.d("Done.");
                         //#endregion
 

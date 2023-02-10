@@ -153,7 +153,7 @@ public class Quiz implements Serializable {
     }
 
     @Exclude
-    private void getFeaturedArtistTracks(int guessArtistCount) {
+    private int getFeaturedArtistTracks(int guessArtistCount) {
         if (type == QuizType.ARTIST) {
             boolean deleted = false;
             for (Track track : tracks) {
@@ -164,6 +164,9 @@ public class Quiz implements Serializable {
             Random rnd = new Random();
             List<Track> temp = new ArrayList<>();
 
+            if (featuredArtistTracks.size() == 0) {
+                return 0;
+            }
             for (int i = 0; i < guessArtistCount; i++) {
                 temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
             }
@@ -177,6 +180,7 @@ public class Quiz implements Serializable {
                 tracks.remove(track);
             }
         }
+        return featuredArtistTracks.size();
     }
 
     @Exclude
@@ -427,19 +431,22 @@ public class Quiz implements Serializable {
         Map<String, String> quizHistory = new HashMap<>();
 
         // Prepare information for answers
+        if (!isPlaylistQuiz) {
+            int result = getFeaturedArtistTracks(guessArtistCount);
+            if (result < guessArtistCount) {
+                for (int i = 0; i < guessArtistCount - result; i++) {
+                    guessArtistCount--;
+                    guessTrackCount++;
+                }
+            }
+        }
+
         if (!isEnoughData(rawTracks.size())) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
-            if (!isPlaylistQuiz) {
-                getFeaturedArtistTracks(guessArtistCount);
-            }
         } else {
             // Old or hard tracks
             List<Track> skippedTracks = new ArrayList<>();
-
-            if (!isPlaylistQuiz) {
-                getFeaturedArtistTracks(guessArtistCount);
-            }
 
             boolean noQuizHistory = false;
             if (isPlaylistQuiz
@@ -560,7 +567,7 @@ public class Quiz implements Serializable {
 
 
     private void generateQuestions(QuestionType type, int count, Random rnd, Map<String, String> quizHistory) {
-        boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
+        boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST && featuredArtistTracks.size() > 0;
         if (count < 1) {
             return;
         }

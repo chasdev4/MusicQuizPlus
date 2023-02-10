@@ -153,6 +153,16 @@ public class Artist implements Serializable {
                 return album.getTracks().size();
             }
         }
+        for (Album album : compilations) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
+        for (Album album : singles) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
         return -1;
     }
     @Exclude
@@ -168,6 +178,16 @@ public class Artist implements Serializable {
     @Exclude
     public Album getAlbum(String albumId) {
         for (Album a : albums) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
+        for (Album a : compilations) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
+        for (Album a : singles) {
             if (a.getId().equals(albumId)) {
                 return a;
             }

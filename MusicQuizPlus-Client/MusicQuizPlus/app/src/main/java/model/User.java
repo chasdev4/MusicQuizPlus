@@ -375,7 +375,7 @@ public class User implements Serializable {
     private void initLevels() {
         int xp = 0;
         for (int i = MIN_LEVEL; i <= MAX_LEVEL; i++) {
-            xp += (int)doEquation(i);
+            xp += (int) doEquation(i);
             LEVELS.put(i, xp);
         }
     }
@@ -496,9 +496,14 @@ public class User implements Serializable {
         if (artistHistory.get(artist.getId()) == null) {
             artistHistory.put(artist.getId(), new ArtistHistory());
             artistHistory.get(artist.getId()).setAlbums(new HashMap<>());
-            artistHistory.get(artist.getId()).setAlbumsTotal(artist.getAlbumIds().size());
+            artistHistory.get(artist.getId()).setAlbumsTotal(artist.getAlbumIds().size() + artist.getSingleIds().size() + artist.getCompilationIds().size());
             artistHistory.get(artist.getId()).setAlbumsCount(0);
             newEntry = true;
+        }
+
+        //If the user already knows all albums
+        if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
+            return;
         }
 
         // Convert the list to an albums map
@@ -521,7 +526,7 @@ public class User implements Serializable {
             if (trackIdAdded) {
                 albumsMap.get(tracks.get(i).getAlbumId()).getTrackIds().put(key, tracks.get(i).getId());
                 albumsMap.get(tracks.get(i).getAlbumId()).incrementCount();
-                if (albumsMap.get(tracks.get(i).getAlbumId()).getTotal() == 0) {
+                if (albumsMap.get(tracks.get(i).getAlbumId()).getTotal() <= 0) {
                     albumsMap.get(tracks.get(i).getAlbumId()).setTotal(artist.getAlbum(tracks.get(i).getAlbumId()).getTrackIds().size());
                 }
             }
@@ -529,33 +534,38 @@ public class User implements Serializable {
 
         // If there is no artist history for the current topic
         if (newEntry) {
-            // Set the value since it's new
             artistHistory.get(artist.getId()).setAlbums(albumsMap);
             artistHistoryRef.setValue(artistHistory.get(artist.getId()));
-            for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
-                if (albumsMapEntry.getValue().getCount() == albumsMapEntry.getValue().getTotal()) {
-                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
-                }
-            }
         }
-        else {
-            for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
-                int count = albumsMapEntry.getValue().getCount()
-                        + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
-                if (albumsMapEntry.getValue().getTotal() > count) {
-                    for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
-                        String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
-                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
-                                .child(trackId.getKey()).setValue(trackId.getValue());
-                    }
-                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
-                }
-                artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
-                if (count == albumsMapEntry.getValue().getTotal()) {
+        for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
+            if (newEntry) {
+                // Set the value since it's new
+                if (albumsMapEntry.getValue().getCount() == albumsMapEntry.getValue().getTotal()) {
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(albumsMapEntry.getValue().getCount());
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
                 }
+
+            } else if (artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getTotal()
+                    != artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount()) {
+                int count = albumsMapEntry.getValue().getCount()
+                        + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
+                    for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
+                                .child(trackId.getKey()).setValue(trackId.getValue());
+                    }
+                    artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).setCount(count);
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
+                    artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
+                    if (count == albumsMapEntry.getValue().getTotal()) {
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("count").setValue(count);
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
+                        artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                        artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
+                    }
             }
+
         }
     }
 
@@ -624,8 +634,7 @@ public class User implements Serializable {
         }
         if (this.xp + xp >= LEVELS.get(MAX_LEVEL)) {
             this.xp = LEVELS.get(MAX_LEVEL);
-        }
-        else {
+        } else {
             this.xp += xp;
         }
         updateLevelAndDb(db, firebaseUser);
