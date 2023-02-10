@@ -303,7 +303,7 @@ public class Artist implements Serializable {
 
     }
 
-    private List<Integer> addSmallestToList(Map<Integer, Integer> decadesMap, List<Integer> sortedList)
+    private void addSmallestToList()
     {
         int minVal = 1000000;
         int minKey = 0;
@@ -316,15 +316,14 @@ public class Artist implements Serializable {
                 minKey = entry.getKey();
             }
         }
-        sortedList.add(0, minKey);
-        return sortedList;
+        sortedDecades.add(0, minKey);
     }
 
     private void decadesMapToSortedList() {
         int size = decadesMap.size();
         for(int i = 0; i < size; i++)
         {
-            sortedDecades = addSmallestToList(decadesMap, sortedDecades);
+            addSmallestToList();
             decadesMap.remove(sortedDecades.get(0));
         }
     }

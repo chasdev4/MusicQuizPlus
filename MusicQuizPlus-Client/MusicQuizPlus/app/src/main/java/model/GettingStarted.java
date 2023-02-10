@@ -21,10 +21,10 @@ import model.type.Difficulty;
 
 public class GettingStarted {
 
-    private final short maxYear;
-    private short minYear;
-    private String[] decadesToSelect;
-    private List<String> selectedDecades;
+    private final int maxYear;
+    private int minYear;
+    private Integer[] decadesToSelect;
+    private List<Integer> selectedDecades;
     private List<String> selectedArtists;
     private User user;
     private Difficulty currentDifficulty;
@@ -56,39 +56,37 @@ public class GettingStarted {
 
     public void createDecades() {
         int arraySize = ((maxYear - minYear) / 10) + 1;
-        decadesToSelect = new String[arraySize];
-        String strYear;
-        short year = minYear;
+        decadesToSelect = new Integer[arraySize];
+        int year = minYear;
         int index = 0;
 
-        while ( year <= maxYear)
+        while (year <= maxYear)
         {
-            strYear = String.valueOf(year);
-            decadesToSelect[index] = strYear;
+            decadesToSelect[index] = year;
             year += 10;
             index++;
         }
     }
 
-    public void addToList(String itemToAdd, String listToAddTo)
+    public void addToList(Object itemToAdd, String listToAddTo)
     {
         switch (listToAddTo)
         {
             case "decadesList":
-                selectedDecades.add(itemToAdd);
+                selectedDecades.add((Integer) itemToAdd);
             case "artistsList":
-                selectedArtists.add(itemToAdd);
+                selectedArtists.add((String) itemToAdd);
         }
     }
 
-    public void removeFromList(String itemToRemove, String listToRemoveFrom)
+    public void removeFromList(Object itemToRemove, String listToRemoveFrom)
     {
         switch (listToRemoveFrom)
         {
             case "decadesList":
-                selectedDecades.remove(itemToRemove);
+                selectedDecades.remove((Integer) itemToRemove);
             case "artistsList":
-                selectedArtists.remove(itemToRemove);
+                selectedArtists.remove((String) itemToRemove);
         }
     }
 
@@ -143,15 +141,15 @@ public class GettingStarted {
         this.minYear = minYear;
     }
 
-    public short getMinYear(){
+    public int getMinYear(){
         return minYear;
     }
 
-    public short getMaxYear(){
+    public int getMaxYear(){
         return maxYear;
     }
 
-    public List<String> getSelectedDecades() {
+    public List<Integer> getSelectedDecades() {
         return selectedDecades;
     }
 
