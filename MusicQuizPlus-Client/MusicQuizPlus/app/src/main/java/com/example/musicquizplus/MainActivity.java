@@ -31,6 +31,7 @@ import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
@@ -44,6 +45,7 @@ import model.User;
 
 import model.item.Album;
 import model.item.Artist;
+import model.item.Playlist;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -164,77 +166,45 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                            i++;
 //                        }
-//                        for (int k = 80; k > 0; k--) {
-//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
-//                            userPlaylist.getTracks().remove(k + 19);
-//                        }
 //
-//                        Random rnd = new Random();
-//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-//                        Question question = quiz.getFirstQuestion();
-//                        quiz.start();
-//                        i = 1;
-//                        while (question != null) {
-//                            log.d(String.valueOf(i));
-//                            i++;
-//                            CountDownLatch cdl = new CountDownLatch(1);
-//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                        for (int p = 0; p < 10; p++) {
+//                            CountDownLatch countDownLatch = new CountDownLatch(1);
+//                            Random rnd = new Random();
+//                            Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                            Question question = quiz.getFirstQuestion();
+//                            quiz.start();
+//                            i = 1;
+//                            while (question != null) {
+//                                log.d(String.valueOf(i));
+//                                i++;
+////                                int index = ((rnd.nextInt(2) + 1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                                int index = question.getAnswerIndex();
+//                                try {
+//                                    Thread.sleep(rnd.nextInt(1) * 1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                question = quiz.nextQuestion(index);
+//                            }
+//
+//                            quiz.end();
+//                            countDownLatch.countDown();
 //                            try {
-//                                Thread.sleep(rnd.nextInt(1) * 1000);
+//                                countDownLatch.await();
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
-//                            question = quiz.nextQuestion(index);
-//                            cdl.countDown();
-//
 //                            try {
-//                                cdl.await();
+//                                Thread.sleep(200);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
-//                        }
 //
-//                        quiz.end();
+//                        }
 //                        log.d("Done.");
                         //#endregion
 
-                        //#region TESTING BADGES
-/*
-                        user.initArtists(db);
-                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                        user.setArtistQuizCount(2);
-                        Quiz quiz = new Quiz(artist, user);
-                        quiz.setNumQuestions(10);
-                        quiz.setNumCorrect(10);
-                        Badge badge = new Badge(user, quiz);
-                        badge.getEarnedBadges(getBaseContext());
-                        int i = 0;
-*/
-                        //#endregion
-
-                        //#region DEBUG: Uncomment me to test out playlist quiz generation
-//                        user.initCollections(db);
-//                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
-//                        userPlaylist.initCollection(db);
-//                        List<String> newTrackIds = new ArrayList<>();
-//                        int i = 0;
-//                        for (String trackId : userPlaylist.getTrackIds()) {
-//                            if (!trackId.equals(userPlaylist.getTracksListFromMap().get(userPlaylist.getTrackIds().indexOf(trackId)).getId())) {
-//                                log.e("Tracks are out of order.");
-//                            }
-//                            i++;
-//                        }
-//                        for (int k = 80; k > 0; k--) {
-//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
-//                            userPlaylist.getTracks().remove(k + 19);
-//                        }
-//
-//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-//                        quiz.end();
-//                        log.d("Done.");
-                        //#endregion
-
-                        //#region DEBUG: Uncomment me to test out artist quiz generation
+                        //#region DEBUG: Artist Quiz Sandbox
 //                        user.initCollections(db);
 //                        CountDownLatch countDownLatch = new CountDownLatch(1);
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
@@ -254,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
 //
-//                        for (int p = 0; p < 15; p++) {
+//                        for (int p = 0; p < 3; p++) {
 //                            countDownLatch = new CountDownLatch(1);
 //                            int i = 1;
 //                            Random rnd = new Random();
@@ -265,8 +235,8 @@ public class MainActivity extends AppCompatActivity {
 //                                log.d(String.valueOf(i));
 //                                i++;
 //                                CountDownLatch cdl = new CountDownLatch(1);
-////                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
-//                                int index = question.getAnswerIndex();
+//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+////                                int index = question.getAnswerIndex();
 //                                try {
 //                                    Thread.sleep(rnd.nextInt(1) * 1000);
 //                                } catch (InterruptedException e) {
@@ -292,6 +262,21 @@ public class MainActivity extends AppCompatActivity {
 //                        }
 //                        log.d("Done.");
                         //#endregion
+
+                        //#region TESTING BADGES
+/*
+                        user.initArtists(db);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        user.setArtistQuizCount(2);
+                        Quiz quiz = new Quiz(artist, user);
+                        quiz.setNumQuestions(10);
+                        quiz.setNumCorrect(10);
+                        Badge badge = new Badge(user, quiz);
+                        badge.getEarnedBadges(getBaseContext());
+                        int i = 0;
+*/
+                        //#endregion
+
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
 //                        Playlist playlist = new Playlist(

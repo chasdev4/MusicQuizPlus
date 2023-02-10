@@ -381,7 +381,7 @@ public class User implements Serializable {
     }
     //#endregion
 
-
+    //#region CRUD
     public boolean delete(FirebaseUser firebaseUser, DatabaseReference db) {
         if (firebaseUser == null) {
             return false;
@@ -409,6 +409,7 @@ public class User implements Serializable {
         }
         return result[0];
     }
+    //#endregion
 
     //#region Update History
     public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
@@ -438,9 +439,9 @@ public class User implements Serializable {
         db.child("users").child(uId).child("historyIds").setValue(historyIds);
     }
 
-    public void updatePlaylistHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
+    public void updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
+        String topicId = playlist.getId();
         DatabaseReference playlistHistoryRef = db.child("users").child(uId).child("playlistHistory").child(topicId);
-
         // If there is no playlist history at all
         if (playlistHistory == null) {
             playlistHistory = new HashMap<>();
@@ -454,12 +455,16 @@ public class User implements Serializable {
             newEntry = true;
         }
 
+        // If the user already knows the playlist
+        if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
+            return;
+        }
+
         // Convert the list to a map
         Map<String, String> tracksMap = new HashMap<>();
 
         for (int i = 0; i < tracks.size(); i++) {
             String key = playlistHistoryRef.push().getKey();
-
             boolean trackIdAdded = playlistHistory.get(topicId).addTrackId(key, tracks.get(i).getId());
             if (trackIdAdded) {
                 tracksMap.put(key, tracks.get(i).getId());

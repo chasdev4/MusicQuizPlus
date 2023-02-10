@@ -37,7 +37,6 @@ import utils.ValidationUtil;
 
 public class Quiz implements Serializable {
     //#region Database members
-    private QuizType type;
     private List<Question> questions;
     private String quizId;
     private Difficulty difficulty;
@@ -45,6 +44,7 @@ public class Quiz implements Serializable {
 
     //#region Other members
     private User user;
+    private QuizType type;
     private String topicId;
     private Playlist playlist;
     private Artist artist;
@@ -136,6 +136,7 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Accessors
+    @Exclude
     public QuizType getType() {
         return type;
     }
@@ -258,6 +259,9 @@ public class Quiz implements Serializable {
     private void addToHistory(Map<String, String> quizHistory, Track track) {
         if (!quizHistory.containsValue(track.getId())) {
             history.add(track);
+        }
+        else {
+            throw new ArrayIndexOutOfBoundsException();
         }
     }
     //#endregion
@@ -445,6 +449,7 @@ public class Quiz implements Serializable {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
         } else {
+            log.v("Separating track set...");
             // Old or hard tracks
             List<Track> skippedTracks = new ArrayList<>();
 
@@ -454,11 +459,14 @@ public class Quiz implements Serializable {
                     && user.getPlaylistHistory().size() > 0
                     && user.getPlaylistHistory().containsKey(topicId)
                     && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
+                log.v("Playlist history exists.");
                 quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            } else if (!isPlaylistQuiz
+            }
+            else if (!isPlaylistQuiz
                     && user.getArtistHistory() != null
                     && user.getArtistHistory().size() > 0
                     && user.getArtistHistory().containsKey(topicId)) {
+                log.v("Artist history exists.");
                 for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
                     if (album.getValue().getCount() == album.getValue().getTotal()) {
                         Album artistAlbum = artist.getAlbum(album.getKey());
@@ -470,7 +478,9 @@ public class Quiz implements Serializable {
                         quizHistory.putAll(album.getValue().getTrackIds());
                     }
                 }
-            } else {
+            }
+            else {
+                log.v("No quiz history found.");
                 noQuizHistory = true;
             }
 
@@ -498,13 +508,11 @@ public class Quiz implements Serializable {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
-                    if (random < 0) {
-                        log.e("bound must be positive");
-                    }
                     tracks.add(rawTracks.get(random));
                     rawTracks.remove(random);
                 }
-            } else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
+            }
+            else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -516,7 +524,8 @@ public class Quiz implements Serializable {
                     }
                     rawTracks.remove(track);
                 }
-            } else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
+            }
+            else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -528,13 +537,21 @@ public class Quiz implements Serializable {
                     }
                     rawTracks.remove(track);
                 }
-            } else {
+            }
+            else {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; ) {
                     int random = rnd.nextInt(rawTracks.size());
                     Track track = rawTracks.get(random);
-                    tracks.add(track);
-                    rawTracks.remove(track);
+                    boolean added = false;
+                    if (!quizHistory.containsValue(track.getId())) {
+                        tracks.add(track);
+                        rawTracks.remove(track);
+                        added = true;
+                    }
+                    if (noQuizHistory || added) {
+                        i++;
+                    }
                 }
             }
 
@@ -857,7 +874,7 @@ public class Quiz implements Serializable {
             history.remove(track);
         }
         if (this.type == QuizType.PLAYLIST) {
-            user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
+            user.updatePlaylistHistory(db, firebaseUser.getUid(), playlist, history, poolCount);
         } else {
             user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
         }
