@@ -170,7 +170,7 @@ public class Quiz implements Serializable {
     }
 
     @Exclude
-    private void getFeaturedArtistTracks(int guessArtistCount) {
+    private int getFeaturedArtistTracks(int guessArtistCount) {
         if (type == QuizType.ARTIST) {
             boolean deleted = false;
             for (Track track : tracks) {
@@ -282,12 +282,6 @@ public class Quiz implements Serializable {
         }
         return null;
     }
-    @Exclude
-    public Playlist getPlaylist() { return playlist; }
-    @Exclude
-    public Artist getArtist() { return artist; }
-    @Exclude
-    public int getNumCorrect() { return numCorrect; }
     //#endregion
 
     //#region Mutators
@@ -914,7 +908,7 @@ public class Quiz implements Serializable {
             history.remove(track);
         }
         if (this.type == QuizType.PLAYLIST) {
-            completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
+            completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), playlist, history, poolCount);
         } else {
             completedCollection = user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
             if(completedCollection)

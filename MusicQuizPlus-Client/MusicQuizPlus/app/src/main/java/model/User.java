@@ -499,7 +499,7 @@ public class User implements Serializable {
 
         // If the user already knows the playlist
         if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
-            return;
+            return false;
         }
 
         // Convert the list to a map
@@ -553,7 +553,7 @@ public class User implements Serializable {
 
         //If the user already knows all albums
         if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
-            return;
+            return false;
         }
 
         // Convert the list to an albums map
@@ -625,10 +625,10 @@ public class User implements Serializable {
                         completedCollectionIDs.add(albumsMapEntry.getKey());
                     }
 
+                }
+
             }
-
         }
-
         return completedCollection;
     }
 
