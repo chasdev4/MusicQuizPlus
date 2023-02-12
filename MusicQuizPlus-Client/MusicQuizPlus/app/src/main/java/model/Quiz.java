@@ -901,6 +901,7 @@ public class Quiz implements Serializable {
             key = db.child("generated_quizzes").child(topicId).push().getKey();
             db.child("generated_quizzes").child(topicId).child(key).setValue(
                     new GeneratedQuiz(quizId, difficulty));
+            user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
         }
 
         user.updateHistoryIds(db, firebaseUser.getUid(), history);
@@ -916,7 +917,6 @@ public class Quiz implements Serializable {
                 completedCollectionIDs.addAll(user.getCompletedCollectionIDs());
             }
         }
-        user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
     //#endregion
 
