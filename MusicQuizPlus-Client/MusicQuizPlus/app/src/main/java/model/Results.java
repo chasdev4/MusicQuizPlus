@@ -10,6 +10,7 @@ public class Results {
     private Quiz quiz;
     private int score;
     private String accuracy;
+    private int bonusXP;
     List<Badge> earnedBadges;
 
     public Results(User user, Quiz quiz)
@@ -23,6 +24,7 @@ public class Results {
     public List<Badge> getEarnedBadges(Context context) {
         Badge badge = new Badge(user, quiz);
         earnedBadges = badge.getEarnedBadges(context);
+        bonusXP = badge.getBonusXP();
         return earnedBadges;
     }
 
@@ -34,4 +36,5 @@ public class Results {
         return accuracy;
     }
 
+    public int getBonusXP() { return bonusXP; }
 }

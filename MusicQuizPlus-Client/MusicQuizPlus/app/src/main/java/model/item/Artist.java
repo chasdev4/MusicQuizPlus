@@ -1,7 +1,5 @@
 package model.item;
 
-import android.text.Html;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
@@ -44,6 +42,8 @@ public class Artist implements Serializable {
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
+    private Map<Integer, Integer> decadesMap = new HashMap<>();
+    private List<Integer> sortedDecades;
 
     private static String TAG = "Artist.java";
 
@@ -91,7 +91,10 @@ public class Artist implements Serializable {
     public boolean isFollowersKnown() {
         return followersKnown;
     }
+    public List<Integer> getSortedDecades() { return sortedDecades; }
 
+    @Exclude
+    public Map<Integer, Integer> getDecadesMap() { return decadesMap; }
     @Exclude
     public List<Album> getSingles() { return singles; }
     @Exclude
@@ -299,6 +302,52 @@ public class Artist implements Serializable {
 
                 }
             }
+        }
+
+        JsonArray jArray = discography.getAsJsonObject("albums").getAsJsonArray("items");
+        for(int i = 0; i < jArray.size(); i++)
+        {
+            JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
+            int year = date.get("year").getAsInt();
+            int decade = (year/10)*10;
+            if(decadesMap.containsKey(decade))
+            {
+                int val = decadesMap.get(decade);
+                val++;
+                decadesMap.put(decade, val);
+            }
+            else
+            {
+                decadesMap.put(decade, 1);
+            }
+        }
+
+        decadesMapToSortedList();
+
+    }
+
+    private void addSmallestToList()
+    {
+        int minVal = 1000000;
+        int minKey = 0;
+
+        for(Map.Entry<Integer, Integer> entry : decadesMap.entrySet())
+        {
+            if(entry.getValue() < minVal)
+            {
+                minVal = entry.getValue();
+                minKey = entry.getKey();
+            }
+        }
+        sortedDecades.add(0, minKey);
+    }
+
+    private void decadesMapToSortedList() {
+        int size = decadesMap.size();
+        for(int i = 0; i < size; i++)
+        {
+            addSmallestToList();
+            decadesMap.remove(sortedDecades.get(0));
         }
     }
 
