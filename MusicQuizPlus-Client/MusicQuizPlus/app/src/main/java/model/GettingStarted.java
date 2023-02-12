@@ -10,14 +10,36 @@ import com.example.musicquizplus.ParentOfFragments;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import model.item.Album;
+import model.item.Artist;
+import model.item.Playlist;
+import model.item.Track;
 import model.type.Difficulty;
+import service.FirebaseService;
+import utils.LogUtil;
+
+/*
+
+CreateDecades() - create the list of decades based off min and max year
+Add() - adds user selected decades or artists to their respective lists
+Remove() - removes from user selected lists
+SetDifficulty() - update difficulty selection
+Finished() - send the selected artists to the database, save difficulty setting, navigate to playlists
+SelectAll() - selects/unselects all decades
+GetArtists() - get suggested artists from our database, derive the min and max era from each object
+Sort() - this method will move artists from selected decades to the front of the list.
+
+ */
 
 public class GettingStarted {
 
@@ -26,6 +48,7 @@ public class GettingStarted {
     private Integer[] decadesToSelect;
     private List<Integer> selectedDecades;
     private List<String> selectedArtists;
+    private List<Artist> artistsToSelect;
     private User user;
     private Difficulty currentDifficulty;
     private boolean areAllSelected;
@@ -119,6 +142,48 @@ public class GettingStarted {
         return new Intent(context, ParentOfFragments.class);
     }
 
+    private List<Artist> sort()
+    {
+        List<Artist> sortedList = new ArrayList<>();
+        int size = selectedDecades.size();
+
+        for(int i = size; i > 0; i--)
+        {
+            for(Artist artist : artistsToSelect)
+            {
+                if(selectedDecades.contains(artist.getSortedDecades().get(0)))
+                {
+                    sortedList.add(artist);
+                }
+            }
+        }
+        return sortedList;
+    }
+
+    public List<Artist> getArtists(DatabaseReference db)
+    {
+        final String TAG = "GettingStarted.java";
+        LogUtil log = new LogUtil(TAG, "getArtists");
+
+        db.child("artists").limitToFirst(50).addListenerForSingleValueEvent(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                {
+                    artistsToSelect.add((Artist) snapshot.getValue());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                log.w(String.format("Unable to obtain the 50 artists: %s", error));
+            }
+        });
+
+        return sort();
+    }
+
     private void updateUser(DatabaseReference db, FirebaseUser firebaseUser, Context context)
     {
         User updatedUser = new User(user);
@@ -174,25 +239,3 @@ public class GettingStarted {
         return areAllSelected;
     }
 }
-
-
-/*
-
-
-Methods
-
-GetArtists() - get suggested artists from our database, derive the min and max era from each object
-Sort() - this method will move artists from selected decades to the front of the list.
-
-
-Completed Methods
-
-CreateDecades() - create the list of decades based off min and max year
-Add() - adds user selected decades or artists to their respective lists
-Remove() - removes from user selected lists
-SetDifficulty() - update difficulty selection
-Finished() - send the selected artists to the database, save difficulty setting, navigate to playlists
-SelectAll() - selects/unselects all decades
-
-
- */
