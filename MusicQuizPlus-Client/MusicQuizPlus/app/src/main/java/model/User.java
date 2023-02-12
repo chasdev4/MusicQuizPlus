@@ -46,6 +46,10 @@ public class User implements Serializable {
     private Map<String, Playlist> playlists;
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
+    private boolean completedCollection = false;
+    private List<String> completedCollectionIDs;
+    private int artistTrackCount;
+    private boolean allSongsKnown;
 
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
@@ -147,6 +151,15 @@ public class User implements Serializable {
     public Map<String, Map<String, String>> getGeneratedQuizHistory() {
         return generatedQuizHistory;
     }
+
+    @Exclude
+    public boolean getAllSongsKnown() {return allSongsKnown;}
+
+    @Exclude
+    public int getArtistTrackCount() { return artistTrackCount; }
+
+    @Exclude
+    public List<String> getCompletedCollectionIDs() { return completedCollectionIDs; }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
@@ -341,7 +354,7 @@ public class User implements Serializable {
         db.child("users").child(uId).child("historyIds").setValue(historyIds);
     }
 
-    public void updatePlaylistHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
+    public boolean updatePlaylistHistory(DatabaseReference db, String uId, String topicId, List<Track> tracks, int poolCount) {
         DatabaseReference playlistHistoryRef = db.child("users").child(uId).child("playlistHistory").child(topicId);
 
         // If there is no playlist history at all
@@ -383,10 +396,13 @@ public class User implements Serializable {
 
         if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
             playlistHistoryRef.child("trackIds").removeValue();
+            completedCollection = true;
         }
+
+        return completedCollection;
     }
 
-    public void updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+    public boolean updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
         DatabaseReference artistHistoryRef = db.child("users").child(uId).child("artistHistory").child(artist.getId());
 
         // If there is no artist history at all
@@ -439,12 +455,16 @@ public class User implements Serializable {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 if (albumsMapEntry.getValue().getCount() == albumsMapEntry.getValue().getTotal()) {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
+                    completedCollection = true;
+                    completedCollectionIDs.add(albumsMapEntry.getKey());
+                    artistTrackCount += albumsMapEntry.getValue().getCount();
                 }
             }
         } else {
             for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
                 int count = albumsMapEntry.getValue().getCount()
                         + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
+                artistTrackCount += count;
                 if (albumsMapEntry.getValue().getTotal() > count) {
                     for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
                         String key = artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").push().getKey();
@@ -456,9 +476,13 @@ public class User implements Serializable {
                 if (count == albumsMapEntry.getValue().getTotal()) {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
+                    completedCollection = true;
+                    completedCollectionIDs.add(albumsMapEntry.getKey());
                 }
             }
         }
+
+        return completedCollection;
     }
 
     public void updateGeneratedQuizHistory(DatabaseReference db, String uId, String topicId, String quizId) {
@@ -512,6 +536,22 @@ public class User implements Serializable {
             log.i("History retrieved.");
         } else {
             log.i("No history to retrieve.");
+        }
+    }
+
+    public void initArtistTrackCount()
+    {
+        for( Map.Entry<String, ArtistHistory> item : artistHistory.entrySet() )
+        {
+            if(item.getValue().getAlbumsTotal() == item.getValue().getAlbumsCount())
+            {
+                allSongsKnown = true;
+            }
+
+            for ( Map.Entry<String, TopicHistory> a :  item.getValue().getAlbums().entrySet())
+            {
+                artistTrackCount += a.getValue().getCount();
+            }
         }
     }
     //#endregion

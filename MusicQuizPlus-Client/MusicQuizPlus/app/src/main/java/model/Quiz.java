@@ -69,6 +69,9 @@ public class Quiz implements Serializable {
     private long multiplierTime;
     private Timer multiplierTimer;
     private double currentMultiplier;
+    private boolean completedCollection;
+    private List<String> completedCollectionIDs = new ArrayList<>();
+    private int quickReaction;
     //#endregion
 
     //#region Constants
@@ -301,6 +304,7 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
+        quickReaction = 0;
         init();
     }
 
@@ -321,6 +325,8 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
+        quickReaction = 0;
+        this.user.initArtistTrackCount();
         init();
     }
 
@@ -344,6 +350,16 @@ public class Quiz implements Serializable {
 
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    @Exclude
+    public boolean getCompletedCollection() {
+        return completedCollection;
+    }
+
+    @Exclude
+    public List<String> getCompletedCollectionIDs() {
+        return completedCollectionIDs;
     }
 
     @Exclude
@@ -372,6 +388,25 @@ public class Quiz implements Serializable {
             }
         }
     }
+
+    /*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+    public void setQuickReactions(int num) { quickReactions = num; }
+    */
+
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+
+    @Exclude
+    public Artist getArtist() { return artist; }
+
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
+
+    @Exclude
+    public int getQuickReaction() { return quickReaction; }
 
     @Exclude
     public int getScore() {
@@ -937,23 +972,6 @@ public class Quiz implements Serializable {
         return false;
     }
 
-
-/*
-    //USED FOR TESTING
-    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
-    public void setNumCorrect(int correct) { numCorrect = correct; }
- */
-
-    @Exclude
-    public Playlist getPlaylist() { return playlist; }
-
-    @Exclude
-    public Artist getArtist() { return artist; }
-
-    @Exclude
-    public int getNumCorrect() { return numCorrect; }
-
-
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
@@ -976,6 +994,12 @@ public class Quiz implements Serializable {
         if (answerIndex == questions.get(currentQuestionIndex).getAnswerIndex()) {
             long elapsed = System.nanoTime() - questionTime;
             double seconds = (double)elapsed / 1_000_000_000.0;
+
+            if(seconds <= 5.0)
+            {
+                quickReaction++;
+            }
+
             multiplierTime += QUESTION_INTERVAL - seconds;
             if (multiplierTime > 25) {
                 multiplierTime = 25;
@@ -1067,9 +1091,13 @@ public class Quiz implements Serializable {
             history.remove(track);
         }
         if (this.type == QuizType.PLAYLIST) {
-            user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
+            completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), topicId, history, poolCount);
         } else {
-            user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
+            completedCollection = user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
+            if(completedCollection)
+            {
+                completedCollectionIDs.addAll(user.getCompletedCollectionIDs());
+            }
         }
         user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
