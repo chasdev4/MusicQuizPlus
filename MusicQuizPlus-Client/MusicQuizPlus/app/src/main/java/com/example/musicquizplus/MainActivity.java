@@ -1,8 +1,11 @@
 package com.example.musicquizplus;
 
+import static android.app.PendingIntent.getActivity;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -20,7 +23,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.musicquizplus.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.database.DatabaseReference;
 
 import android.view.Menu;
@@ -28,27 +30,27 @@ import android.view.MenuItem;
 import android.widget.Button;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
-import model.Badge;
-import model.GettingStarted;
 import model.GoogleSignIn;
 
 import model.PhotoUrl;
+import model.Question;
 import model.Quiz;
-import model.Search;
-import model.SearchResult;
 import model.User;
+
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.type.AlbumType;
-import model.type.Difficulty;
-
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
+import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
 
@@ -59,11 +61,11 @@ public class MainActivity extends AppCompatActivity {
 
     private User user;
     private DatabaseReference db;
-    private FirebaseFirestore firestore;
     private FirebaseUser firebaseUser;
     private GoogleSignIn googleSignIn;
     private Button signInWithGoogleButton;
     private SpotifyService spotifyService;
+    private Map<String, String> defaultPlaylistIds;
 
     private final String TAG = "MainActivity.java";
 
@@ -89,12 +91,14 @@ public class MainActivity extends AppCompatActivity {
 
                 new Thread(new Runnable() {
                     public void run() {
-//                        final short limit = 30;
+                        //#region DEBUG: Search
 //                        Search search = new Search("Morrissey", 30, spotifyService);
-//                        search.search(0);
-//                        List<SearchResult> searchResults = search.getAll();
+//                        search.execute(0);
+//                        List<Track> trackList = search.getTracks();
+//                        TrackResult result = search.getTrackResult(trackList.get(0));
 //
 //                        Log.d(TAG,"done");
+                        //#endregion
 
 
                     }
@@ -104,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         googleSignIn = new GoogleSignIn();
-        firestore = FirebaseFirestore.getInstance();
         db = FirebaseDatabase.getInstance().getReference();
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
@@ -126,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+
         // Check if user is signed in (non-null) and update UI accordingly.
         // googleSignIn.signOut();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
@@ -135,38 +139,22 @@ public class MainActivity extends AppCompatActivity {
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
         this.firebaseUser = firebaseUser;
-        // TODO: Update the state of app depending if the user is logged in or not
-        if (this.firebaseUser != null) {
-            // User is signed in
-            signInWithGoogleButton.setVisibility(View.GONE);
-            log.d(firebaseUser.getDisplayName());
-            log.d(firebaseUser.getEmail());
+        new Thread(new Runnable() {
+            public void run() {
+
+                // If the user is signed in
+                if (firebaseUser != null) {
+                    // User is signed in
+                    signInWithGoogleButton.setVisibility(View.GONE);
+                    log.d(firebaseUser.getDisplayName());
+                    log.d(firebaseUser.getEmail());
 
 
-            new Thread(new Runnable() {
-                public void run() {
+                    defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-
+                    // If there is a database entry for the suer
                     if (user != null) {
-/*
-                        //region TESTING BADGES
-
-                        user.initArtists(db);
-                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                        user.setArtistQuizCount(2);
-                        Quiz quiz = new Quiz(artist, user);
-                        quiz.setNumQuestions(10);
-                        quiz.setNumCorrect(10);
-                        Badge badge = new Badge(user, quiz);
-                        badge.getEarnedBadges(getBaseContext());
-                        int i = 0;
-
-                        //endregion
- */
-
-
-
-                        //#region DEBUG: Uncomment me to test out playlist quiz generation
+                        //#region DEBUG: Playlist Quiz Sandbox
 //                        user.initCollections(db);
 //                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
 //                        userPlaylist.initCollection(db);
@@ -178,17 +166,45 @@ public class MainActivity extends AppCompatActivity {
 //                            }
 //                            i++;
 //                        }
-//                        for (int k = 80; k > 0; k--) {
-//                            userPlaylist.getTrackIds().remove(userPlaylist.getTrackIds().size() - 1);
-//                            userPlaylist.getTracks().remove(k + 19);
-//                        }
 //
-//                        Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
-//                        quiz.end();
+//                        for (int p = 0; p < 10; p++) {
+//                            CountDownLatch countDownLatch = new CountDownLatch(1);
+//                            Random rnd = new Random();
+//                            Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
+//                            Question question = quiz.getFirstQuestion();
+//                            quiz.start();
+//                            i = 1;
+//                            while (question != null) {
+//                                log.d(String.valueOf(i));
+//                                i++;
+////                                int index = ((rnd.nextInt(2) + 1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                                int index = question.getAnswerIndex();
+//                                try {
+//                                    Thread.sleep(rnd.nextInt(1) * 1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                question = quiz.nextQuestion(index);
+//                            }
+//
+//                            quiz.end();
+//                            countDownLatch.countDown();
+//                            try {
+//                                countDownLatch.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                            try {
+//                                Thread.sleep(200);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//
+//                        }
 //                        log.d("Done.");
                         //#endregion
 
-                        //#region DEBUG: Uncomment me to test out artist quiz generation
+                        //#region DEBUG: Artist Quiz Sandbox
 //                        user.initCollections(db);
 //                        CountDownLatch countDownLatch = new CountDownLatch(1);
 //                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
@@ -208,10 +224,59 @@ public class MainActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
 //
-//                        Quiz quiz = new Quiz(artist, user, db, firebaseUser);
-//                        quiz.end();
+//                        for (int p = 0; p < 3; p++) {
+//                            countDownLatch = new CountDownLatch(1);
+//                            int i = 1;
+//                            Random rnd = new Random();
+//                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+//                            Question question = quiz.getFirstQuestion();
+//                            quiz.start();
+//                            while (question != null) {
+//                                log.d(String.valueOf(i));
+//                                i++;
+//                                CountDownLatch cdl = new CountDownLatch(1);
+//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+////                                int index = question.getAnswerIndex();
+//                                try {
+//                                    Thread.sleep(rnd.nextInt(1) * 1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                question = quiz.nextQuestion(index);
+//                                cdl.countDown();
+//
+//                                try {
+//                                    cdl.await();
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                            quiz.end();
+//                            countDownLatch.countDown();
+//
+//                            try {
+//                                countDownLatch.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
 //                        log.d("Done.");
                         //#endregion
+
+                        //#region TESTING BADGES
+/*
+                        user.initArtists(db);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        user.setArtistQuizCount(2);
+                        Quiz quiz = new Quiz(artist, user);
+                        quiz.setNumQuestions(10);
+                        quiz.setNumCorrect(10);
+                        Badge badge = new Badge(user, quiz);
+                        badge.getEarnedBadges(getBaseContext());
+                        int i = 0;
+*/
+                        //#endregion
+
 
                         //#region DEBUG: Uncomment me to test heartPlaylist
 //                        Playlist playlist = new Playlist(
@@ -269,31 +334,28 @@ public class MainActivity extends AppCompatActivity {
 //                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
                         //#endregion
 
-
                         //#region DEBUG: Uncomment me to test unheartAlbum
 //                    Album album = FirebaseService.checkDatabase(db, "albums", "spotify:album:1LybLcJ9KuOeLHsn1NEe3j", Album.class);
 //                    AlbumService.unheartalbum(user, firebaseUser, db, album, spotifyService);
                         //#endregion
 
-
-
-
-
                         //#region DO NOT USE unless absolutely necessary
 //                        PlaylistService.createDefaultPlaylists(db, spotifyService);
 //                        log.d("Done.");
                         //#endregion
-                    } else {
-                        UserService.createUser(firebaseUser, firestore, db);
                     }
+                    // No database entry create one
+                    else {
+                        UserService.createUser(firebaseUser, db, defaultPlaylistIds);
+                    }
+
                 }
-            }).start();
-
-
-        } else {
-            // No user is signed in
-            signInWithGoogleButton.setVisibility(View.VISIBLE);
-        }
+                // No user is signed in
+                else {
+                    signInWithGoogleButton.setVisibility(View.VISIBLE);
+                }
+            }
+        }).start();
     }
 
     @Override

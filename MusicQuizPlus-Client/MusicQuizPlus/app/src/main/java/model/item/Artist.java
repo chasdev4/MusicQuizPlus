@@ -63,9 +63,7 @@ public class Artist implements Serializable {
         extractArtist(jsonObject);
     }
 
-    public Artist() {
-
-    }
+    public Artist() { }
 
     //#region Accessors
     public String getId() { return id; }
@@ -158,6 +156,16 @@ public class Artist implements Serializable {
                 return album.getTracks().size();
             }
         }
+        for (Album album : compilations) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
+        for (Album album : singles) {
+            if (album.getId().equals(albumId)) {
+                return album.getTracks().size();
+            }
+        }
         return -1;
     }
     @Exclude
@@ -177,6 +185,16 @@ public class Artist implements Serializable {
                 return a;
             }
         }
+        for (Album a : compilations) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
+        for (Album a : singles) {
+            if (a.getId().equals(albumId)) {
+                return a;
+            }
+        }
         return null;
     }
     //#endregion
@@ -186,7 +204,12 @@ public class Artist implements Serializable {
     public void setFollowersKnown(boolean followersKnown) {
         this.followersKnown = followersKnown;
     }
-
+    public void setAlbumIds(List<String> albumIds) { this.albumIds = albumIds; }
+    public void setSingleIds(List<String> singleIds) { this.singleIds = singleIds; }
+    public void setCompilationIds(List<String> compilationIds) { this.compilationIds = compilationIds; }
+    public void setAlbums(List<Album> albums) { this.albums = albums; }
+    public void setSingles(List<Album> singles) { this.singles = singles; }
+    public void setCompilations(List<Album> compilations) { this.compilations = compilations; }
     //#endregion
 
     //#region Data Extraction
@@ -467,6 +490,7 @@ public class Artist implements Serializable {
                 break;
         }
     }
+
 
 
     //#endregion

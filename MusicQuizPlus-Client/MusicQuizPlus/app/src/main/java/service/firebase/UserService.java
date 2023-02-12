@@ -7,84 +7,45 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
+import model.Settings;
+import model.User;
+import model.ValidationObject;
+import model.item.Playlist;
+import model.type.Severity;
 import utils.LogUtil;
+import utils.ValidationUtil;
 
 public class UserService {
     private final static String TAG = "UserService.java";
 
     // Create a new user on both databases
-    public static void createUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
-                                  DatabaseReference db) {
+    public static void createUser(FirebaseUser firebaseUser, DatabaseReference db, Map<String, String> playlistIds) {
         LogUtil log = new LogUtil(TAG, "createUser");
-        // Create a new user with a first and last name
-        Map<String, Object> userMap = new HashMap<>();
-        userMap.put("name", firebaseUser.getDisplayName());
-        userMap.put("email", firebaseUser.getEmail());
-        userMap.put("photo_url", firebaseUser.getPhotoUrl());
-
-        firestore.collection("users").document(firebaseUser.getUid())
-                .set(userMap)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        log.d("DocumentSnapshot successfully written!");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        log.w("Error writing document", e);
-                    }
-                });
-
-        userMap.clear();
-        userMap = new HashMap<>();
-        userMap.put("xp", 0);
-        userMap.put("level", 1);
-
-        db.child("users").child(firebaseUser.getUid()).setValue(userMap);
-    }
-    // Delete user from database
-    public static boolean deleteUser(FirebaseUser firebaseUser, FirebaseFirestore firestore,
-                                     DatabaseReference db) {
-        LogUtil log = new LogUtil(TAG, "deleteUser");
-        final boolean[] result = {true};
-
-        db.child("users").child(firebaseUser.getUid()).removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    log.d("User data deleted from Realtime Database.");
-                }
-                else
-                {
-                    result[0] = false;
-                }
+        List<ValidationObject> validationObjects = new ArrayList<>() {
+            {
+                add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
+                add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
             }
-        });
-
-        if (result[0] == true) {
-            firestore.collection("users").document(firebaseUser.getUid())
-                    .delete()
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            log.d("Firestore user data successfully deleted!");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            log.w("Error deleting Firestore user", e);
-                        }
-                    });
+        };
+        if (ValidationUtil.nullCheck(validationObjects, log)) {
+            return;
         }
-        return result[0];
+
+        User user = new User(firebaseUser, new Settings(), playlistIds);
+        db.child("users").child(firebaseUser.getUid()).setValue(user);
     }
+
+
 }

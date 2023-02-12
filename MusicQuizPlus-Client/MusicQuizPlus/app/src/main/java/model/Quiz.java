@@ -37,7 +37,6 @@ import utils.ValidationUtil;
 
 public class Quiz implements Serializable {
     //#region Database members
-    private QuizType type;
     private List<Question> questions;
     private String quizId;
     private Difficulty difficulty;
@@ -45,6 +44,7 @@ public class Quiz implements Serializable {
 
     //#region Other members
     private User user;
+    private QuizType type;
     private String topicId;
     private Playlist playlist;
     private Artist artist;
@@ -69,6 +69,8 @@ public class Quiz implements Serializable {
     private long multiplierTime;
     private Timer multiplierTimer;
     private double currentMultiplier;
+    private int xp;     // XP gained during the session
+    private boolean timeUp = false;
     private boolean completedCollection;
     private List<String> completedCollectionIDs = new ArrayList<>();
     private int quickReaction;
@@ -76,202 +78,6 @@ public class Quiz implements Serializable {
 
     //#region Constants
     private final String TAG = "Quiz.java";
-    private final Map<Integer, List<String>> WORDS = new HashMap<>() {
-        {
-            put(1, new ArrayList<>() {
-                {
-
-                }
-            });
-            put(2, new ArrayList<>() {
-                {
-                    add("an");
-                    add("as");
-                    add("at");
-                    add("be");
-                    add("by");
-                    add("do");
-                    add("he");
-                    add("if");
-                    add("in");
-                    add("is");
-                    add("it");
-                    add("my");
-                    add("no");
-                    add("of");
-                    add("on");
-                    add("or");
-                    add("so");
-                    add("to");
-                    add("up");
-                    add("us");
-                    add("we");
-                }
-            });
-            put(3, new ArrayList<>() {
-                {
-                    add("act");
-                    add("all");
-                    add("and");
-                    add("any");
-                    add("are");
-                    add("but");
-                    add("can");
-                    add("day");
-                    add("did");
-                    add("end");
-                    add("far");
-                    add("few");
-                    add("for");
-                    add("get");
-                    add("god");
-                    add("had");
-                    add("has");
-                    add("her");
-                    add("him");
-                    add("his");
-                    add("how");
-                    add("its");
-                    add("law");
-                    add("man");
-                    add("may");
-                    add("men");
-                    add("not");
-                    add("now");
-                    add("off");
-                    add("old");
-                    add("one");
-                    add("our");
-                    add("own");
-                    add("per");
-                    add("say");
-                    add("see");
-                    add("set");
-                    add("she");
-                    add("the");
-                    add("too");
-                    add("two");
-                    add("use");
-                    add("war");
-                    add("was");
-                    add("way");
-                    add("who");
-                    add("why");
-                    add("yet");
-                    add("you");
-                }
-            });
-            put(4, new ArrayList<>() {
-                {
-                    add("also");
-                    add("baby");
-                    add("back");
-                    add("been");
-                    add("both");
-                    add("case");
-                    add("does");
-                    add("down");
-                    add("each");
-                    add("even");
-                    add("from");
-                    add("good");
-                    add("have");
-                    add("here");
-                    add("into");
-                    add("just");
-                    add("life");
-                    add("like");
-                    add("long");
-                    add("made");
-                    add("make");
-                    add("many");
-                    add("more");
-                    add("most");
-                    add("much");
-                    add("must");
-                    add("only");
-                    add("over");
-                    add("part");
-                    add("said");
-                    add("same");
-                    add("some");
-                    add("such");
-                    add("than");
-                    add("that");
-                    add("them");
-                    add("then");
-                    add("they");
-                    add("this");
-                    add("time");
-                    add("upon");
-                    add("used");
-                    add("very");
-                    add("were");
-                    add("what");
-                    add("when");
-                    add("well");
-                    add("will");
-                    add("with");
-                    add("work");
-                    add("your");
-                }
-            });
-            put(5, new ArrayList<>() {
-                {
-                    add("about");
-                    add("above");
-                    add("after");
-                    add("again");
-                    add("among");
-                    add("being");
-                    add("could");
-                    add("early");
-                    add("every");
-                    add("first");
-                    add("found");
-                    add("given");
-                    add("great");
-                    add("group");
-                    add("house");
-                    add("human");
-                    add("large");
-                    add("later");
-                    add("means");
-                    add("might");
-                    add("never");
-                    add("often");
-                    add("order");
-                    add("other");
-                    add("place");
-                    add("point");
-                    add("power");
-                    add("right");
-                    add("shall");
-                    add("since");
-                    add("small");
-                    add("state");
-                    add("still");
-                    add("their");
-                    add("there");
-                    add("these");
-                    add("think");
-                    add("those");
-                    add("three");
-                    add("under");
-                    add("until");
-                    add("water");
-                    add("where");
-                    add("which");
-                    add("while");
-                    add("whole");
-                    add("women");
-                    add("world");
-                    add("would");
-                    add("years");
-                }
-            });
-        }
-    };
     private final double GUESS_TRACK_CHANCE = .6;
     private final double GUESS_PLAYLIST_ALBUM_CHANCE = .1;
     private final double GUESS_ARTIST_ALBUM_CHANCE = .2;
@@ -283,7 +89,7 @@ public class Quiz implements Serializable {
     private final double MULTIPLIER_INTERVAL = 5;
     private final double MULTIPLIER_RATE = .25;
     private final int BUFFER = 5;
-    private final int BASE_SCORE = 100;
+    private final int BASE_SCORE = 250;
     //#endregion
 
     //#region Constructors
@@ -336,6 +142,7 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Accessors
+    @Exclude
     public QuizType getType() {
         return type;
     }
@@ -374,6 +181,9 @@ public class Quiz implements Serializable {
             Random rnd = new Random();
             List<Track> temp = new ArrayList<>();
 
+            if (featuredArtistTracks.size() == 0) {
+                return 0;
+            }
             for (int i = 0; i < guessArtistCount; i++) {
                 temp.add(featuredArtistTracks.get(rnd.nextInt(featuredArtistTracks.size())));
             }
@@ -387,6 +197,7 @@ public class Quiz implements Serializable {
                 tracks.remove(track);
             }
         }
+        return featuredArtistTracks.size();
     }
 
     /*
@@ -417,6 +228,17 @@ public class Quiz implements Serializable {
     public String getAccuracy() {
         double accuracy = (double) numCorrect / numQuestions;
         return String.valueOf(accuracy * 100) + "%";
+    }
+
+    @Exclude
+    private boolean isIgnoreSettingsEnabled() {
+        switch (type) {
+            case PLAYLIST:
+                return user.getSettings().isIgnorePlaylistDifficulty();
+            case ARTIST:
+                return user.getSettings().isIgnoreArtistDifficulty();
+        }
+        return false;
     }
 
     @Exclude
@@ -460,6 +282,12 @@ public class Quiz implements Serializable {
         }
         return null;
     }
+    @Exclude
+    public Playlist getPlaylist() { return playlist; }
+    @Exclude
+    public Artist getArtist() { return artist; }
+    @Exclude
+    public int getNumCorrect() { return numCorrect; }
     //#endregion
 
     //#region Mutators
@@ -467,9 +295,13 @@ public class Quiz implements Serializable {
         if (!quizHistory.containsValue(track.getId())) {
             history.add(track);
         }
+        else {
+            throw new ArrayIndexOutOfBoundsException();
+        }
     }
     //#endregion
 
+    //#region Pre-Quiz
     public void init() {
         // Initialize non-final members
         currentQuestionIndex = 0;
@@ -478,7 +310,7 @@ public class Quiz implements Serializable {
         numQuestions = 10;
         difficulty = user.getDifficulty();
 
-        if (!retrieveQuiz()) {
+        if (type == QuizType.ARTIST || !retrieveQuiz()) {
             generateQuiz();
         }
     }
@@ -527,6 +359,14 @@ public class Quiz implements Serializable {
         questions = quiz.getQuestions();
         quizId = quiz.getQuizId();
         history = new ArrayList<>();
+        if (type == QuizType.PLAYLIST) {
+            poolCount = playlist.getTrackIds().size();
+        }
+        else {
+            poolCount = artist.getTracks().size();
+        }
+        String child = (type == QuizType.PLAYLIST) ? "playlists" : "artists";
+
         for (Question question : quiz.getQuestions()) {
             history.add(new Track(question.getTrackId(), question.getAlbumId()));
         }
@@ -591,7 +431,7 @@ public class Quiz implements Serializable {
         difficulty = user.getDifficulty();
 
         // Calculate the popularity threshold and update ignoreDifficulty
-        if (difficulty != Difficulty.HARD) {
+        if (difficulty != Difficulty.HARD && !isIgnoreSettingsEnabled()) {
             popularityThreshold = (int) (averagePopularity * .6);
         }
 
@@ -630,19 +470,23 @@ public class Quiz implements Serializable {
         Map<String, String> quizHistory = new HashMap<>();
 
         // Prepare information for answers
+        if (!isPlaylistQuiz) {
+            int result = getFeaturedArtistTracks(guessArtistCount);
+            if (result < guessArtistCount) {
+                for (int i = 0; i < guessArtistCount - result; i++) {
+                    guessArtistCount--;
+                    guessTrackCount++;
+                }
+            }
+        }
+
         if (!isEnoughData(rawTracks.size())) {
             log.v("Creating quiz based on the entire track set.");
             tracks = rawTracks;
-            if (!isPlaylistQuiz) {
-                getFeaturedArtistTracks(guessArtistCount);
-            }
         } else {
+            log.v("Separating track set...");
             // Old or hard tracks
             List<Track> skippedTracks = new ArrayList<>();
-
-            if (!isPlaylistQuiz) {
-                getFeaturedArtistTracks(guessArtistCount);
-            }
 
             boolean noQuizHistory = false;
             if (isPlaylistQuiz
@@ -650,11 +494,14 @@ public class Quiz implements Serializable {
                     && user.getPlaylistHistory().size() > 0
                     && user.getPlaylistHistory().containsKey(topicId)
                     && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
+                log.v("Playlist history exists.");
                 quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            } else if (!isPlaylistQuiz
+            }
+            else if (!isPlaylistQuiz
                     && user.getArtistHistory() != null
                     && user.getArtistHistory().size() > 0
                     && user.getArtistHistory().containsKey(topicId)) {
+                log.v("Artist history exists.");
                 for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
                     if (album.getValue().getCount() == album.getValue().getTotal()) {
                         Album artistAlbum = artist.getAlbum(album.getKey());
@@ -666,7 +513,9 @@ public class Quiz implements Serializable {
                         quizHistory.putAll(album.getValue().getTrackIds());
                     }
                 }
-            } else {
+            }
+            else {
+                log.v("No quiz history found.");
                 noQuizHistory = true;
             }
 
@@ -694,13 +543,11 @@ public class Quiz implements Serializable {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
-                    if (random < 0) {
-                        log.e("bound must be positive");
-                    }
                     tracks.add(rawTracks.get(random));
                     rawTracks.remove(random);
                 }
-            } else if (user.getDifficulty() == Difficulty.EASY) {
+            }
+            else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -712,7 +559,8 @@ public class Quiz implements Serializable {
                     }
                     rawTracks.remove(track);
                 }
-            } else if (user.getDifficulty() == Difficulty.MEDIUM) {
+            }
+            else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
                 int size = tracks.size();
                 for (int i = 0; i < numQuestions + BUFFER - size; i++) {
                     int random = rnd.nextInt(rawTracks.size());
@@ -724,13 +572,21 @@ public class Quiz implements Serializable {
                     }
                     rawTracks.remove(track);
                 }
-            } else {
+            }
+            else {
                 int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                for (int i = 0; i < numQuestions + BUFFER - size; ) {
                     int random = rnd.nextInt(rawTracks.size());
                     Track track = rawTracks.get(random);
-                    tracks.add(track);
-                    rawTracks.remove(track);
+                    boolean added = false;
+                    if (!quizHistory.containsValue(track.getId())) {
+                        tracks.add(track);
+                        rawTracks.remove(track);
+                        added = true;
+                    }
+                    if (noQuizHistory || added) {
+                        i++;
+                    }
                 }
             }
 
@@ -760,8 +616,10 @@ public class Quiz implements Serializable {
         log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), topicId));
     }
 
+
+
     private void generateQuestions(QuestionType type, int count, Random rnd, Map<String, String> quizHistory) {
-        boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST;
+        boolean isFeaturedArtistQuestion = this.type == QuizType.ARTIST && type == QuestionType.GUESS_ARTIST && featuredArtistTracks.size() > 0;
         if (count < 1) {
             return;
         }
@@ -892,7 +750,7 @@ public class Quiz implements Serializable {
 
                         for (int k = 0; k < 4; k++) {
                             if (answerText != null && answers.get(k) != null) {
-                                if (namesMatch(answers.get(k), answerText)) {
+                                if (ValidationUtil.namesMatch(answers.get(k), answerText, TAG)) {
                                     tryAgain = true;
                                 }
                             }
@@ -912,72 +770,22 @@ public class Quiz implements Serializable {
     private boolean isEnoughData(int size) {
         return size >= numQuestions + BUFFER;
     }
+    //#endregion
 
-    private boolean namesMatch(String a, String b) {
-        LogUtil log = new LogUtil(TAG, "namesMatch");
-        // Return if either are empty
-        if (a.isEmpty() || b.isEmpty()) {
-            return false;
-        }
-
-        // Return if they're equal
-        if (a.equals(b)) {
-            return true;
-        }
-
-        int count = 0;
-        char[] str1 = a.toCharArray();
-        char[] str2 = b.toCharArray();
-        boolean str1Longer = a.length() > b.length();
-        int length = (str1Longer) ? b.length() : a.length();
-
-        for (int i = 0; i < length; i++) {
-            try {
-                if (str1[i] == str2[i]) {
-                    count++;
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
-                log.e("still not working");
-            }
-
-
-        }
-
-        // Return if there were no matches
-        if (count == 0) {
-            return false;
-        } else if (count == length) {
-            return true;
-        }
-
-        String strResult = a.substring(0, count);
-
-        // Remove trailing spaces
-        if (str1[count - 1] == ' ') {
-            strResult = strResult.trim();
-        }
-
-        if (strResult.length() > 1 && strResult.length() <= 5) {
-            if (WORDS.get(strResult.length()).contains(strResult.toLowerCase())) {
-                return false;
-            }
-        }
-
-        if (count < 3 && count > length - 3) {
-            return true;
-        }
-
-        return false;
-    }
-
+    //#region During Quiz
     // Pass in the selected answer
     // Returns the next question
     public Question nextQuestion(int answerIndex) {
         LogUtil log = new LogUtil(TAG, "nextQuestion");
         questionTimer.cancel();
         multiplierTimer.cancel();
+        questionTimer = new Timer();
+        multiplierTimer = new Timer();
+        if (timeUp) {
+            answerIndex = -1;
+            timeUp =false;
+        }
+
         if (!updateTest(answerIndex)) {
             log.i("No more questions!");
             return null;
@@ -1005,7 +813,7 @@ public class Quiz implements Serializable {
                 multiplierTime = 25;
             }
             double reactionTimeBonus = 1 - (seconds / QUESTION_INTERVAL);
-            score += BASE_SCORE * (currentMultiplier + reactionTimeBonus);
+            score += (int)(BASE_SCORE * (currentMultiplier + reactionTimeBonus));
             numCorrect++;
         } else {
             for (Track track : history) {
@@ -1020,15 +828,6 @@ public class Quiz implements Serializable {
         }
         currentQuestionIndex++;
         return true;
-    }
-
-    // Call this method to begin the quiz
-    public void start() {
-        multiplierTime = (int)MAX_MULTIPLIER;
-        questionTime = System.nanoTime();
-
-        scheduleMultiplierTimer();
-        scheduleQuestionTimer();
     }
 
     private void scheduleMultiplierTimer() {
@@ -1059,24 +858,48 @@ public class Quiz implements Serializable {
     }
 
     private void scheduleQuestionTimer() {
-        int delay = (int)QUESTION_INTERVAL * 1000;
+        int delay = (int)(QUESTION_INTERVAL * 1000) + 1;
         questionTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                updateTest(-1);
+                timeUp = true;
             }
-        },delay);
+        },delay,500);
     }
 
+    // Call this method to begin the quiz
+    public void start() {
+        multiplierTime = (int)MAX_MULTIPLIER;
+        questionTime = System.nanoTime();
+
+        scheduleMultiplierTimer();
+        scheduleQuestionTimer();
+    }
+    //#endregion
+
+    //#region Post Quiz
     // Call this method after the quiz is complete
     public void end() {
-        updateDatabase();
+        calculateXp();
+        if (firebaseUser != null) {
+            updateDatabase();
+        }
+    }
+
+    private void calculateXp() {
+        xp = (int)(score / 4 + 100);
+        // TODO: Add bonus XP from badges to xp
     }
 
     private void updateDatabase() {
+
+        // Update the user's xp / level
+        user.addXP(db, firebaseUser, xp);
+
         String key = null;
 
-        if (isNewQuiz) {
+        // Artist Quizzes aren't saved to database
+        if (isNewQuiz && type == QuizType.PLAYLIST) {
             // Save the new quiz up to the database
             db.child("quizzes").child(quizId).setValue(this);
 
@@ -1101,4 +924,11 @@ public class Quiz implements Serializable {
         }
         user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
     }
+    //#endregion
+
+    /*
+    //USED FOR TESTING
+    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
+    public void setNumCorrect(int correct) { numCorrect = correct; }
+ */
 }
