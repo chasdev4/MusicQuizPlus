@@ -50,6 +50,7 @@ public class User implements Serializable {
     private Map<String, Playlist> playlists;
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
+    private Map<String, Badge> badges;
 
     private double xpToNextLevel;
     //#endregion
@@ -231,6 +232,9 @@ public class User implements Serializable {
     public LinkedList<Track> getHistory() {
         return history;
     }
+
+    @Exclude
+    public Map<String, Badge> getBadges() { return badges; }
 
     @Exclude
     public Playlist getPlaylist(String playlistId) {
@@ -480,8 +484,11 @@ public class User implements Serializable {
         db.child("users").child(uId).child("historyIds").setValue(historyIds);
     }
 
-
     public boolean updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
+        // Increment the playlist quiz count at the very least
+        playlistQuizCount++;
+        db.child("users").child(uId).child("playlistQuizCount").setValue(playlistQuizCount);
+
         String topicId = playlist.getId();
         DatabaseReference playlistHistoryRef = db.child("users").child(uId).child("playlistHistory").child(topicId);
         // If there is no playlist history at all
@@ -534,6 +541,10 @@ public class User implements Serializable {
     }
 
     public boolean updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+        // Increment the artist quiz count at the very least
+        artistQuizCount++;
+        db.child("users").child(uId).child("artistQuizCount").setValue(artistQuizCount);
+
         DatabaseReference artistHistoryRef = db.child("users").child(uId).child("artistHistory").child(artist.getId());
 
         // If there is no artist history at all
