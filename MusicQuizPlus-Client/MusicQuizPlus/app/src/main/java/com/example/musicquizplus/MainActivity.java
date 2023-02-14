@@ -41,6 +41,7 @@ import model.GoogleSignIn;
 import model.PhotoUrl;
 import model.Question;
 import model.Quiz;
+import model.Results;
 import model.User;
 
 import model.item.Album;
@@ -155,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     // If there is a database entry for the suer
                     if (user != null) {
                         //#region DEBUG: Playlist Quiz Sandbox
+//                        user.initBadgeThumbnails(db);
 //                        user.initCollections(db);
 //                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
 //                        userPlaylist.initCollection(db);
@@ -187,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
 //                                question = quiz.nextQuestion(index);
 //                            }
 //
-//                            quiz.end();
+//                            Results results = quiz.end();
 //                            countDownLatch.countDown();
 //                            try {
 //                                countDownLatch.await();
@@ -205,62 +207,67 @@ public class MainActivity extends AppCompatActivity {
                         //#endregion
 
                         //#region DEBUG: Artist Quiz Sandbox
-//                        user.initCollections(db);
-//                        CountDownLatch countDownLatch = new CountDownLatch(1);
-//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-//                        artist.initCollections(db, user);
-//                        countDownLatch.countDown();
-//                        try {
-//                            countDownLatch.await();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                        countDownLatch = new CountDownLatch(1);
-//                        artist.initTracks(db);
-//                        countDownLatch.countDown();
-//                        try {
-//                            countDownLatch.await();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        for (int p = 0; p < 3; p++) {
-//                            countDownLatch = new CountDownLatch(1);
-//                            int i = 1;
-//                            Random rnd = new Random();
-//                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
-//                            Question question = quiz.getFirstQuestion();
-//                            quiz.start();
-//                            while (question != null) {
-//                                log.d(String.valueOf(i));
-//                                i++;
-//                                CountDownLatch cdl = new CountDownLatch(1);
+                        user.initCollections(db);
+                        CountDownLatch countDownLatch = new CountDownLatch(1);
+                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+                        artist.initCollections(db, user);
+                        countDownLatch.countDown();
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        countDownLatch = new CountDownLatch(1);
+                        artist.initTracks(db);
+                        countDownLatch.countDown();
+                        try {
+                            countDownLatch.await();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                        for (int p = 0; p < 50; p++) {
+                            log.d(String.valueOf(p+1));
+                            countDownLatch = new CountDownLatch(1);
+                            int i = 1;
+                            Random rnd = new Random();
+                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+                            Question question = quiz.getFirstQuestion();
+                            quiz.start();
+                            while (question != null) {
+                                i++;
+                                CountDownLatch cdl = new CountDownLatch(1);
 //                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
-////                                int index = question.getAnswerIndex();
-//                                try {
-//                                    Thread.sleep(rnd.nextInt(1) * 1000);
-//                                } catch (InterruptedException e) {
-//                                    e.printStackTrace();
-//                                }
-//                                question = quiz.nextQuestion(index);
-//                                cdl.countDown();
-//
-//                                try {
-//                                    cdl.await();
-//                                } catch (InterruptedException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            }
-//                            quiz.end();
-//                            countDownLatch.countDown();
-//
-//                            try {
-//                                countDownLatch.await();
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                        log.d("Done.");
+                                int index = question.getAnswerIndex();
+                                try {
+                                    Thread.sleep(rnd.nextInt(1) * 1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                question = quiz.nextQuestion(index);
+                                cdl.countDown();
+
+                                try {
+                                    cdl.await();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            Results results = quiz.end();
+                            countDownLatch.countDown();
+
+                            try {
+                                countDownLatch.await();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                                                        try {
+                                Thread.sleep(200);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        log.d("Done.");
                         //#endregion
 
                         //#region TESTING BADGES

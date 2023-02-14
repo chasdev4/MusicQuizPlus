@@ -22,7 +22,10 @@ import model.history.TopicHistory;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.AlbumType;
+import model.type.BadgeType;
 import model.type.Difficulty;
+import service.BadgeService;
 import service.FirebaseService;
 import utils.LogUtil;
 
@@ -39,7 +42,7 @@ public class User implements Serializable {
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
     private List<String> historyIds;
-    private Map<String, String> badgeIds;
+    private Map<String, Badge> badges;
     private Map<String, TopicHistory> playlistHistory;
     private Map<String, ArtistHistory> artistHistory;
     private Map<String, Map<String, String>> generatedQuizHistory;
@@ -50,14 +53,10 @@ public class User implements Serializable {
     private Map<String, Playlist> playlists;
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
-    private Map<String, Badge> badges;
-
+    private List<Badge> earnedBadges;
     private double xpToNextLevel;
     //#endregion
 
-    private boolean completedCollection = false;
-    private List<String> completedCollectionIDs;
-    private int artistTrackCount;
     private boolean allSongsKnown;
 
     //#region Constants
@@ -73,12 +72,13 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
         historyIds = new ArrayList<>();
-        badgeIds = new HashMap<>();
+        badges = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
         level = MIN_LEVEL;
         xp = 0;
         settings = new Settings();
+        earnedBadges = new ArrayList<>();
         initLevels();
     }
 
@@ -92,12 +92,13 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         this.playlistIds = playlistIds;
         historyIds = new ArrayList<>();
-        badgeIds = new HashMap<>();
+        badges = new HashMap<>();
         playlistHistory = new HashMap<>();
         artistHistory = new HashMap<>();
         generatedQuizHistory = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        earnedBadges = new ArrayList<>();
         initLevels();
     }
 
@@ -108,12 +109,13 @@ public class User implements Serializable {
         artistIds = user.artistIds;
         playlistIds = user.playlistIds;
         historyIds = user.historyIds;
-        badgeIds = user.badgeIds;
+        badges = user.badges;
         playlistQuizCount = user.playlistQuizCount;
         artistQuizCount = user.artistQuizCount;
         level = user.level;
         xp = user.xp;
         settings = user.settings;
+        earnedBadges = new ArrayList<>();
         initLevels();
     }
 
@@ -126,12 +128,13 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         this.playlistIds = playlistIds;
         historyIds = new ArrayList<>();
-        badgeIds = new HashMap<>();
+        badges = new HashMap<>();
         playlistHistory = new HashMap<>();
         artistHistory = new HashMap<>();
         generatedQuizHistory = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        earnedBadges = new ArrayList<>();
         initLevels();
     }
 
@@ -172,8 +175,8 @@ public class User implements Serializable {
         return historyIds;
     }
 
-    public Map<String, String> getBadgeIds() {
-        return badgeIds;
+    public Map<String, Badge> getBadges() {
+        return badges;
     }
 
     public Map<String, TopicHistory> getPlaylistHistory() {
@@ -202,18 +205,15 @@ public class User implements Serializable {
     }
 
     @Exclude
-    public boolean getAllSongsKnown() {return allSongsKnown;}
-
-    @Exclude
-    public int getArtistTrackCount() { return artistTrackCount; }
-
-    @Exclude
-    public List<String> getCompletedCollectionIDs() { return completedCollectionIDs; }
+    public boolean getAllSongsKnown() {
+        return allSongsKnown;
+    }
 
     @Exclude
     public Map<String, Playlist> getPlaylists() {
         return playlists;
     }
+
     @Exclude
     public List<Playlist> getPlaylistsAsList() {
         List<Playlist> lists = new ArrayList<>();
@@ -232,9 +232,6 @@ public class User implements Serializable {
     public LinkedList<Track> getHistory() {
         return history;
     }
-
-    @Exclude
-    public Map<String, Badge> getBadges() { return badges; }
 
     @Exclude
     public Playlist getPlaylist(String playlistId) {
@@ -259,6 +256,11 @@ public class User implements Serializable {
     @Exclude
     public double getXpToNextLevel() {
         return xpToNextLevel;
+    }
+
+    @Exclude
+    public List<Badge> getEarnedBadges() {
+        return earnedBadges;
     }
     //#endregion
 
@@ -311,6 +313,10 @@ public class User implements Serializable {
         this.history = history;
     }
 
+    public void resetEarnedBadges() {
+        earnedBadges = new ArrayList<>();
+    }
+
     public boolean addAlbumId(String key, String albumId) {
         if (albumIds.containsValue(albumId)) {
             return false;
@@ -318,18 +324,6 @@ public class User implements Serializable {
 
         albumIds.put(key, albumId);
         return true;
-    }
-
-    public String removeBadgeId(String badgeId) {
-        String key = "";
-        for (Map.Entry<String, String> entry : badgeIds.entrySet()) {
-            if (entry.getValue().equals(badgeId)) {
-                key = entry.getKey();
-            }
-        }
-
-        badgeIds.remove(key);
-        return key;
     }
 
     public boolean addArtistId(String key, String artistId) {
@@ -383,38 +377,6 @@ public class User implements Serializable {
 
         playlistIds.remove(key);
         return key;
-    }
-
-    public boolean addBadgeId(String key, String badgeId, boolean allowDuplicates) {
-        if (allowDuplicates) {
-            badgeIds.put(key, badgeId);
-            return true;
-        }
-
-        if (!badgeIds.containsValue(badgeId)) {
-            badgeIds.put(key, badgeId);
-            return true;
-        }
-
-        return false;
-    }
-
-    //USED FOR DEBUGGING
-    public void setArtistQuizCount(int artistQuizCount) {
-        this.artistQuizCount = artistQuizCount;
-    }
-
-    //USED FOR DEBUGGING
-    public void setPlaylistQuizCount(int playlistQuizCount) {
-        this.playlistQuizCount = playlistQuizCount;
-    }
-
-    public void incrementArtistQuizCount() {
-        artistQuizCount++;
-    }
-
-    public void incrementPlaylistQuizCount() {
-        playlistQuizCount++;
     }
 
     private void initLevels() {
@@ -484,9 +446,36 @@ public class User implements Serializable {
         db.child("users").child(uId).child("historyIds").setValue(historyIds);
     }
 
-    public boolean updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
-        // Increment the playlist quiz count at the very least
+    public void updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
+        // Playlist quiz count and milestone badge logic
         playlistQuizCount++;
+        BadgeType badgeType = null;
+        if (playlistQuizCount <= 25) {
+            switch (playlistQuizCount) {
+                case 1:
+                    badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_1;
+                    break;
+                case 3:
+                    badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_3;
+                    break;
+                case 5:
+                    badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_5;
+                    break;
+                case 10:
+                    badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_10;
+                    break;
+                case 25:
+                    badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_25;
+                    break;
+            }
+        } else if (playlistQuizCount % 50 == 0) {
+            badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_50;
+        }
+
+        if (badgeType != null) {
+            earnedBadges.add(new Badge(badgeType, null));
+        }
+
         db.child("users").child(uId).child("playlistQuizCount").setValue(playlistQuizCount);
 
         String topicId = playlist.getId();
@@ -506,7 +495,7 @@ public class User implements Serializable {
 
         // If the user already knows the playlist
         if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
-            return false;
+            return;
         }
 
         // Convert the list to a map
@@ -534,15 +523,40 @@ public class User implements Serializable {
 
         if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
             playlistHistoryRef.child("trackIds").removeValue();
-            completedCollection = true;
+            earnedBadges.add(new Badge(BadgeType.PLAYLIST_KNOWLEDGE, playlist.getId()));
         }
-
-        return completedCollection;
     }
 
-    public boolean updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+    public void updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
         // Increment the artist quiz count at the very least
         artistQuizCount++;
+        BadgeType badgeType = null;
+        if (artistQuizCount <= 25) {
+            switch (artistQuizCount) {
+                case 1:
+                    badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_1;
+                    break;
+                case 3:
+                    badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_3;
+                    break;
+                case 5:
+                    badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_5;
+                    break;
+                case 10:
+                    badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_10;
+                    break;
+                case 25:
+                    badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_25;
+                    break;
+            }
+        } else if (artistQuizCount % 50 == 0) {
+            badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_50;
+        }
+
+        if (badgeType != null) {
+            earnedBadges.add(new Badge(badgeType, null));
+        }
+
         db.child("users").child(uId).child("artistQuizCount").setValue(artistQuizCount);
 
         DatabaseReference artistHistoryRef = db.child("users").child(uId).child("artistHistory").child(artist.getId());
@@ -564,8 +578,9 @@ public class User implements Serializable {
 
         //If the user already knows all albums
         if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
-            return false;
+            return;
         }
+        int oldCount = artistHistory.get(artist.getId()).calculateTracksCount();
 
         // Convert the list to an albums map
         Map<String, TopicHistory> albumsMap = new HashMap<>();
@@ -598,6 +613,8 @@ public class User implements Serializable {
             artistHistory.get(artist.getId()).setAlbums(albumsMap);
             artistHistoryRef.setValue(artistHistory.get(artist.getId()));
         }
+
+
         for (Map.Entry<String, TopicHistory> albumsMapEntry : albumsMap.entrySet()) {
             if (newEntry) {
                 // Set the value since it's new
@@ -606,20 +623,15 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
-                    completedCollection = true;
-                    completedCollectionIDs.add(albumsMapEntry.getKey());
-                    artistTrackCount += albumsMapEntry.getValue().getCount();
-
+                    earnedBadges.add(new Badge(
+                            (artist.getAlbum(albumsMapEntry.getKey()).getType() == AlbumType.ALBUM) ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
+                            albumsMapEntry.getKey()));
                 }
 
             } else if (artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getTotal()
                     != artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount()) {
                 int count = albumsMapEntry.getValue().getCount()
                         + artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getCount();
-
-                artistTrackCount += count;
-                if (albumsMapEntry.getValue().getTotal() > count) {
-
                     for (Map.Entry<String, String> trackId : albumsMapEntry.getValue().getTrackIds().entrySet()) {
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds")
                                 .child(trackId.getKey()).setValue(trackId.getValue());
@@ -632,15 +644,92 @@ public class User implements Serializable {
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                         artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
-                        completedCollection = true;
-                        completedCollectionIDs.add(albumsMapEntry.getKey());
+                        artistHistory.get(artist.getId()).incrementAlbumsCount();
+                        earnedBadges.add(new Badge(
+                                (artist.getAlbum(albumsMapEntry.getKey()).getType() == AlbumType.ALBUM) ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
+                                albumsMapEntry.getKey()));
                     }
-
-                }
 
             }
         }
-        return completedCollection;
+        int newCount = artistHistory.get(artist.getId()).calculateTracksCount();
+        if (oldCount < newCount) {
+            List<BadgeType> badgeTypes = new ArrayList<>();
+
+            if (oldCount < 10) {
+                if (oldCount < 3 && newCount >= 3) {
+                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                }
+                if (oldCount < 3 && newCount >= 5
+                        || (oldCount > 3 && oldCount < 5) && newCount >= 5) {
+                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                }
+                if (oldCount < 5 && newCount >= 10
+                        || (oldCount > 3 && oldCount < 5) && newCount >= 10
+                        || (oldCount > 5 && oldCount < 10) && newCount >= 10) {
+                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                }
+            }
+            else if (oldCount < 25 && newCount >= 25 || oldCount < 50 && newCount >= 50) {
+                badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_2);
+            }
+            else if (oldCount >= 50) {
+                for (int i = oldCount; i < newCount; i++) {
+                    if (i % 50 == 0) {
+                        badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_3);
+                    }
+                }
+
+            }
+
+            if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
+                badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_4);
+            }
+
+            for (BadgeType type : badgeTypes) {
+                earnedBadges.add(new Badge(type, artist.getId()));
+            }
+
+//            int difference = newCount - oldCount;
+//
+//            badgeType = null;
+//            int i = 1;
+//
+//            if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
+//                badgeType = BadgeType.ARTIST_KNOWLEDGE_4;
+//            } else if (oldCount >= 50 && newCount % 50 == 0) {
+//                badgeType = BadgeType.ARTIST_KNOWLEDGE_3;
+//            } else if (newCount == 25 || newCount == 50) {
+//                badgeType = BadgeType.ARTIST_KNOWLEDGE_2;
+//            } else if (newCount <= 10) {
+//                i = 0;
+//                if (newCount == 10) {
+//                    if (oldCount < 3) {
+//                        i = 3;
+//                    } else if (oldCount < 5) {
+//                        i = 2;
+//                    }
+//                }
+//                else if (newCount == 5) {
+//                    if (oldCount < 3) {
+//                        i = 2;
+//                    }
+//                }
+//                else if (newCount == 3) {
+//                    i = 1;
+//                }
+//
+//                if (i != 0) {
+//                    badgeType = BadgeType.ARTIST_KNOWLEDGE_1;
+//                }
+//            }
+//
+//            if (badgeType != null) {
+//                for (int j = 0; j < i; j++) {
+//                    earnedBadges.add(new Badge(badgeType, artist.getId()));
+//                }
+//            }
+        }
     }
 
     public void updateGeneratedQuizHistory(DatabaseReference db, String uId, String topicId, String quizId) {
@@ -697,21 +786,20 @@ public class User implements Serializable {
         }
     }
 
-    public void initArtistTrackCount()
-    {
-        for( Map.Entry<String, ArtistHistory> item : artistHistory.entrySet() )
-        {
-            if(item.getValue().getAlbumsTotal() == item.getValue().getAlbumsCount())
-            {
-                allSongsKnown = true;
-            }
+    public void initBadgeThumbnails(DatabaseReference db) {
+        for (Map.Entry<String, Badge> entry : badges.entrySet()) {
+            if (BadgeService.hasThumbnail(entry.getValue().getType())) {
+                String child = null;
+                String photoUrl = null;
+                String path = BadgeService.getPath(entry.getValue());
 
-            for ( Map.Entry<String, TopicHistory> a :  item.getValue().getAlbums().entrySet())
-            {
-                artistTrackCount += a.getValue().getCount();
+                photoUrl = BadgeService.getBadgeThumbnail(db, BadgeService.getPath(entry.getValue()));
+                entry.getValue().setPhotoUrl(photoUrl);
             }
         }
     }
+
+
     //#endregion
 
     //#region Progression

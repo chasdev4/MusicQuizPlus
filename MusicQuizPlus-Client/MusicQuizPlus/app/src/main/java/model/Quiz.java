@@ -4,7 +4,6 @@ import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import model.type.Difficulty;
 import model.type.QuestionType;
 import model.type.QuizType;
 import model.type.Severity;
+import service.BadgeService;
 import service.FirebaseService;
 import service.firebase.QuizService;
 import utils.LogUtil;
@@ -36,7 +36,7 @@ import utils.ValidationUtil;
 // The Quiz model holds data and methods for artist and playlist quizzes
 
 public class Quiz implements Serializable {
-    //#region Database members
+    //#region Database members Playlist quizzes
     private List<Question> questions;
     private String quizId;
     private Difficulty difficulty;
@@ -45,7 +45,6 @@ public class Quiz implements Serializable {
     //#region Other members
     private User user;
     private QuizType type;
-    private String topicId;
     private Playlist playlist;
     private Artist artist;
     private List<Track> tracks = new ArrayList<>();
@@ -69,11 +68,12 @@ public class Quiz implements Serializable {
     private long multiplierTime;
     private Timer multiplierTimer;
     private double currentMultiplier;
-    private int xp;     // XP gained during the session
+    private int xp;
     private boolean timeUp = false;
     private boolean completedCollection;
     private List<String> completedCollectionIDs = new ArrayList<>();
-    private int quickReaction;
+    private int quickReactionCount;
+    private List<Badge> badges;
     //#endregion
 
     //#region Constants
@@ -94,8 +94,7 @@ public class Quiz implements Serializable {
 
     //#region Constructors
     public Quiz(Playlist playlist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        topicId = playlist.getId();
-        quizId = db.child("generated_quizzes").child(topicId).push().getKey();
+        quizId = db.child("generated_quizzes").child(playlist.getId()).push().getKey();
         this.playlist = playlist;
         this.db = db;
         this.firebaseUser = firebaseUser;
@@ -110,13 +109,12 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
-        quickReaction = 0;
-        init();
+        quickReactionCount = 0;
+        badges = new ArrayList<>();
+        init(playlist.getId());
     }
 
     public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        topicId = artist.getId();
-        quizId = db.child("generated_quizzes").child(topicId).push().getKey();
         this.db = db;
         this.firebaseUser = firebaseUser;
         playlist = null;
@@ -131,9 +129,9 @@ public class Quiz implements Serializable {
         questionTimer = new Timer();
         multiplierTimer = new Timer();
         currentMultiplier = 1;
-        quickReaction = 0;
-        this.user.initArtistTrackCount();
-        init();
+        quickReactionCount = 0;
+        badges = new ArrayList<>();
+        init(artist.getId());
     }
 
     public Quiz() {
@@ -158,6 +156,9 @@ public class Quiz implements Serializable {
     public Difficulty getDifficulty() {
         return difficulty;
     }
+
+    @Exclude
+    public int getNumQuestions() {return numQuestions;}
 
     @Exclude
     public boolean getCompletedCollection() {
@@ -217,7 +218,7 @@ public class Quiz implements Serializable {
     public int getNumCorrect() { return numCorrect; }
 
     @Exclude
-    public int getQuickReaction() { return quickReaction; }
+    public int getQuickReactionCount() { return quickReactionCount; }
 
     @Exclude
     public int getScore() {
@@ -289,14 +290,11 @@ public class Quiz implements Serializable {
         if (!quizHistory.containsValue(track.getId())) {
             history.add(track);
         }
-        else {
-            throw new ArrayIndexOutOfBoundsException();
-        }
     }
     //#endregion
 
     //#region Pre-Quiz
-    public void init() {
+    public void init(String topicId) {
         // Initialize non-final members
         currentQuestionIndex = 0;
         score = 0;
@@ -304,13 +302,13 @@ public class Quiz implements Serializable {
         numQuestions = 10;
         difficulty = user.getDifficulty();
 
-        if (type == QuizType.ARTIST || !retrieveQuiz()) {
-            generateQuiz();
+        if (type == QuizType.ARTIST || !retrieveQuiz(topicId)) {
+            generateQuiz(topicId);
         }
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
-    private boolean retrieveQuiz() {
+    private boolean retrieveQuiz(String topicId) {
         // Get a map of generated quiz ids indexed under the topicId
         Map<String, GeneratedQuiz> generatedQuizzesByTopic = QuizService.retrieveGeneratedQuizzes(db, topicId);
 
@@ -359,7 +357,6 @@ public class Quiz implements Serializable {
         else {
             poolCount = artist.getTracks().size();
         }
-        String child = (type == QuizType.PLAYLIST) ? "playlists" : "artists";
 
         for (Question question : quiz.getQuestions()) {
             history.add(new Track(question.getTrackId(), question.getAlbumId()));
@@ -367,7 +364,7 @@ public class Quiz implements Serializable {
 
     }
 
-    private void generateQuiz() {
+    private void generateQuiz(String topicId) {
         // For logging
         LogUtil log = new LogUtil(TAG, "generateQuiz");
         boolean isPlaylistQuiz = this.type == QuizType.PLAYLIST; // Boolean to track the type once
@@ -495,7 +492,9 @@ public class Quiz implements Serializable {
                     && user.getArtistHistory() != null
                     && user.getArtistHistory().size() > 0
                     && user.getArtistHistory().containsKey(topicId)) {
+
                 log.v("Artist history exists.");
+
                 for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
                     if (album.getValue().getCount() == album.getValue().getTotal()) {
                         Album artistAlbum = artist.getAlbum(album.getKey());
@@ -527,6 +526,7 @@ public class Quiz implements Serializable {
                     }
                 }
                 if (addedRemaining) {
+                    log.d("Added remaining tracks, removing from raw track pool.");
                     for (Track track : tracks) {
                         rawTracks.remove(track);
                     }
@@ -602,9 +602,13 @@ public class Quiz implements Serializable {
         }
 
         // Generate questions of each type
+        log.v("Creating Guess Track Questions");
         generateQuestions(QuestionType.GUESS_TRACK, guessTrackCount, rnd, quizHistory);
+        log.v("Creating Guess Album Questions");
         generateQuestions(QuestionType.GUESS_ALBUM, guessAlbumCount, rnd, quizHistory);
+        log.v("Creating Guess Artist Questions");
         generateQuestions(QuestionType.GUESS_ARTIST, guessArtistCount, rnd, quizHistory);
+        log.v("Creating Guess Year Questions");
         generateQuestions(QuestionType.GUESS_YEAR, guessYearCount, rnd, quizHistory);
         Collections.shuffle(questions);
         log.i(String.format("%s Quiz with the id:%s created!", this.type.toString(), topicId));
@@ -799,7 +803,7 @@ public class Quiz implements Serializable {
 
             if(seconds <= 5.0)
             {
-                quickReaction++;
+                quickReactionCount++;
             }
 
             multiplierTime += QUESTION_INTERVAL - seconds;
@@ -873,23 +877,19 @@ public class Quiz implements Serializable {
 
     //#region Post Quiz
     // Call this method after the quiz is complete
-    public void end() {
+    public Results end() {
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
+        return new Results(user, this, badges);
     }
 
     private void calculateXp() {
         xp = (int)(score / 4 + 100);
-        // TODO: Add bonus XP from badges to xp
     }
 
     private void updateDatabase() {
-
-        // Update the user's xp / level
-        user.addXP(db, firebaseUser, xp);
-
         String key = null;
 
         // Artist Quizzes aren't saved to database
@@ -898,10 +898,10 @@ public class Quiz implements Serializable {
             db.child("quizzes").child(quizId).setValue(this);
 
             // Save a reference to this quiz to generated_quizzes
-            key = db.child("generated_quizzes").child(topicId).push().getKey();
-            db.child("generated_quizzes").child(topicId).child(key).setValue(
+            key = db.child("generated_quizzes").child(playlist.getId()).push().getKey();
+            db.child("generated_quizzes").child(playlist.getId()).child(key).setValue(
                     new GeneratedQuiz(quizId, difficulty));
-            user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), topicId, quizId);
+            user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), playlist.getId(), quizId);
         }
 
         user.updateHistoryIds(db, firebaseUser.getUid(), history);
@@ -909,20 +909,27 @@ public class Quiz implements Serializable {
             history.remove(track);
         }
         if (this.type == QuizType.PLAYLIST) {
-            completedCollection = user.updatePlaylistHistory(db, firebaseUser.getUid(), playlist, history, poolCount);
+            user.updatePlaylistHistory(db, firebaseUser.getUid(), playlist, history, poolCount);
         } else {
-            completedCollection = user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
-            if(completedCollection)
-            {
-                completedCollectionIDs.addAll(user.getCompletedCollectionIDs());
-            }
+            user.updateArtistHistory(db, firebaseUser.getUid(), artist, history, poolCount);
         }
+
+        // Add badges
+        BadgeService badgeService = new BadgeService(user);
+        badges = badgeService.getBadges(this);
+        for (Badge badge : badges) {
+            key = db.child("users").child(firebaseUser.getUid()).child("badges").push().getKey();
+            user.getBadges().put(key, badge);
+
+            if (BadgeService.hasThumbnail(badge.getType())) {
+                user.getBadges().get(key).setPhotoUrl(BadgeService.getBadgeThumbnail(db, BadgeService.getPath(badge)));
+            }
+            db.child("users").child(firebaseUser.getUid()).child("badges").child(key).setValue(badge);
+            xp += BadgeService.getBadgeXp(badge.getType());
+        }
+
+        // Update the user's xp / level
+        user.addXP(db, firebaseUser, xp);
     }
     //#endregion
-
-    /*
-    //USED FOR TESTING
-    public void setNumQuestions (int numberOfQuestions) { numQuestions = numberOfQuestions; }
-    public void setNumCorrect(int correct) { numCorrect = correct; }
- */
 }

@@ -2,6 +2,8 @@ package model.history;
 
 import android.util.Log;
 
+import com.google.firebase.database.Exclude;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,17 +14,12 @@ public class ArtistHistory {
     private int albumsTotal;
     private int albumsCount;
 
-    public ArtistHistory(Map<String, TopicHistory> albums, int albumsTotal, int albumsCount) {
-        this.albums = albums;
-        this.albumsTotal = albumsTotal;
-        this.albumsCount = albumsCount;
-    }
-
     public ArtistHistory() {}
 
     public Map<String, TopicHistory> getAlbums() { return albums; }
     public int getAlbumsTotal() { return albumsTotal; }
     public int getAlbumsCount() { return albumsCount; }
+    public void incrementAlbumsCount() { albumsCount++; }
 
     public void setAlbums(Map<String, TopicHistory> albums) { this.albums = albums; }
     public void setAlbumsTotal(int albumsTotal) { this.albumsTotal = albumsTotal; }
@@ -45,5 +42,14 @@ public class ArtistHistory {
             return false;
         }
         return albums.get(track.getAlbumId()).addTrackId(key, track.getId());
+    }
+
+    public int calculateTracksCount() {
+        int count = 0;
+        for (Map.Entry<String, TopicHistory> entry : albums.entrySet()) {
+            count += entry.getValue().getCount();
+        }
+
+        return count;
     }
 }

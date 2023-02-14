@@ -63,8 +63,7 @@ public class QuizResults extends AppCompatActivity {
                     //Testing Results Model
                     User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     Quiz quiz = (Quiz) extras.getSerializable("quiz");
-                    Results results = new Results(user, quiz);
-                    List<Badge> earnedBadges = results.getEarnedBadges(getBaseContext());
+                    Results results = quiz.end();
                     score = results.getScore();
                     accuracy = results.getAccuracy();
                     String scoreString = String.valueOf(score);
