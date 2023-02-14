@@ -1,5 +1,7 @@
 package com.example.musicquizplus.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Paint;
 import android.os.Bundle;
 
@@ -13,19 +15,42 @@ import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.musicquizplus.HistoryView;
 import com.example.musicquizplus.R;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Locale;
 import java.util.Objects;
 
 import model.GoogleSignIn;
+import model.User;
+import service.FirebaseService;
 
 public class HistoryFragment extends Fragment {
 
     private View popupSignUpView = null;
+    private Button googleSignInBtn;
+    private ListView listView;
+    private TextView userLevel;
+    private View noCurrentUser;
+    private TextView noUserHeader;
+    private ImageButton backToTop;
+    private View historyUserAvatar;
+    private GoogleSignIn googleSignIn;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference db;
+    private User user;
+    private ImageView userCustomAvatar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,25 +58,26 @@ public class HistoryFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
-        Button googleSignIn = view.findViewById(R.id.googleSignInButton);
-        ListView listView = view.findViewById(R.id.historyListView);
-        TextView userLevel = view.findViewById(R.id.userLevel);
-        View noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
-        TextView noUserHeader = view.findViewById(R.id.logged_out_header);
-        ImageButton backToTop = view.findViewById(R.id.backToTop);
-        View historyUserAvatar = view.findViewById(R.id.historyUserAvatar);
-
-        boolean guestAccount;
+        googleSignInBtn = view.findViewById(R.id.googleSignInButton);
+        listView = view.findViewById(R.id.historyListView);
+        userLevel = view.findViewById(R.id.userLevel);
+        noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
+        noUserHeader = view.findViewById(R.id.logged_out_header);
+        backToTop = view.findViewById(R.id.backToTop);
+        historyUserAvatar = view.findViewById(R.id.historyUserAvatar);
+        userCustomAvatar = view.findViewById(R.id.userCustomAvatar);
+        googleSignIn = new GoogleSignIn();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        db = FirebaseDatabase.getInstance().getReference();
 
         if(Objects.equals(userLevel.getText(), "GUEST"))
         {
-            guestAccount = true;
             listView.setVisibility(View.GONE);
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);
             noCurrentUser.setVisibility(View.VISIBLE);
 
-            googleSignIn.setOnClickListener(new View.OnClickListener() {
+            googleSignInBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     GoogleSignIn signInWGoogle = new GoogleSignIn();
@@ -61,15 +87,9 @@ public class HistoryFragment extends Fragment {
         }
         else
         {
-            guestAccount = false;
             listView.setVisibility(View.VISIBLE);
             noCurrentUser.setVisibility(View.GONE);
-        }
-
-        if(!guestAccount) {
-
             //TODO: retreive history from firebase and populate listview
-
         }
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -176,5 +196,39 @@ public class HistoryFragment extends Fragment {
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (firebaseUser != null)
+        {
+            new Thread(new Runnable() {
+                public void run() {
+                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                    if(user.getPhotoUrl() != null)
+                    {
+                        userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
+                    }
+                }
+            }).start();
+        }
+    }
+
+    private static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
