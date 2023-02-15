@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
@@ -21,21 +22,33 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.example.musicquizplus.ArtistsAdapter;
+import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.HistoryView;
+import com.example.musicquizplus.MainActivity;
+import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 import model.GoogleSignIn;
 import model.User;
+import model.item.Artist;
+import model.item.Playlist;
+import model.item.Track;
 import service.FirebaseService;
 
 public class HistoryFragment extends Fragment {
@@ -53,6 +66,9 @@ public class HistoryFragment extends Fragment {
     private DatabaseReference db;
     private User user;
     private ImageView userCustomAvatar;
+    HistoryAdapter adapter;
+    List<Track> list = new ArrayList<>();
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -93,7 +109,26 @@ public class HistoryFragment extends Fragment {
             historyRecyclerView.setVisibility(View.VISIBLE);
             noCurrentUser.setVisibility(View.GONE);
             //TODO: retreive history from firebase and populate listview
+
         }
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("tracks");
+        reference.limitToFirst(50).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren())
+                {
+                    Track track = dataSnapshot.getValue(Track.class);
+                    list.add(track);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
 
         historyRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -200,17 +235,36 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        updateUI();
+    }
 
+    public void updateUI() {
         if (firebaseUser != null)
         {
+
             new Thread(new Runnable() {
                 public void run() {
+
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                    if(user.getPhotoUrl() != null)
-                    {
-                        userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
-                    }
+
+                    getActivity().runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                            if(user.getPhotoUrl() != null)
+                            {
+                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
+                            }
+                            if (list.size() > 0) {
+                                adapter = new HistoryAdapter(list, getContext());
+                                historyRecyclerView.setAdapter(adapter);
+                                historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+                            }
+
+                        }
+                    });
                 }
             }).start();
         }
