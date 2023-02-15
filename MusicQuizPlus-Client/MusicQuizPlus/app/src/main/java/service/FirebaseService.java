@@ -150,8 +150,8 @@ public class FirebaseService {
                 gridView.setAdapter(playlistsAdapter);
                 break;
             case "Track":
-                historyAdapter = new HistoryAdapter(context, R.layout.gridview_contents, history);
-                gridView.setAdapter(historyAdapter);
+                //historyAdapter = new HistoryAdapter(context, R.layout.gridview_contents, history);
+                //gridView.setAdapter(historyAdapter);
                 break;
             default:
                 log.w(String.format("Unsupported class %s.", cls.getSimpleName()));
