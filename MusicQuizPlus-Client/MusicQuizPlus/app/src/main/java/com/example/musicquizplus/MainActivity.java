@@ -28,25 +28,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 
-import model.GettingStarted;
 import model.GoogleSignIn;
 
-import model.Question;
-import model.Quiz;
-import model.Results;
 import model.User;
 
-import model.item.Artist;
-import model.item.Playlist;
-import model.type.BadgeType;
-import service.BadgeService;
 import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.PlaylistService;
@@ -152,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     // If there is a database entry for the suer
                     if (user != null) {
+//                        user.initBadges(db);
+//                        log.d("done");
                         //#region DEBUG: Getting Started
 //                        GettingStarted gettingStarted = new GettingStarted(new User(), db);
 //                        gettingStarted.selectDecade(1980);

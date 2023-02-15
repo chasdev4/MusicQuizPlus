@@ -79,6 +79,8 @@ public class Badge {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+    public void setName(String name) { this.name = name; }
 }
 
 

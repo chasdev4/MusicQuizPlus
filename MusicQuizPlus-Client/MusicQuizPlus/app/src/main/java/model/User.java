@@ -748,15 +748,19 @@ public class User implements Serializable {
         }
     }
 
-    public void initBadgeThumbnails(DatabaseReference db) {
+    public void initBadges(DatabaseReference db) {
         for (Map.Entry<String, Badge> entry : badges.entrySet()) {
             if (BadgeService.hasThumbnail(entry.getValue().getType())) {
                 String child = null;
                 String photoUrl = null;
+                String name = null;
                 String path = BadgeService.getPath(entry.getValue());
 
-                photoUrl = BadgeService.getBadgeThumbnail(db, BadgeService.getPath(entry.getValue()));
+                photoUrl = BadgeService.getBadgeThumbnail(db, path);
                 entry.getValue().setPhotoUrl(photoUrl);
+
+                name = BadgeService.getBadgeName(db, path);
+                entry.getValue().setName(name);
             }
         }
     }

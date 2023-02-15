@@ -128,6 +128,31 @@ public class BadgeService {
         return url;
     }
 
+    public static String getBadgeName(DatabaseReference db, String path) {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        final String[] name = {null};
+
+        db.child(path + "/name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                name[0] = snapshot.getValue().toString();
+                countDownLatch.countDown();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return name[0];
+    }
+
     public static String getBadgeName(BadgeType type) { return BADGE_NAMES.get(type); }
     public static String getBadgeText(BadgeType type, String name, int number) {
         String text = BADGE_TEXTS.get(type);
