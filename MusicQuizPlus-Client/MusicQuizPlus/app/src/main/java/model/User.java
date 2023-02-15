@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 
 import model.history.ArtistHistory;
 import model.history.TopicHistory;
+import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -468,12 +469,11 @@ public class User implements Serializable {
                     badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_25;
                     break;
             }
+            if (badgeType != null) {
+                earnedBadges.add(new Badge(badgeType));
+            }
         } else if (playlistQuizCount % 50 == 0) {
-            badgeType = BadgeType.PLAYLIST_QUIZ_MILESTONE_50;
-        }
-
-        if (badgeType != null) {
-            earnedBadges.add(new Badge(badgeType, null));
+            earnedBadges.add(new Badge(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, playlistQuizCount));
         }
 
         db.child("users").child(uId).child("playlistQuizCount").setValue(playlistQuizCount);
@@ -523,7 +523,7 @@ public class User implements Serializable {
 
         if (playlistHistory.get(topicId).getCount() == playlistHistory.get(topicId).getTotal()) {
             playlistHistoryRef.child("trackIds").removeValue();
-            earnedBadges.add(new Badge(BadgeType.PLAYLIST_KNOWLEDGE, playlist.getId()));
+            earnedBadges.add(new Badge(BadgeType.PLAYLIST_KNOWLEDGE, playlist.getName()));
         }
     }
 
@@ -549,12 +549,12 @@ public class User implements Serializable {
                     badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_25;
                     break;
             }
+            if (badgeType != null) {
+                earnedBadges.add(new Badge(badgeType));
+            }
         } else if (artistQuizCount % 50 == 0) {
-            badgeType = BadgeType.ARTIST_QUIZ_MILESTONE_50;
-        }
 
-        if (badgeType != null) {
-            earnedBadges.add(new Badge(badgeType, null));
+            earnedBadges.add(new Badge(BadgeType.ARTIST_QUIZ_MILESTONE_50, artistQuizCount));
         }
 
         db.child("users").child(uId).child("artistQuizCount").setValue(artistQuizCount);
@@ -623,9 +623,11 @@ public class User implements Serializable {
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("total").setValue(albumsMapEntry.getValue().getTotal());
                     artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                     artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
+                    Album tempAlbum = artist.getAlbum(albumsMapEntry.getKey());
                     earnedBadges.add(new Badge(
-                            (artist.getAlbum(albumsMapEntry.getKey()).getType() == AlbumType.ALBUM) ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
-                            albumsMapEntry.getKey()));
+                            (tempAlbum.getType() == AlbumType.ALBUM)
+                                    ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
+                            albumsMapEntry.getKey(), tempAlbum.getName()));
                 }
 
             } else if (artistHistory.get(artist.getId()).getAlbums().get(albumsMapEntry.getKey()).getTotal()
@@ -645,90 +647,50 @@ public class User implements Serializable {
                         artistHistoryRef.child("albums").child(albumsMapEntry.getKey()).child("trackIds").removeValue();
                         artistHistoryRef.child("albumsCount").setValue(ServerValue.increment(1));
                         artistHistory.get(artist.getId()).incrementAlbumsCount();
+                        Album tempAlbum = artist.getAlbum(albumsMapEntry.getKey());
                         earnedBadges.add(new Badge(
-                                (artist.getAlbum(albumsMapEntry.getKey()).getType() == AlbumType.ALBUM) ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
-                                albumsMapEntry.getKey()));
+                                (tempAlbum.getType() == AlbumType.ALBUM) ? BadgeType.STUDIO_ALBUM_KNOWLEDGE : BadgeType.OTHER_ALBUM_KNOWLEDGE,
+                                albumsMapEntry.getKey(), tempAlbum.getName()));
                     }
 
             }
         }
         int newCount = artistHistory.get(artist.getId()).calculateTracksCount();
         if (oldCount < newCount) {
-            List<BadgeType> badgeTypes = new ArrayList<>();
 
             if (oldCount < 10) {
                 if (oldCount < 3 && newCount >= 3) {
-                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                    earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_1, artist.getId(), artist.getName(), 3));
                 }
                 if (oldCount < 3 && newCount >= 5
                         || (oldCount > 3 && oldCount < 5) && newCount >= 5) {
-                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                    earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_1, artist.getId(), artist.getName(), 5));
                 }
                 if (oldCount < 5 && newCount >= 10
                         || (oldCount > 3 && oldCount < 5) && newCount >= 10
                         || (oldCount > 5 && oldCount < 10) && newCount >= 10) {
-                    badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_1);
+                    earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_1, artist.getId(), artist.getName(), 10));
                 }
             }
-            else if (oldCount < 25 && newCount >= 25 || oldCount < 50 && newCount >= 50) {
-                badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_2);
+            else if (oldCount < 25 && newCount >= 25) {
+                earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_2, artist.getId(), artist.getName(), 25));
             }
-            else if (oldCount >= 50) {
+            else if (oldCount < 50 && newCount >= 50) {
+                earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_2, artist.getId(), artist.getName(), 50));
+            }
+            else if (oldCount > 50) {
                 for (int i = oldCount; i < newCount; i++) {
                     if (i % 50 == 0) {
-                        badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_3);
+                        earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_3, artist.getId(), artist.getName(), i));
+
                     }
                 }
 
             }
 
             if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
-                badgeTypes.add(BadgeType.ARTIST_KNOWLEDGE_4);
+                earnedBadges.add(new Badge(BadgeType.ARTIST_KNOWLEDGE_4, artist.getId(), artist.getName()));
             }
-
-            for (BadgeType type : badgeTypes) {
-                earnedBadges.add(new Badge(type, artist.getId()));
-            }
-
-//            int difference = newCount - oldCount;
-//
-//            badgeType = null;
-//            int i = 1;
-//
-//            if (artistHistory.get(artist.getId()).getAlbumsCount() == artistHistory.get(artist.getId()).getAlbumsTotal()) {
-//                badgeType = BadgeType.ARTIST_KNOWLEDGE_4;
-//            } else if (oldCount >= 50 && newCount % 50 == 0) {
-//                badgeType = BadgeType.ARTIST_KNOWLEDGE_3;
-//            } else if (newCount == 25 || newCount == 50) {
-//                badgeType = BadgeType.ARTIST_KNOWLEDGE_2;
-//            } else if (newCount <= 10) {
-//                i = 0;
-//                if (newCount == 10) {
-//                    if (oldCount < 3) {
-//                        i = 3;
-//                    } else if (oldCount < 5) {
-//                        i = 2;
-//                    }
-//                }
-//                else if (newCount == 5) {
-//                    if (oldCount < 3) {
-//                        i = 2;
-//                    }
-//                }
-//                else if (newCount == 3) {
-//                    i = 1;
-//                }
-//
-//                if (i != 0) {
-//                    badgeType = BadgeType.ARTIST_KNOWLEDGE_1;
-//                }
-//            }
-//
-//            if (badgeType != null) {
-//                for (int j = 0; j < i; j++) {
-//                    earnedBadges.add(new Badge(badgeType, artist.getId()));
-//                }
-//            }
         }
     }
 

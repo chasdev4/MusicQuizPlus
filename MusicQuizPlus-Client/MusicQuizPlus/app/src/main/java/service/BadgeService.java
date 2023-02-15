@@ -28,9 +28,6 @@ public class BadgeService {
     }
 
     //#region Accessors
-    public static String getBadgeName(BadgeType type) { return BADGE_NAMES.get(type); }
-    public static Integer getBadgeXp(BadgeType type) { return BADGE_XP.get(type); }
-
     public static String getPath(Badge value) {
         String path = "";
         switch (value.getType()) {
@@ -52,12 +49,9 @@ public class BadgeService {
 
         return path;
     }
-    //#endregion
-
     public List<Badge> getBadges(Quiz quiz) {
         return getQuizBadges(quiz);
     }
-
     private List<Badge> getQuizBadges(Quiz quiz) {
         List<Badge> badges = new ArrayList<>();
 
@@ -94,7 +88,6 @@ public class BadgeService {
 
         return badges;
     }
-
     public static String getBadgeThumbnail(DatabaseReference db, String path) {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         String url = null;
@@ -128,16 +121,60 @@ public class BadgeService {
                 temp = p;
             }
         }
-        url = temp.getUrl();
+        if (temp != null) {
+            url = temp.getUrl();
+        }
 
         return url;
     }
 
+    public static String getBadgeName(BadgeType type) { return BADGE_NAMES.get(type); }
+    public static String getBadgeText(BadgeType type, String name, int number) {
+        String text = BADGE_TEXTS.get(type);
+        if (isMilestone50(type)) {
+            return String.format(text, String.valueOf(number));
+        }
+        else if (hasThumbnail(type)) {
+            return String.format(text, name);
+        }
+        return text;
+    }
+    public static String getBadgeDescription(BadgeType type, String name, int number) {
+        String description = BADGE_DESCRIPTIONS.get(type);
+        if (isMilestone50(type)) {
+            return String.format(description, String.valueOf(number));
+        }
+        else if (hasTwoArguments(type)) {
+            return String.format(description, String.valueOf(number), name);
+        }
+        else if (hasOneArgument(type)) {
+            return String.format(description, name);
+        }
+        return description;
+    }
+    public static Integer getBadgeXp(BadgeType type) { return BADGE_XP.get(type); }
+    //#endregion
     public static boolean hasThumbnail(BadgeType type) {
         return type == BadgeType.PLAYLIST_KNOWLEDGE ||
                 type == BadgeType.ARTIST_KNOWLEDGE_1 ||
                 type == BadgeType.ARTIST_KNOWLEDGE_2 ||
                 type == BadgeType.ARTIST_KNOWLEDGE_3 ||
+                type == BadgeType.ARTIST_KNOWLEDGE_4 ||
+                type == BadgeType.STUDIO_ALBUM_KNOWLEDGE ||
+                type == BadgeType.OTHER_ALBUM_KNOWLEDGE;
+    }
+    private static boolean isMilestone50(BadgeType type) {
+        return type == BadgeType.ARTIST_QUIZ_MILESTONE_50 ||
+                type == BadgeType.PLAYLIST_QUIZ_MILESTONE_50;
+    }
+
+    private static boolean hasTwoArguments(BadgeType type) {
+        return type == BadgeType.ARTIST_KNOWLEDGE_1 ||
+                type == BadgeType.ARTIST_KNOWLEDGE_2 ||
+                type == BadgeType.ARTIST_KNOWLEDGE_3;
+    }
+    private static boolean hasOneArgument(BadgeType type) {
+        return type == BadgeType.PLAYLIST_KNOWLEDGE ||
                 type == BadgeType.ARTIST_KNOWLEDGE_4 ||
                 type == BadgeType.STUDIO_ALBUM_KNOWLEDGE ||
                 type == BadgeType.OTHER_ALBUM_KNOWLEDGE;
@@ -150,18 +187,18 @@ public class BadgeService {
             put(BadgeType.QUICK_REACTOR_2, "Quick Reactor II");
             put(BadgeType.QUICK_REACTOR_3, "Quick Reactor III");
             put(BadgeType.PERFECT_ACCURACY, "Perfect Accuracy");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_1, "Artist Quiz Milestone");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_3, "Artist Quiz Milestone");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_5, "Artist Quiz Milestone");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_10, "Artist Quiz Milestone");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_25, "Artist Quiz Milestone");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_50, "Artist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_1, "Playlist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_3, "Playlist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_5, "Playlist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_10, "Playlist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_25, "Playlist Quiz Milestone");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "Playlist Quiz Milestone");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_1, "Artist Quiz Milestone I");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_3, "Artist Quiz Milestone II");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_5, "Artist Quiz Milestone III");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_10, "Artist Quiz Milestone IV");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_25, "Artist Quiz Milestone V");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_50, "Artist Quiz Milestone VI");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_1, "Playlist Quiz Milestone I");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_3, "Playlist Quiz Milestone II");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_5, "Playlist Quiz Milestone III");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_10, "Playlist Quiz Milestone IV");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_25, "Playlist Quiz Milestone V");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "Playlist Quiz Milestone VI");
             put(BadgeType.PLAYLIST_KNOWLEDGE, "Knows Playlist");
             put(BadgeType.ARTIST_KNOWLEDGE_1, "Knows Artist");
             put(BadgeType.ARTIST_KNOWLEDGE_2, "Likes Artist");
@@ -190,8 +227,8 @@ public class BadgeService {
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_5, "5 Playlist Quizzes!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_10, "10 Playlist Quizzes!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_25, "25 Playlist Quizzes!");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "%s Playlist Quizzes!");
-            put(BadgeType.PLAYLIST_KNOWLEDGE, "Knows Playlist");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "%s Playlist Quizzes!"); // dynamic number
+            put(BadgeType.PLAYLIST_KNOWLEDGE, "Knows %s");          // playlist name
             put(BadgeType.ARTIST_KNOWLEDGE_1, "Knows %s");          // artist name
             put(BadgeType.ARTIST_KNOWLEDGE_2, "Likes %s");          // artist name
             put(BadgeType.ARTIST_KNOWLEDGE_3, "Loves %s");          // artist name
@@ -212,20 +249,20 @@ public class BadgeService {
             put(BadgeType.ARTIST_QUIZ_MILESTONE_5, "You've taken 5 artist quizzes!");
             put(BadgeType.ARTIST_QUIZ_MILESTONE_10, "You've taken 10 artist quizzes!");
             put(BadgeType.ARTIST_QUIZ_MILESTONE_25, "You've taken 25 artist quizzes!");
-            put(BadgeType.ARTIST_QUIZ_MILESTONE_50, "You've taken %s artist quizzes!");
+            put(BadgeType.ARTIST_QUIZ_MILESTONE_50, "You've taken %s artist quizzes!"); // dynamic number
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_1, "Keep playing to earn more badges!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_3, "Looks like you're getting the hang of it!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_5, "You've taken 5 artist quizzes!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_10, "You've taken 10 artist quizzes!");
             put(BadgeType.PLAYLIST_QUIZ_MILESTONE_25, "You've taken 25 artist quizzes!");
-            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "You've taken %s artist quizzes!");
+            put(BadgeType.PLAYLIST_QUIZ_MILESTONE_50, "You've taken %s artist quizzes!"); // dynamic number
             put(BadgeType.PLAYLIST_KNOWLEDGE, "You know all the songs in %s"); // Playlist name
             put(BadgeType.ARTIST_KNOWLEDGE_1, "You know %s %s songs!"); // number, artist name
             put(BadgeType.ARTIST_KNOWLEDGE_2, "You know %s %s songs!"); // number, artist name
             put(BadgeType.ARTIST_KNOWLEDGE_3, "You know %s %s songs!"); // number, artist name
             put(BadgeType.ARTIST_KNOWLEDGE_4, "You know every song by %s!"); // artist name
-            put(BadgeType.STUDIO_ALBUM_KNOWLEDGE, "You know every song on %"); // album name
-            put(BadgeType.OTHER_ALBUM_KNOWLEDGE, "You know every song on %"); // album name
+            put(BadgeType.STUDIO_ALBUM_KNOWLEDGE, "You know every song on %s"); // album name
+            put(BadgeType.OTHER_ALBUM_KNOWLEDGE, "You know every song on %s"); // album name
         }
     };
 

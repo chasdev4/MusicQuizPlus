@@ -28,16 +28,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 
 import model.GettingStarted;
 import model.GoogleSignIn;
 
+import model.Question;
+import model.Quiz;
+import model.Results;
 import model.User;
 
 import model.item.Artist;
+import model.item.Playlist;
+import model.type.BadgeType;
+import service.BadgeService;
 import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.PlaylistService;
@@ -139,8 +148,6 @@ public class MainActivity extends AppCompatActivity {
                     signInWithGoogleButton.setVisibility(View.GONE);
                     log.d(firebaseUser.getDisplayName());
                     log.d(firebaseUser.getEmail());
-
-
                     defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     // If there is a database entry for the suer
@@ -170,15 +177,15 @@ public class MainActivity extends AppCompatActivity {
 //                            i++;
 //                        }
 //
-//                        for (int p = 0; p < 10; p++) {
+//                        for (int p = 0; p < 100; p++) {
 //                            CountDownLatch countDownLatch = new CountDownLatch(1);
 //                            Random rnd = new Random();
 //                            Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
 //                            Question question = quiz.getFirstQuestion();
 //                            quiz.start();
 //                            i = 1;
+//                            log.d(String.valueOf(p));
 //                            while (question != null) {
-//                                log.d(String.valueOf(i));
 //                                i++;
 ////                                int index = ((rnd.nextInt(2) + 1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
 //                                int index = question.getAnswerIndex();
@@ -198,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
 //                                e.printStackTrace();
 //                            }
 //                            try {
-//                                Thread.sleep(200);
+//                                Thread.sleep(50);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }

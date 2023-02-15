@@ -2,6 +2,8 @@ package model;
 
 import com.google.firebase.database.Exclude;
 
+import org.checkerframework.checker.nullness.qual.NonNull;
+
 import model.type.BadgeType;
 
 /*
@@ -27,10 +29,34 @@ public class Badge {
     private BadgeType type;
     private String id;
     private String photoUrl;
+    private String name;
+    private int number;
 
-    public Badge(BadgeType type, String id) {
+    public Badge(@NonNull BadgeType type) {
+        this.type = type;
+    }
+
+    public Badge(@NonNull BadgeType type, String id) {
         this.type = type;
         this.id = id;
+    }
+
+    public Badge(@NonNull BadgeType type, String id, String name) {
+        this.type = type;
+        this.id = id;
+        this.name = name;
+    }
+
+    public Badge(@NonNull BadgeType type, int number) {
+        this.type = type;
+        this.number = number;
+    }
+
+    public Badge(@NonNull BadgeType type, String id, String name, int number) {
+        this.type = type;
+        this.id = id;
+        this.name = name;
+        this.number = number;
     }
 
     public Badge() {}
@@ -47,7 +73,9 @@ public class Badge {
     public String getPhotoUrl() {
         return photoUrl;
     }
-
+    @Exclude
+    public String getName() { return name; }
+    public int getNumber() { return number; }
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }

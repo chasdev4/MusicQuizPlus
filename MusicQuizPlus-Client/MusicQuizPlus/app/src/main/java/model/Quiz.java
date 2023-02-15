@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -925,7 +927,9 @@ public class Quiz implements Serializable {
                 user.getBadges().get(key).setPhotoUrl(BadgeService.getBadgeThumbnail(db, BadgeService.getPath(badge)));
             }
             db.child("users").child(firebaseUser.getUid()).child("badges").child(key).setValue(badge);
+
             xp += BadgeService.getBadgeXp(badge.getType());
+
         }
 
         // Update the user's xp / level
