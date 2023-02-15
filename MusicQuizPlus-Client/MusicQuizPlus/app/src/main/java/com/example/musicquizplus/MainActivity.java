@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
+import model.GettingStarted;
 import model.GoogleSignIn;
 
 import model.PhotoUrl;
@@ -155,6 +156,11 @@ public class MainActivity extends AppCompatActivity {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     // If there is a database entry for the suer
                     if (user != null) {
+                        //#region DEBUG: Getting Started
+                        GettingStarted gettingStarted = new GettingStarted(new User(), db);
+                        Map<Integer, List<Artist>> art = gettingStarted.getArtists();
+                        log.d("done");
+
                         //#region DEBUG: Playlist Quiz Sandbox
 //                        user.initBadgeThumbnails(db);
 //                        user.initCollections(db);
@@ -207,67 +213,67 @@ public class MainActivity extends AppCompatActivity {
                         //#endregion
 
                         //#region DEBUG: Artist Quiz Sandbox
-                        user.initCollections(db);
-                        CountDownLatch countDownLatch = new CountDownLatch(1);
-                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
-                        artist.initCollections(db, user);
-                        countDownLatch.countDown();
-                        try {
-                            countDownLatch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        countDownLatch = new CountDownLatch(1);
-                        artist.initTracks(db);
-                        countDownLatch.countDown();
-                        try {
-                            countDownLatch.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-
-                        for (int p = 0; p < 50; p++) {
-                            log.d(String.valueOf(p+1));
-                            countDownLatch = new CountDownLatch(1);
-                            int i = 1;
-                            Random rnd = new Random();
-                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
-                            Question question = quiz.getFirstQuestion();
-                            quiz.start();
-                            while (question != null) {
-                                i++;
-                                CountDownLatch cdl = new CountDownLatch(1);
-//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
-                                int index = question.getAnswerIndex();
-                                try {
-                                    Thread.sleep(rnd.nextInt(1) * 1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                question = quiz.nextQuestion(index);
-                                cdl.countDown();
-
-                                try {
-                                    cdl.await();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            Results results = quiz.end();
-                            countDownLatch.countDown();
-
-                            try {
-                                countDownLatch.await();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                                                        try {
-                                Thread.sleep(200);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        log.d("Done.");
+//                        user.initCollections(db);
+//                        CountDownLatch countDownLatch = new CountDownLatch(1);
+//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        artist.initCollections(db, user);
+//                        countDownLatch.countDown();
+//                        try {
+//                            countDownLatch.await();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//                        countDownLatch = new CountDownLatch(1);
+//                        artist.initTracks(db);
+//                        countDownLatch.countDown();
+//                        try {
+//                            countDownLatch.await();
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        for (int p = 0; p < 50; p++) {
+//                            log.d(String.valueOf(p+1));
+//                            countDownLatch = new CountDownLatch(1);
+//                            int i = 1;
+//                            Random rnd = new Random();
+//                            Quiz quiz = new Quiz(artist, user, db, firebaseUser);
+//                            Question question = quiz.getFirstQuestion();
+//                            quiz.start();
+//                            while (question != null) {
+//                                i++;
+//                                CountDownLatch cdl = new CountDownLatch(1);
+////                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                                int index = question.getAnswerIndex();
+//                                try {
+//                                    Thread.sleep(rnd.nextInt(1) * 1000);
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                                question = quiz.nextQuestion(index);
+//                                cdl.countDown();
+//
+//                                try {
+//                                    cdl.await();
+//                                } catch (InterruptedException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                            Results results = quiz.end();
+//                            countDownLatch.countDown();
+//
+//                            try {
+//                                countDownLatch.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                                                        try {
+//                                Thread.sleep(200);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                        log.d("Done.");
                         //#endregion
 
                         //#region TESTING BADGES
@@ -314,31 +320,32 @@ public class MainActivity extends AppCompatActivity {
 
                         //#region DEBUG: Uncomment me to test heartAlbum
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-//                                        "Inna",
+//                                new Album("spotify:album:6vwexbVstZKBPZS0qjSYtV",
+//                                        "Keep Moving",
 //                                        new ArrayList<PhotoUrl>() {{
-//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-//                                                    640, 640));
+//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e02607b0acd32f9615ad7ea3cdc",
+//                                                    300, 300));
 //                                        }},
-//                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
+//                                        "spotify:artist:4AYkFtEBnNnGuoo8HaHErd",
 //                                        new HashMap<String, String>() {
 //                                            {
-//                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
+//                                                put("spotify:artist:4AYkFtEBnNnGuoo8HaHErd", "Madness");
 //                                            }
 //                                        },
 //                                        AlbumType.ALBUM, new ArrayList<String>(),
 //                                        false, 0, false,
-//                                        "2015"), spotifyService);
+//                                        "1984"), spotifyService);
 //
 //                        user.initCollections(db);
 //
-//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        Artist artist = user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd");
 //                        artist.initCollections(db, user);
 //
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
+//                                user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd").getAlbums().get(1), spotifyService);
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
+//                                user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd").getAlbums().get(2), spotifyService);
+//                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test unheartAlbum

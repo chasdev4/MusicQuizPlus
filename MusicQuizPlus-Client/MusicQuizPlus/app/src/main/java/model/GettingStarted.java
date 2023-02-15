@@ -13,12 +13,18 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
+import org.checkerframework.checker.units.qual.C;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import model.item.Album;
 import model.item.Artist;
@@ -43,9 +49,11 @@ Sort() - this method will move artists from selected decades to the front of the
 
 public class GettingStarted {
 
+    private Map<Integer, List<Artist>> artists;
+
     private final int maxYear;
     private int minYear;
-    private Integer[] decadesToSelect;
+    public Integer[] decadesToSelect;
     private List<Integer> selectedDecades;
     private List<String> selectedArtists;
     private List<Artist> artistsToSelect;
@@ -53,14 +61,7 @@ public class GettingStarted {
     private Difficulty currentDifficulty;
     private boolean areAllSelected;
 
-    public GettingStarted(User user)
-    {
-        this.maxYear = (short) Calendar.getInstance().get(Calendar.YEAR);
-        this.selectedArtists = new ArrayList<>();
-        this.selectedDecades = new ArrayList<>();
-        this.user = user;
-    }
-
+    //#region Constants
     public static final List<String> DIFFICULTY_NAMES = new ArrayList<>() {
         {
             add("Easy");
@@ -68,7 +69,6 @@ public class GettingStarted {
             add("Hard");
         }
     };
-
     public static final List<String> DIFFICULTY_DESCRIPTIONS = new ArrayList<>() {
         {
             add("On easy difficulty, 100% of the least popular tracks will be filtered out.");
@@ -76,6 +76,62 @@ public class GettingStarted {
             add("On hard difficulty, 0% of the least popular tracks will be filtered out.");
         }
     };
+    private final static String TAG = "GettingStarted.java";
+    //#endregion
+
+    public GettingStarted(User user, DatabaseReference db)
+    {
+        this.maxYear = (short) Calendar.getInstance().get(Calendar.YEAR);
+        this.selectedArtists = new ArrayList<>();
+        this.selectedDecades = new ArrayList<>();
+        this.artistsToSelect = new ArrayList<>();
+        this.user = user;
+        init(db);
+    }
+
+    private void init(DatabaseReference db) {
+        retrieveArtists(db);
+    }
+
+    public Map<Integer, List<Artist>> getArtists() {
+        return artists;
+    }
+
+    private void retrieveArtists(DatabaseReference db) {
+        LogUtil log = new LogUtil(TAG, "retrieveArtists");
+        artists = new HashMap<>();
+        CountDownLatch cdl = new CountDownLatch(1);
+        Query query = db.child("artists").orderByChild("followers").limitToFirst(50);
+        query.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren())
+                {
+                    Artist artist = (Artist) snapshot.getValue(Artist.class);
+                    for (Integer decade : artist.getDecades()) {
+                        if (artists.size() == 0 || artists.get(decade) == null || artists.get(decade).size() == 0) {
+                            artists.put(decade, new ArrayList<>());
+                        }
+                        artists.get(decade).add(artist);
+                    }
+                }
+                cdl.countDown();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                log.w(String.format("Unable to obtain the 50 artists: %s", error));
+            }
+        });
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public void createDecades() {
         int arraySize = ((maxYear - minYear) / 10) + 1;
@@ -164,15 +220,17 @@ public class GettingStarted {
     {
         final String TAG = "GettingStarted.java";
         LogUtil log = new LogUtil(TAG, "getArtists");
-
-        db.child("artists").limitToFirst(50).addListenerForSingleValueEvent(new ValueEventListener() {
+        CountDownLatch cdl = new CountDownLatch(1);
+        Query query = db.child("artists").orderByChild("followers").limitToFirst(50);
+        query.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren())
                 {
-                    artistsToSelect.add((Artist) snapshot.getValue());
+                    artistsToSelect.add((Artist) snapshot.getValue(Artist.class));
                 }
+                cdl.countDown();
             }
 
             @Override
@@ -180,6 +238,11 @@ public class GettingStarted {
                 log.w(String.format("Unable to obtain the 50 artists: %s", error));
             }
         });
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         return sort();
     }

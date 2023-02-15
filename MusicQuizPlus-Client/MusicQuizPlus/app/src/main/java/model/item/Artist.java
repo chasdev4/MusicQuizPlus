@@ -1,5 +1,7 @@
 package model.item;
 
+import android.util.Log;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
@@ -37,12 +39,12 @@ public class Artist implements Serializable {
     private List<String> compilationIds;
     private int followers;
     private boolean followersKnown;
+    private List<Integer> decades;
 
     // Exlcuded from database
     private List<Album> singles;
     private List<Album> albums;
     private List<Album> compilations;
-    private Map<Integer, Integer> decadesMap = new HashMap<>();
     private List<Integer> sortedDecades;
 
     private static String TAG = "Artist.java";
@@ -92,9 +94,7 @@ public class Artist implements Serializable {
         return followersKnown;
     }
     public List<Integer> getSortedDecades() { return sortedDecades; }
-
-    @Exclude
-    public Map<Integer, Integer> getDecadesMap() { return decadesMap; }
+    public List<Integer> getDecades() { return decades; }
     @Exclude
     public List<Album> getSingles() { return singles; }
     @Exclude
@@ -277,6 +277,7 @@ public class Artist implements Serializable {
         };
 
         // Loop thru to extract each album's info and add to it's collection
+        Map<Integer, Integer> decadesMap = new HashMap<>();
         for (int k = 0; k < discographyCollections.size(); k++) {
             jsonArray = discography.getAsJsonObject(discographyCollections.get(k).toString())
                     .getAsJsonArray("items");
@@ -285,6 +286,22 @@ public class Artist implements Serializable {
                 Album album = extractAlbum(jsonArray.get(i).getAsJsonObject()
                         .getAsJsonObject("releases").getAsJsonArray("items").get(0)
                         .getAsJsonObject());
+
+                int year = Integer.parseInt(album.getYear());
+                int decade = (year/10)*10;
+                if (year % 10 == 9) {
+                    decade += 10;
+                }
+
+                if(decadesMap.containsKey(decade)) {
+                    int val = decadesMap.get(decade);
+                    val++;
+                    decadesMap.put(decade, val);
+                }
+                else {
+                    decadesMap.put(decade, 1);
+                }
+
                 switch (album.getType()) {
                     case UNINITIALIZED:
                     case ALBUM:
@@ -304,52 +321,85 @@ public class Artist implements Serializable {
             }
         }
 
-        JsonArray jArray = discography.getAsJsonObject("albums").getAsJsonArray("items");
-        for(int i = 0; i < jArray.size(); i++)
-        {
-            JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
-            int year = date.get("year").getAsInt();
-            int decade = (year/10)*10;
-            if(decadesMap.containsKey(decade))
-            {
-                int val = decadesMap.get(decade);
-                val++;
-                decadesMap.put(decade, val);
+        decades = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
+            if (decades.size() == 0) {
+                decades.add(d.getKey());
             }
-            else
-            {
-                decadesMap.put(decade, 1);
+            else {
+                boolean added = false;
+                int index = decades.size();
+                for (int i = 0; i < decades.size(); i++) {
+                    if (i == 3) {
+                        Log.d(TAG, "extractArtist: ");
+                    }
+                    if (d.getValue() < decadesMap.get(decades.get(i))) {
+                        index = decades.indexOf(decades.get(i));
+                        break;
+                    }
+                }
+                decades.add(decades.size() - index, d.getKey());
             }
         }
+        Log.d(TAG, "extractArtist: ");
 
-        decadesMapToSortedList();
+
+//
+//
+//
+//
+//        Map<Integer, Integer> years = new HashMap<>();
+//        JsonArray jArray = discography.getAsJsonObject("albums").getAsJsonArray("items");
+//        for(int i = 0; i < jArray.size(); i++)
+//        {
+//            JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
+//            int year = date.get("year").getAsInt();
+//
+//            int decade = (year/10)*10;
+//            if(decadesMap.containsKey(decade))
+//            {
+//                int val = decades.get(decade);
+//                val++;
+//                decadesMap.put(decade, val);
+//            }
+//            else
+//            {
+//                decadesMap.put(decade, 1);
+//            }
+//        }
+//
+//        for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
+//
+//        }
+//
+//        decadesMapToSortedList();
 
     }
 
-    private void addSmallestToList()
-    {
-        int minVal = 1000000;
-        int minKey = 0;
+//    private void addSmallestToList()
+//    {
+//        int minVal = 1000000;
+//        int minKey = 0;
+//
+//        for(Map.Entry<Integer, Integer> entry : decades.entrySet())
+//        {
+//            if(entry.getValue() < minVal)
+//            {
+//                minVal = entry.getValue();
+//                minKey = entry.getKey();
+//            }
+//        }
+//        sortedDecades.add(0, minKey);
+//    }
 
-        for(Map.Entry<Integer, Integer> entry : decadesMap.entrySet())
-        {
-            if(entry.getValue() < minVal)
-            {
-                minVal = entry.getValue();
-                minKey = entry.getKey();
-            }
-        }
-        sortedDecades.add(0, minKey);
-    }
-
-    private void decadesMapToSortedList() {
-        int size = decadesMap.size();
-        for(int i = 0; i < size; i++)
-        {
-            addSmallestToList();
-            decadesMap.remove(sortedDecades.get(0));
-        }
-    }
+//    private void decadesMapToSortedList() {
+//        int size = decades.size();
+//        for(int i = 0; i < size; i++)
+//        {
+//            addSmallestToList();
+//            decades.remove(sortedDecades.get(0));
+//        }
+//    }
 
     // Extract information from the album JsonObject created in extractArtist
     private Album extractAlbum(JsonObject album) {
