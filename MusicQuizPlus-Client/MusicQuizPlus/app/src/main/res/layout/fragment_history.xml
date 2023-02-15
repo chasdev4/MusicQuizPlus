@@ -87,8 +87,8 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@+id/guideline" />
 
-    <ListView
-        android:id="@+id/historyListView"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/historyRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:visibility="visible"

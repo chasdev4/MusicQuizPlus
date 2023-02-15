@@ -5,8 +5,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Paint;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,7 +42,7 @@ public class HistoryFragment extends Fragment {
 
     private View popupSignUpView = null;
     private Button googleSignInBtn;
-    private ListView listView;
+    private RecyclerView historyRecyclerView;
     private TextView userLevel;
     private View noCurrentUser;
     private TextView noUserHeader;
@@ -59,7 +61,7 @@ public class HistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
         googleSignInBtn = view.findViewById(R.id.googleSignInButton);
-        listView = view.findViewById(R.id.historyListView);
+        historyRecyclerView = view.findViewById(R.id.historyRecyclerView);
         userLevel = view.findViewById(R.id.userLevel);
         noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
         noUserHeader = view.findViewById(R.id.logged_out_header);
@@ -70,10 +72,10 @@ public class HistoryFragment extends Fragment {
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
-        if(firebaseUser != null)
+        if(firebaseUser == null)
         {
             userLevel.setText(getString(R.string.guest));
-            listView.setVisibility(View.GONE);
+            historyRecyclerView.setVisibility(View.GONE);
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);
             noCurrentUser.setVisibility(View.VISIBLE);
@@ -88,21 +90,17 @@ public class HistoryFragment extends Fragment {
         }
         else
         {
-            listView.setVisibility(View.VISIBLE);
+            historyRecyclerView.setVisibility(View.VISIBLE);
             noCurrentUser.setVisibility(View.GONE);
             //TODO: retreive history from firebase and populate listview
         }
 
-        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+        historyRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView absListView, int i) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
 
-            }
-
-            @Override
-            public void onScroll(AbsListView absListView, int i, int i1, int i2) {
-
-                int scroll = listView.getFirstVisiblePosition();
+                int scroll = historyRecyclerView.getScrollState();
 
                 if(scroll > 0)
                 {
@@ -119,7 +117,7 @@ public class HistoryFragment extends Fragment {
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                listView.setSelection(0);
+                historyRecyclerView.scrollToPosition(0);
                 backToTop.setVisibility(View.GONE);
             }
         });
