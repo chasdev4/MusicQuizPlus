@@ -1,6 +1,97 @@
 package com.example.musicquizplus;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import model.item.Album;
+import model.item.Track;
+import service.FirebaseService;
+
+public class HistoryAdapter extends RecyclerView.Adapter<historyViewHolder> {
+
+    List<Track> list = new ArrayList<>();
+
+    Context context;
+    //ClickListiner listiner;
+
+    //public ImageGalleryAdapter2(List<Track> list, Context context,ClickListiner listiner)
+    public HistoryAdapter(List<Track> list, Context context)
+    {
+        this.list = list;
+        this.context = context;
+        //this.listiner = listiner;
+    }
+
+    @Override
+    public historyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+    {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        View photoView = inflater.inflate(R.layout.playlist_quiz_listview_contents, parent, false);
+
+        historyViewHolder viewHolder = new historyViewHolder(photoView);
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(final historyViewHolder viewHolder, final int position)
+    {
+        //final index = viewHolder.getAdapterPosition();
+        viewHolder.trackTitle.setText(list.get(position).getName());
+        viewHolder.trackArtist.setText(list.get(position).getArtistName());
+        viewHolder.trackAlbum.setText(list.get(position).getAlbumName());
+        viewHolder.trackYear.setText(list.get(position).getYear());
+        //Album tracksAlbum = FirebaseService.checkDatabase(FirebaseDatabase.getInstance().getReference(), "albums", list.get(position).getAlbumId(), Album.class);
+        //Uri uri = Uri.parse(tracksAlbum.getPhotoUrl().get(0).getUrl());
+        //viewHolder.albumCover.setImageURI(uri);
+
+/*
+        viewHolder.view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                //listiner.click(index);
+            }
+        });
+ */
+    }
+
+    @Override
+    public int getItemCount()
+    {
+        return list.size();
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView)
+    {
+        super.onAttachedToRecyclerView(recyclerView);
+    }
+}
+
+
+
+
+
+
+/*
+import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +143,6 @@ public class HistoryAdapter extends ArrayAdapter<Track> {
         // get the item using the position param
         Track item = tracks.get(position);
 
-        // TODO: Get Image from Album
         //String url = item.getPhotoUrl().get(0).getUrl();
         String title = item.getName();
 
@@ -67,3 +157,5 @@ public class HistoryAdapter extends ArrayAdapter<Track> {
     }
 
 }
+
+ */
