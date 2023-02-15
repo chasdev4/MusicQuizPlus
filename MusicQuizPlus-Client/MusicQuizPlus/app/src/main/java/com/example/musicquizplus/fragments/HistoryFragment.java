@@ -70,8 +70,9 @@ public class HistoryFragment extends Fragment {
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
-        if(Objects.equals(userLevel.getText(), "GUEST"))
+        if(firebaseUser != null)
         {
+            userLevel.setText(getString(R.string.guest));
             listView.setVisibility(View.GONE);
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);

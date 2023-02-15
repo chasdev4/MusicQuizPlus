@@ -66,6 +66,7 @@ public class ArtistsFragment extends Fragment {
 
         if(firebaseUser == null)
         {
+            userLevel.setText(getString(R.string.guest));
             gridView.setVisibility(View.GONE);
             noUser.setVisibility(View.VISIBLE);
             googleSignInBtn.setOnClickListener(new View.OnClickListener() {

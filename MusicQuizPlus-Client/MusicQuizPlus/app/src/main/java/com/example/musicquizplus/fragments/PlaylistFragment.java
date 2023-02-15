@@ -77,6 +77,7 @@ public class PlaylistFragment extends Fragment {
         {
             //TODO: Populate GridView with Default Playlists
             FirebaseService.retrieveData(gridView, getContext(), "playlists", Playlist.class);
+            userLevel.setText(getString(R.string.guest));
         }
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
