@@ -1,7 +1,5 @@
 package model.item;
 
-import android.util.Log;
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
@@ -12,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -197,6 +196,21 @@ public class Artist implements Serializable {
         }
         return null;
     }
+
+    public String getRandomId() {
+        Random rnd = new Random();
+        if (compilationIds.size() > 0) {
+            return compilationIds.get(rnd.nextInt(compilationIds.size()));
+        }
+        else if (albumIds.size() > 0) {
+            return albumIds.get(rnd.nextInt(albumIds.size()));
+        }
+        else if (singleIds.size() > 0) {
+            return singleIds.get(rnd.nextInt(singleIds.size()));
+        }
+
+        return null;
+    }
     //#endregion
 
     //#region Mutators
@@ -327,12 +341,8 @@ public class Artist implements Serializable {
                 decades.add(d.getKey());
             }
             else {
-                boolean added = false;
                 int index = decades.size();
                 for (int i = 0; i < decades.size(); i++) {
-                    if (i == 3) {
-                        Log.d(TAG, "extractArtist: ");
-                    }
                     if (d.getValue() < decadesMap.get(decades.get(i))) {
                         index = decades.indexOf(decades.get(i));
                         break;
@@ -341,7 +351,6 @@ public class Artist implements Serializable {
                 decades.add(decades.size() - index, d.getKey());
             }
         }
-        Log.d(TAG, "extractArtist: ");
 
 
 //

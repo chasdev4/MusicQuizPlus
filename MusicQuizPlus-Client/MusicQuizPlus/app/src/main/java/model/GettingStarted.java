@@ -2,13 +2,10 @@ package model;
 
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.example.musicquizplus.ParentOfFragments;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -16,11 +13,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import org.checkerframework.checker.units.qual.C;
-
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,38 +22,22 @@ import java.util.concurrent.CountDownLatch;
 
 import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
-import model.item.Track;
-import model.type.Difficulty;
 import service.FirebaseService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 import utils.LogUtil;
-
-/*
-
-CreateDecades() - create the list of decades based off min and max year
-Add() - adds user selected decades or artists to their respective lists
-Remove() - removes from user selected lists
-SetDifficulty() - update difficulty selection
-Finished() - send the selected artists to the database, save difficulty setting, navigate to playlists
-SelectAll() - selects/unselects all decades
-GetArtists() - get suggested artists from our database, derive the min and max era from each object
-Sort() - this method will move artists from selected decades to the front of the list.
-
- */
 
 public class GettingStarted {
 
-    private Map<Integer, List<Artist>> artists;
-
-    private final int maxYear;
-    private int minYear;
-    public Integer[] decadesToSelect;
-    private List<Integer> selectedDecades;
-    private List<String> selectedArtists;
-    private List<Artist> artistsToSelect;
+    //#region Members
+    private Map<Integer, List<Artist>> decadeArtistMap;
+    private Map<Integer, Boolean> selectedDecades;
+    private Map<String, Artist> artists;
+    private Map<String, Artist> selectedArtists;
     private User user;
-    private Difficulty currentDifficulty;
     private boolean areAllSelected;
+    private int numDecadesSelected;
+    //#endregion
 
     //#region Constants
     public static final List<String> DIFFICULTY_NAMES = new ArrayList<>() {
@@ -71,49 +49,87 @@ public class GettingStarted {
     };
     public static final List<String> DIFFICULTY_DESCRIPTIONS = new ArrayList<>() {
         {
-            add("On easy difficulty, 100% of the least popular tracks will be filtered out.");
-            add("On medium difficulty, 50% of the least popular tracks will be filtered out.");
+            add("On easy difficulty, 100% of the least popular tracks will be filtered out first.");
+            add("On medium difficulty, 50% of the least popular tracks will be filtered out first.");
             add("On hard difficulty, 0% of the least popular tracks will be filtered out.");
         }
     };
     private final static String TAG = "GettingStarted.java";
     //#endregion
 
-    public GettingStarted(User user, DatabaseReference db)
-    {
-        this.maxYear = (short) Calendar.getInstance().get(Calendar.YEAR);
-        this.selectedArtists = new ArrayList<>();
-        this.selectedDecades = new ArrayList<>();
-        this.artistsToSelect = new ArrayList<>();
+    public GettingStarted(User user, DatabaseReference db) {
         this.user = user;
+        decadeArtistMap = new HashMap<>();
+        selectedDecades = new HashMap<>();
+        selectedArtists = new HashMap<>();
         init(db);
     }
 
-    private void init(DatabaseReference db) {
-        retrieveArtists(db);
+    //#region Accessors
+    // Call after decades are selected
+    public Map<String, Artist> getArtists() {
+        artists = new HashMap<>();
+        for (Map.Entry<Integer, List<Artist>> entry : this.decadeArtistMap.entrySet()) {
+            if (selectedDecades.get(entry.getKey()) || numDecadesSelected == 0) {
+                for (Artist artist : entry.getValue()) {
+                    if (!artists.containsValue(artist)) {
+                        artists.put(artist.getId(), artist);
+                    }
+                }
+            }
+        }
+
+        return artists;
     }
 
-    public Map<Integer, List<Artist>> getArtists() {
-        return artists;
+    // Populate a list of available decades
+    public List<Integer> getDecades() {
+        List<Integer> decadesList = new ArrayList<>();
+
+        for (Map.Entry<Integer, List<Artist>> entry : decadeArtistMap.entrySet()) {
+            if (decadesList.size() == 0) {
+                decadesList.add(entry.getKey());
+            } else {
+
+                int index = decadesList.size();
+                for (int i = 0; i < decadesList.size(); i++) {
+                    if (entry.getKey() < decadesList.get(i)) {
+                        index = decadesList.indexOf(decadesList.get(i));
+                        break;
+                    }
+                }
+                decadesList.add(index, entry.getKey());
+            }
+        }
+        return decadesList;
+    }
+    //#endregion
+
+    //#region Data initialization
+    private void init(DatabaseReference db) {
+        retrieveArtists(db);
+        for (Map.Entry<Integer, List<Artist>> entry : decadeArtistMap.entrySet()) {
+            selectedDecades.put(entry.getKey(), false);
+        }
+        numDecadesSelected = 0;
     }
 
     private void retrieveArtists(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "retrieveArtists");
-        artists = new HashMap<>();
+        decadeArtistMap = new HashMap<>();
         CountDownLatch cdl = new CountDownLatch(1);
         Query query = db.child("artists").orderByChild("followers").limitToFirst(50);
         query.addValueEventListener(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren())
-                {
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Artist artist = (Artist) snapshot.getValue(Artist.class);
                     for (Integer decade : artist.getDecades()) {
-                        if (artists.size() == 0 || artists.get(decade) == null || artists.get(decade).size() == 0) {
-                            artists.put(decade, new ArrayList<>());
+                        if (decadeArtistMap.size() == 0 || decadeArtistMap.get(decade) == null || decadeArtistMap.get(decade).size() == 0) {
+                            decadeArtistMap.put(decade, new ArrayList<>());
                         }
-                        artists.get(decade).add(artist);
+                        decadeArtistMap.get(decade).add(artist);
                     }
                 }
                 cdl.countDown();
@@ -130,175 +146,65 @@ public class GettingStarted {
             e.printStackTrace();
         }
     }
+    //#endregion
 
-
-
-    public void createDecades() {
-        int arraySize = ((maxYear - minYear) / 10) + 1;
-        decadesToSelect = new Integer[arraySize];
-        int year = minYear;
-        int index = 0;
-
-        while (year <= maxYear)
-        {
-            decadesToSelect[index] = year;
-            year += 10;
-            index++;
+    //#region Methods
+    public void selectDecade(int decade) {
+        boolean selected = selectedDecades.get(decade);
+        if (selected) {
+            numDecadesSelected--;
+        } else {
+            numDecadesSelected++;
         }
+
+        selectedDecades.put(decade, !selected);
+        updateSelectAll();
     }
 
-    public void addToList(Object itemToAdd, String listToAddTo)
-    {
-        switch (listToAddTo)
-        {
-            case "decadesList":
-                selectedDecades.add((Integer) itemToAdd);
-            case "artistsList":
-                selectedArtists.add((String) itemToAdd);
-        }
-    }
+    public void selectAllDecades() {
+        Map<Integer, Boolean> selected = new HashMap<>();
+        if (areAllSelected) {
+            for (Map.Entry<Integer, Boolean> entry : selectedDecades.entrySet()) {
+                selected.put(entry.getKey(), false);
+            }
+            selectedDecades = selected;
+            numDecadesSelected = 0;
 
-    public void removeFromList(Object itemToRemove, String listToRemoveFrom)
-    {
-        switch (listToRemoveFrom)
-        {
-            case "decadesList":
-                selectedDecades.remove((Integer) itemToRemove);
-            case "artistsList":
-                selectedArtists.remove((String) itemToRemove);
-        }
-    }
-
-    public void selectAllDecades()
-    {
-        if(areAllSelected)
-        {
-            selectedDecades.clear();
-        }
-        else
-        {
-            selectedDecades.clear();
-            selectedDecades.addAll(Arrays.asList(decadesToSelect));
+        } else {
+            for (Map.Entry<Integer, Boolean> entry : selectedDecades.entrySet()) {
+                selected.put(entry.getKey(), true);
+            }
+            selectedDecades = selected;
+            numDecadesSelected = decadeArtistMap.size();
         }
         areAllSelected = !areAllSelected;
     }
 
-    public Intent finished(DatabaseReference db, FirebaseUser firebaseUser, Context context)
-    {
-        //add the selected artists to the user
-        for (String artist : selectedArtists) {
-            String key = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-            user.addArtistId(key, artist);
+    private void updateSelectAll() {
+        if (numDecadesSelected == decadeArtistMap.size() && !areAllSelected) {
+            areAllSelected = true;
+        } else if (numDecadesSelected < decadeArtistMap.size() && areAllSelected) {
+            areAllSelected = false;
         }
+    }
 
-        //send the selected artists to the database, save difficulty setting to database
-        updateUser(db, firebaseUser, context);
+    public void selectArtist(String artistId) {
+        if (selectedArtists.containsKey(artistId)) {
+            selectedArtists.remove(artistId);
+        } else {
+            selectedArtists.put(artistId, artists.get(artistId));
+        }
+    }
 
-        // navigate to playlists
+    public Intent finished(DatabaseReference db, FirebaseUser firebaseUser, SpotifyService spotifyService, Context context) {
+        //add the selected artists to the user
+        DatabaseReference userRef = db.child("users").child(firebaseUser.getUid());
+        for (Map.Entry<String, Artist> artist : selectedArtists.entrySet()) {
+            String randomId = artist.getValue().getRandomId();
+            Album album = FirebaseService.checkDatabase(db, "albums", randomId, Album.class);
+            AlbumService.heart(user, firebaseUser, db, album, spotifyService);
+        }
         return new Intent(context, ParentOfFragments.class);
     }
-
-    private List<Artist> sort()
-    {
-        List<Artist> sortedList = new ArrayList<>();
-        int size = selectedDecades.size();
-
-        for(int i = size; i > 0; i--)
-        {
-            for(Artist artist : artistsToSelect)
-            {
-                if(selectedDecades.contains(artist.getSortedDecades().get(0)))
-                {
-                    sortedList.add(artist);
-                }
-            }
-        }
-        return sortedList;
-    }
-
-    public List<Artist> getArtists(DatabaseReference db)
-    {
-        final String TAG = "GettingStarted.java";
-        LogUtil log = new LogUtil(TAG, "getArtists");
-        CountDownLatch cdl = new CountDownLatch(1);
-        Query query = db.child("artists").orderByChild("followers").limitToFirst(50);
-        query.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren())
-                {
-                    artistsToSelect.add((Artist) snapshot.getValue(Artist.class));
-                }
-                cdl.countDown();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                log.w(String.format("Unable to obtain the 50 artists: %s", error));
-            }
-        });
-        try {
-            cdl.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return sort();
-    }
-
-    private void updateUser(DatabaseReference db, FirebaseUser firebaseUser, Context context)
-    {
-        User updatedUser = new User(user);
-
-        db.child("users").child(firebaseUser.getUid()).setValue(updatedUser).
-                addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Toast.makeText(context, "User has been updated..", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(context, "Failed to update the user data..", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    public void setMinYear(short minYear) {
-        this.minYear = minYear;
-    }
-
-    public int getMinYear(){
-        return minYear;
-    }
-
-    public int getMaxYear(){
-        return maxYear;
-    }
-
-    public List<Integer> getSelectedDecades() {
-        return selectedDecades;
-    }
-
-    public void setDifficulty(Difficulty difficulty)
-    {
-        user.setDifficulty(difficulty);
-        currentDifficulty = difficulty;
-    }
-
-    public Difficulty getDifficulty()
-    {
-        return currentDifficulty;
-    }
-
-    public void setAreAllSelected(boolean areAllSelected)
-    {
-        this.areAllSelected = areAllSelected;
-    }
-
-    public boolean getAreAllSelected()
-    {
-        return areAllSelected;
-    }
+    //#endregion
 }

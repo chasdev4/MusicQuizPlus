@@ -5,7 +5,6 @@ import static android.app.PendingIntent.getActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -29,29 +28,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 
 import model.GettingStarted;
 import model.GoogleSignIn;
 
-import model.PhotoUrl;
-import model.Question;
-import model.Quiz;
-import model.Results;
 import model.User;
 
-import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
-import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
-import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
@@ -141,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
         this.firebaseUser = firebaseUser;
+        Context context = this;
         new Thread(new Runnable() {
             public void run() {
 
@@ -157,9 +146,15 @@ public class MainActivity extends AppCompatActivity {
                     // If there is a database entry for the suer
                     if (user != null) {
                         //#region DEBUG: Getting Started
-                        GettingStarted gettingStarted = new GettingStarted(new User(), db);
-                        Map<Integer, List<Artist>> art = gettingStarted.getArtists();
-                        log.d("done");
+//                        GettingStarted gettingStarted = new GettingStarted(new User(), db);
+//                        gettingStarted.selectDecade(1980);
+//                        Map<String, Artist> artistMap = gettingStarted.getArtists();
+//                        for (Map.Entry<String, Artist> entry : artistMap.entrySet()) {
+//                            gettingStarted.selectArtist(entry.getKey());
+//                        }
+//                        gettingStarted.finished(db, firebaseUser, spotifyService, context);
+//                        log.d("done");
+                        //#endregion
 
                         //#region DEBUG: Playlist Quiz Sandbox
 //                        user.initBadgeThumbnails(db);
