@@ -206,11 +206,16 @@ public class PlaylistFragment extends Fragment {
             new Thread(new Runnable() {
                 public void run() {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                    if(user.getPhotoUrl() != null)
-                    {
-                        userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
-                    }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                            if(user.getPhotoUrl() != null)
+                            {
+                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
+                            }
+                        }
+                    });
                 }
             }).start();
         }

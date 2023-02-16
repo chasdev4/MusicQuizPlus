@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,8 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.example.musicquizplus.HistoryAdapter;
 import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -201,11 +205,16 @@ public class ArtistsFragment extends Fragment {
             new Thread(new Runnable() {
                 public void run() {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                    if(user.getPhotoUrl() != null)
-                    {
-                        userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
-                    }
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                            if(user.getPhotoUrl() != null)
+                            {
+                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
+                            }
+                        }
+                    });
                 }
             }).start();
         }
