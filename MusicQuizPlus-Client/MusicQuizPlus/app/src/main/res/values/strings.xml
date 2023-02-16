@@ -36,4 +36,5 @@
     <string name="continueText">Continue</string>
     <string name="accuracy">Accuracy :</string>
     <string name="score">Score :</string>
+    <string name="search_hint">Search for your favorite music</string>
 </resources>
