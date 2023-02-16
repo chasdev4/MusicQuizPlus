@@ -135,7 +135,8 @@ public class HistoryFragment extends Fragment {
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                int scroll = historyRecyclerView.getScrollState();
+                LinearLayoutManager llm = (LinearLayoutManager) historyRecyclerView.getLayoutManager();
+                int scroll = llm.findFirstVisibleItemPosition();
 
                 if(scroll > 0)
                 {
@@ -241,7 +242,6 @@ public class HistoryFragment extends Fragment {
     public void populateView() {
         if (firebaseUser != null)
         {
-
             new Thread(new Runnable() {
                 public void run() {
 

@@ -1,5 +1,6 @@
 package com.example.musicquizplus;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -9,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -40,7 +42,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     Playlist playlist;
     HistoryAdapter adapter;
     Handler mainHandler = new Handler();
-//    List<Track> playlistTracks = new ArrayList<>();
+    ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
 
@@ -55,7 +57,35 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         owner = findViewById(R.id.pqvPlaylistOwner);
         listView = findViewById(R.id.pqvRecyclerView);
         startQuiz = findViewById(R.id.pqvStartButton);
+        backToTop = findViewById(R.id.pqvBackToTop);
 
+        listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                LinearLayoutManager llm = (LinearLayoutManager) listView.getLayoutManager();
+                int scroll = llm.findFirstVisibleItemPosition();
+
+                if(scroll > 0)
+                {
+                    backToTop.setVisibility(View.VISIBLE);
+                }
+                else
+                {
+                    backToTop.setVisibility(View.GONE);
+                }
+
+            }
+        });
+
+        backToTop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                listView.scrollToPosition(0);
+                backToTop.setVisibility(View.GONE);
+            }
+        });
     }
 
 
@@ -82,7 +112,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
         final Quiz[] playlistQuiz = new Quiz[1];
         // TODO: Get the user from the root of the app
-        // User user = new User();
 
         new Thread(new Runnable() {
             public void run() {
