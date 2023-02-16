@@ -67,6 +67,7 @@ public class GettingStarted {
 
     //#region Accessors
     // Call after decades are selected
+    public User getUser() { return user; }
     public Map<String, Artist> getArtists() {
         artists = new HashMap<>();
         for (Map.Entry<Integer, List<Artist>> entry : this.decadeArtistMap.entrySet()) {
