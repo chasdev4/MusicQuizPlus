@@ -235,10 +235,10 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updateUI();
+        populateView();
     }
 
-    public void updateUI() {
+    public void populateView() {
         if (firebaseUser != null)
         {
 

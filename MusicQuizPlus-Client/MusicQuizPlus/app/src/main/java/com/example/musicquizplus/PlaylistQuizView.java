@@ -1,6 +1,7 @@
 package com.example.musicquizplus;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import model.Quiz;
 import model.User;
@@ -36,7 +38,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     RecyclerView listView;
     Button startQuiz;
     Playlist playlist;
-    PlaylistQuizAdapter playlistQuizAdapter;
+    HistoryAdapter adapter;
     Handler mainHandler = new Handler();
 //    List<Track> playlistTracks = new ArrayList<>();
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
@@ -86,6 +88,19 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             public void run() {
 
                 playlist.initCollection(reference);
+                List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (tracksList.size() > 0) {
+                            adapter = new HistoryAdapter(tracksList, getBaseContext());
+                            listView.setAdapter(adapter);
+                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                        }
+                    }
+                });
+
                 // TODO: Pass in our DatabaseReference
                // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
 
