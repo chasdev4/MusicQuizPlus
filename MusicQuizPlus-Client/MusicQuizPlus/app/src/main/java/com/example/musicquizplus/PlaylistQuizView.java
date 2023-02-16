@@ -44,8 +44,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     Handler mainHandler = new Handler();
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-
-
+    ImageButton backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +57,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         listView = findViewById(R.id.pqvRecyclerView);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
+        backButton = findViewById(R.id.pqvBackButton);
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -84,6 +84,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             public void onClick(View view) {
                 listView.scrollToPosition(0);
                 backToTop.setVisibility(View.GONE);
+            }
+        });
+
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
             }
         });
     }
