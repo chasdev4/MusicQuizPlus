@@ -113,7 +113,7 @@ public class PlaylistFragment extends Fragment {
         playlistUserAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(firebaseUser != null) {
+                if(firebaseUser == null) {
                     SignUpPopUp signUpPopUp = new SignUpPopUp(getActivity(), getContext(), getString(R.string.user_profile_signup_header));
                     signUpPopUp.createAndShow();
                 }
