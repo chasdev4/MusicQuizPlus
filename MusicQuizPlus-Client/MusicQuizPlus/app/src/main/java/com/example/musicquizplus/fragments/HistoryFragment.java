@@ -45,6 +45,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import model.GoogleSignIn;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Artist;
 import model.item.Playlist;
@@ -161,66 +162,9 @@ public class HistoryFragment extends Fragment {
         historyUserAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(Objects.equals(userLevel.getText(), "GUEST")) {
-
-                    // Create a AlertDialog Builder.
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext());
-                    // Set title, icon, can not cancel properties.
-                    alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
-                    alertDialogBuilder.setIcon(R.drawable.magicstar);
-                    alertDialogBuilder.setCancelable(false);
-
-                    // Init popup dialog view and it's ui controls.
-                    popupSignUpView = View.inflate(view.getContext(), R.layout.logged_out_message, null);
-                    // Set the inflated layout view object to the AlertDialog builder.
-                    alertDialogBuilder.setView(popupSignUpView);
-
-                    // Create AlertDialog and show.
-                    final AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
-
-                    ImageButton cancelPopUp = alertDialog.findViewById(R.id.closeDialogButton);
-                    TextView noThanksLink = alertDialog.findViewById(R.id.noThanksHyperLink);
-                    TextView signUpHeader = alertDialog.findViewById(R.id.logged_out_header);
-                    TextView linkGoogle = alertDialog.findViewById(R.id.link_google);
-                    TextView accountBenefits = alertDialog.findViewById(R.id.account_benefits);
-                    View entireGuestMessage = alertDialog.findViewById(R.id.entireGuestUserMessage);
-
-                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 1300);
-
-                    entireGuestMessage.setLayoutParams(params);
-                    alertDialog.getWindow().setLayout(1000, 1500); //Controlling width and height.
-
-                    Button signInWithGoogle = alertDialog.findViewById(R.id.googleSignInButton);
-                    noThanksLink.setVisibility(View.VISIBLE);
-                    noThanksLink.setPaintFlags(noThanksLink.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
-                    cancelPopUp.setVisibility(View.VISIBLE);
-                    signUpHeader.setTextSize(22);
-                    signUpHeader.setText(R.string.user_profile_signup_header);
-                    linkGoogle.setTextSize(14);
-                    accountBenefits.setTextSize(14);
-
-                    signInWithGoogle.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            GoogleSignIn googleSignIn = new GoogleSignIn();
-                            googleSignIn.signInWithGoogle(view, getActivity(), view.getContext());
-                        }
-                    });
-
-                    noThanksLink.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            alertDialog.cancel();
-                        }
-                    });
-
-                    cancelPopUp.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            alertDialog.cancel();
-                        }
-                    });
+                if(firebaseUser == null) {
+                    SignUpPopUp signUpPopUp = new SignUpPopUp(getActivity(), getContext(), getString(R.string.user_profile_signup_header));
+                    signUpPopUp.createAndShow();
                 }
                 else
                 {
