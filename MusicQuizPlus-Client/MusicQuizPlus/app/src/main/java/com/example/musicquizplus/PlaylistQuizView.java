@@ -1,6 +1,7 @@
 package com.example.musicquizplus;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     ImageView coverImage;
     TextView title;
     TextView owner;
-    ListView quizListView;
+    RecyclerView listView;
     Button startQuiz;
     Playlist playlist;
     PlaylistQuizAdapter playlistQuizAdapter;
@@ -47,11 +48,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
 
-        coverImage = findViewById(R.id.playlistQuizViewCoverImage);
-        title = findViewById(R.id.playlistQuizViewTitle);
-        owner = findViewById(R.id.playlistQuizViewOwner);
-        quizListView = findViewById(R.id.playlistQuizViewListView);
-        startQuiz = findViewById(R.id.playlistQuizViewStartQuizButton);
+        coverImage = findViewById(R.id.pqvCoverImage);
+        title = findViewById(R.id.pqvTitle);
+        owner = findViewById(R.id.pqvPlaylistOwner);
+        listView = findViewById(R.id.pqvRecyclerView);
+        startQuiz = findViewById(R.id.pqvStartButton);
 
     }
 
