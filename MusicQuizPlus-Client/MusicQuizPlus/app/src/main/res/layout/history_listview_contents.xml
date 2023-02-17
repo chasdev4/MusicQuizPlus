@@ -110,12 +110,12 @@
         android:layout_height="match_parent"
         android:backgroundTint="@color/mqPurple2"
         android:drawableTop="@drawable/spotify_logo_in_mqpurple2"
+        android:paddingStart="12dp"
         android:text="@string/view"
         android:textColor="@color/mqWhite"
         android:textSize="10sp"
-        android:paddingStart="12dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="@+id/guidelineVert"
+        app:layout_constraintEnd_toStartOf="@+id/shareTrack"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -124,12 +124,12 @@
         android:layout_height="match_parent"
         android:backgroundTint="@color/mqPurple2"
         android:drawableTop="@drawable/share_icon"
+        android:paddingStart="8dp"
         android:text="@string/share"
         android:textColor="@color/mqWhite"
         android:textSize="10sp"
-        android:paddingStart="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/spotifyView"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
