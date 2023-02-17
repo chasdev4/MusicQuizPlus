@@ -36,8 +36,11 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
             case 1:
                 //if switchOn is 1, its for playlist quiz preview
                 playlistTrackTitle = itemView.findViewById(R.id.quizViewTrackTitle);
+                playlistTrackTitle.setSelected(true);
                 playlistArtist = itemView.findViewById(R.id.quizViewTrackArtist);
+                playlistArtist.setSelected(true);
                 playlistAlbum = itemView.findViewById(R.id.quizViewTrackAlbum);
+                playlistAlbum.setSelected(true);
                 playlistYear = itemView.findViewById(R.id.quizViewTrackYear);
                 playlistPreviewImage = itemView.findViewById(R.id.quizViewPreviewImage);
                 break;

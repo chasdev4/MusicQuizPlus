@@ -7,13 +7,13 @@
 
     <ImageView
         android:id="@+id/quizViewPreviewImage"
-        android:layout_width="80dp"
+        android:layout_width="85dp"
         android:layout_height="match_parent"
         android:src="@drawable/spotify_todays_hits"/>
 
     <RelativeLayout
         android:id="@+id/quizViewTrackInfo"
-        android:layout_width="wrap_content"
+        android:layout_width="255dp"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/quizViewPreviewImage"
         android:layout_marginTop="2dp">
@@ -29,7 +29,15 @@
             android:layout_marginStart="5dp"
             android:layout_marginEnd="10dp"
             android:layout_marginTop="2dp"
-            />
+
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            android:scrollHorizontally="true">
+        </TextView>
 
         <TextView
             android:id="@+id/quizViewTrackArtist"
@@ -40,7 +48,16 @@
             android:layout_below="@id/quizViewTrackTitle"
             android:layout_marginStart="5dp"
             android:textSize="12sp"
-            android:fontFamily="@font/commissioner"/>
+            android:fontFamily="@font/commissioner"
+
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            android:scrollHorizontally="true">
+        </TextView>
 
         <TextView
             android:id="@+id/quizViewTrackAlbum"
@@ -51,7 +68,16 @@
             android:layout_below="@id/quizViewTrackArtist"
             android:textSize="12sp"
             android:layout_marginStart="5dp"
-            android:fontFamily="@font/commissioner"/>
+            android:fontFamily="@font/commissioner"
+
+            android:ellipsize="marquee"
+            android:singleLine="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:focusable="true"
+            android:clickable="true"
+            android:focusableInTouchMode="true"
+            android:scrollHorizontally="true">
+        </TextView>
 
         <TextView
             android:id="@+id/quizViewTrackYear"
