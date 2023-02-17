@@ -16,11 +16,11 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     HistoryViewHolder(View itemView)
     {
         super(itemView);
-        trackTitle = itemView.findViewById(R.id.quizViewTrackTitle);
-        trackArtist = itemView.findViewById(R.id.quizViewTrackArtist);
-        trackAlbum = itemView.findViewById(R.id.quizViewTrackAlbum);
-        trackYear = itemView.findViewById(R.id.quizViewTrackYear);
-        albumCover = itemView.findViewById(R.id.quizViewPreviewImage);
+        trackTitle = itemView.findViewById(R.id.historyTrackTitle);
+        trackArtist = itemView.findViewById(R.id.historyArtist);
+        trackAlbum = itemView.findViewById(R.id.historyAlbum);
+        trackYear = itemView.findViewById(R.id.historyYear);
+        albumCover = itemView.findViewById(R.id.historyPreviewImage);
         view  = itemView;
     }
 }
