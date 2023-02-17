@@ -32,7 +32,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        View photoView = inflater.inflate(R.layout.playlist_quiz_listview_contents, parent, false);
+        View photoView = inflater.inflate(R.layout.history_listview_contents, parent, false);
 
         HistoryViewHolder viewHolder = new HistoryViewHolder(photoView);
         return viewHolder;
