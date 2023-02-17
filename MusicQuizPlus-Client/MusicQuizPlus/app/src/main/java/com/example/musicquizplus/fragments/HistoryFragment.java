@@ -202,7 +202,7 @@ public class HistoryFragment extends Fragment {
                                 userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
                             }
                             if (list.size() > 0) {
-                                adapter = new HistoryAdapter(list, getContext());
+                                adapter = new HistoryAdapter(list, getContext(), 0);
                                 historyRecyclerView.setAdapter(adapter);
                                 historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
                             }

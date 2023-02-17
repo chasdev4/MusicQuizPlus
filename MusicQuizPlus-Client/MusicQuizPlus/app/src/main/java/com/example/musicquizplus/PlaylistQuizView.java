@@ -130,7 +130,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     @Override
                     public void run() {
                         if (tracksList.size() > 0) {
-                            adapter = new HistoryAdapter(tracksList, getBaseContext());
+                            adapter = new HistoryAdapter(tracksList, getBaseContext(), 1);
                             listView.setAdapter(adapter);
                             listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                         }

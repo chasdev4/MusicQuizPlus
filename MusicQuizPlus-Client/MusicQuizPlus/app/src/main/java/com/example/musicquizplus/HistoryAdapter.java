@@ -14,15 +14,19 @@ import model.item.Track;
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     List<Track> list = new ArrayList<>();
-
+    int switchOn;
     Context context;
+    View photoView;
+    HistoryViewHolder viewHolder;
+
     //ClickListiner listiner;
 
     //public ImageGalleryAdapter2(List<Track> list, Context context,ClickListiner listiner)
-    public HistoryAdapter(List<Track> list, Context context)
+    public HistoryAdapter(List<Track> list, Context context, int switchOn)
     {
         this.list = list;
         this.context = context;
+        this.switchOn = switchOn;
         //this.listiner = listiner;
     }
 
@@ -32,20 +36,45 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        View photoView = inflater.inflate(R.layout.history_listview_contents, parent, false);
+        switch (switchOn)
+        {
+            case 0:
+                //if switchOn is 0, its for history view
+                photoView = inflater.inflate(R.layout.history_listview_contents, parent, false);
+                viewHolder = new HistoryViewHolder(photoView, 0);
+                break;
+            case 1:
+                //if switchOn is 1, its for playlist quiz preview
+                photoView = inflater.inflate(R.layout.playlist_quiz_listview_contents, parent, false);
+                viewHolder = new HistoryViewHolder(photoView, 1);
+                break;
+        }
 
-        HistoryViewHolder viewHolder = new HistoryViewHolder(photoView);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position)
     {
+        switch (switchOn)
+        {
+            case 0:
+                //if switchOn is 0, its for history view
+                viewHolder.historyTrackTitle.setText(list.get(position).getName());
+                viewHolder.historyArtist.setText(list.get(position).getArtistName());
+                viewHolder.historyAlbum.setText(list.get(position).getAlbumName());
+                viewHolder.historyYear.setText(list.get(position).getYear());
+                break;
+            case 1:
+                //if switchOn is 1, its for playlist quiz preview
+                viewHolder.playlistTrackTitle.setText(list.get(position).getName());
+                viewHolder.playlistArtist.setText(list.get(position).getArtistName());
+                viewHolder.playlistAlbum.setText(list.get(position).getAlbumName());
+                viewHolder.playlistYear.setText(list.get(position).getYear());
+                break;
+        }
         //final index = viewHolder.getAdapterPosition();
-        viewHolder.trackTitle.setText(list.get(position).getName());
-        viewHolder.trackArtist.setText(list.get(position).getArtistName());
-        viewHolder.trackAlbum.setText(list.get(position).getAlbumName());
-        viewHolder.trackYear.setText(list.get(position).getYear());
+
         //Album tracksAlbum = FirebaseService.checkDatabase(FirebaseDatabase.getInstance().getReference(), "albums", list.get(position).getAlbumId(), Album.class);
         //Uri uri = Uri.parse(tracksAlbum.getPhotoUrl().get(0).getUrl());
         //viewHolder.albumCover.setImageURI(uri);
