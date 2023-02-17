@@ -1,136 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="80dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/mqPurple2"
     android:layout_margin="1dp">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="80dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guidelineVert"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".70"/>
+
     <ImageView
         android:id="@+id/historyPreviewImage"
-        android:layout_width="80dp"
-        android:layout_height="match_parent"
-        android:src="@drawable/spotify_todays_hits"/>
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:layout_margin="1dp"
+        android:src="@drawable/spotify_todays_hits"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <RelativeLayout
-        android:id="@+id/historyTrackInfo"
+    <TextView
+        android:id="@+id/historyTrackTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/historyPreviewImage"
-        android:layout_centerVertical="true">
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="-18dp"
+        android:fontFamily="@font/concert_one"
+        android:text="@string/sample_song_title"
+        android:textColor="@color/mqWhite"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/historyPreviewImage"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/historyTrackTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sample_song_title"
-            android:textColor="@color/mqWhite"
-            android:fontFamily="@font/concert_one"
-            android:textSize="24sp"
-            android:layout_marginStart="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="2dp"
-            />
+    <TextView
+        android:id="@+id/historyArtist"
+        android:layout_width="76dp"
+        android:layout_height="14dp"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/sample_artist"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/historyPreviewImage"
+        app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
-        <TextView
-            android:id="@+id/historyArtist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sample_artist"
-            android:textColor="@color/mqWhite"
-            android:layout_below="@id/historyTrackTitle"
-            android:layout_marginStart="5dp"
-            android:textSize="12sp"
-            android:fontFamily="@font/commissioner"/>
+    <TextView
+        android:id="@+id/middleDotAfterArtist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:text="@string/middle_dot"
+        android:textColor="@color/mqWhite"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/historyArtist"
+        app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
-        <TextView
-            android:id="@+id/middleDotAfterArtist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/middle_dot"
-            android:layout_toEndOf="@id/historyArtist"
-            android:layout_below="@id/historyTrackTitle"
-            android:textColor="@color/mqWhite"
-            android:textStyle="bold"
-            android:layout_marginHorizontal="2dp"/>
+    <TextView
+        android:id="@+id/historyAlbum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/sample_album"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/middleDotAfterArtist"
+        app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
-        <TextView
-            android:id="@+id/historyAlbum"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sample_album"
-            android:textColor="@color/mqWhite"
-            android:layout_below="@id/historyTrackTitle"
-            android:layout_toEndOf="@id/middleDotAfterArtist"
-            android:textSize="12sp"
-            android:fontFamily="@font/commissioner"/>
+    <TextView
+        android:id="@+id/middleDotAfterAlbum"
+        android:layout_width="4dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="2dp"
+        android:layout_toEndOf="@id/historyAlbum"
+        android:text="@string/middle_dot"
+        android:textColor="@color/mqWhite"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/historyAlbum"
+        app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
-        <TextView
-            android:id="@+id/middleDotAfterAlbum"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/middle_dot"
-            android:layout_toEndOf="@id/historyAlbum"
-            android:layout_below="@id/historyTrackTitle"
-            android:textColor="@color/mqWhite"
-            android:textStyle="bold"
-            android:layout_marginHorizontal="2dp"/>
+    <TextView
+        android:id="@+id/historyYear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/sample_year"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/middleDotAfterAlbum"
+        app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
-        <TextView
-            android:id="@+id/historyYear"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sample_year"
-            android:textColor="@color/mqWhite"
-            android:layout_below="@id/historyTrackTitle"
-            android:layout_toEndOf="@id/middleDotAfterAlbum"
-            android:textSize="12sp"
-            android:fontFamily="@font/commissioner"/>
-
-    </RelativeLayout>
-
-    <ImageButton
+    <Button
         android:id="@+id/spotifyView"
         android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_toEndOf="@id/historyTrackInfo"
-        android:layout_marginTop="4dp"
-        android:paddingTop="2dp"
-        android:paddingStart="8dp"
-        android:src="@drawable/spotify_logo_in_mqpurple2"
-        android:background="@null" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/mqPurple2"
+        android:drawableTop="@drawable/spotify_logo_in_mqpurple2"
         android:text="@string/view"
-        android:textSize="12sp"
         android:textColor="@color/mqWhite"
-        android:layout_below="@id/spotifyView"
-        android:layout_marginTop="-14dp"
-        android:layout_toEndOf="@id/historyTrackInfo"
-        android:layout_marginStart="19dp"
-        android:fontFamily="@font/commissioner"/>
+        android:textSize="10sp"
+        android:paddingStart="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
+    <Button
         android:id="@+id/shareTrack"
         android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_toEndOf="@id/spotifyView"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="2dp"
-        android:src="@drawable/share_icon"
-        android:background="@null"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/mqPurple2"
+        android:drawableTop="@drawable/share_icon"
         android:text="@string/share"
-        android:textSize="12sp"
         android:textColor="@color/mqWhite"
-        android:layout_below="@id/shareTrack"
-        android:layout_marginTop="-14dp"
-        android:layout_toEndOf="@id/spotifyView"
-        android:layout_marginStart="14dp"
-        android:fontFamily="@font/commissioner"/>
+        android:textSize="10sp"
+        android:paddingStart="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/spotifyView"
+        app:layout_constraintTop_toTopOf="parent" />
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
