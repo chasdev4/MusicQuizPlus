@@ -1,28 +1,17 @@
 package com.example.musicquizplus;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.FirebaseDatabase;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.item.Album;
 import model.item.Track;
-import service.FirebaseService;
 
-public class HistoryAdapter extends RecyclerView.Adapter<historyViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     List<Track> list = new ArrayList<>();
 
@@ -38,19 +27,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<historyViewHolder> {
     }
 
     @Override
-    public historyViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+    public HistoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
         View photoView = inflater.inflate(R.layout.playlist_quiz_listview_contents, parent, false);
 
-        historyViewHolder viewHolder = new historyViewHolder(photoView);
+        HistoryViewHolder viewHolder = new HistoryViewHolder(photoView);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(final historyViewHolder viewHolder, final int position)
+    public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position)
     {
         //final index = viewHolder.getAdapterPosition();
         viewHolder.trackTitle.setText(list.get(position).getName());

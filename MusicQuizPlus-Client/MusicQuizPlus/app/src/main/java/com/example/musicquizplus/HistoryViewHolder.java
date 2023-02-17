@@ -5,7 +5,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class historyViewHolder extends RecyclerView.ViewHolder {
+public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView trackTitle;
     TextView trackAlbum;
     TextView trackArtist;
@@ -13,7 +13,7 @@ public class historyViewHolder extends RecyclerView.ViewHolder {
     ImageView albumCover;
     View view;
 
-    historyViewHolder(View itemView)
+    HistoryViewHolder(View itemView)
     {
         super(itemView);
         trackTitle = itemView.findViewById(R.id.quizViewTrackTitle);
