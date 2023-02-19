@@ -145,7 +145,18 @@ public class MainActivity extends AppCompatActivity {
                 // If the user is signed in
                 if (firebaseUser != null) {
                     // User is signed in
-                    signInWithGoogleButton.setVisibility(View.GONE);
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+
+                            // Stuff that updates the UI
+                            signInWithGoogleButton.setVisibility(View.GONE);
+
+                        }
+                    });
+
                     log.d(firebaseUser.getDisplayName());
                     log.d(firebaseUser.getEmail());
 
