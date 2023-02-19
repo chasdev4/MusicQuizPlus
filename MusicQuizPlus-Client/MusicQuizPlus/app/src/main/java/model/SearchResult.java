@@ -35,7 +35,7 @@ public class SearchResult <T> {
     }
 
     public Track getTrack() {
-        if (type != SearchFilter.TRACK) {
+        if (type != SearchFilter.SONG) {
             return null;
         }
         return (Track) object;

@@ -23,4 +23,8 @@
     <color name="mqHard">#FF3D00</color>
     <color name="spotifyGreen">#1ED760</color>
 
+    //Non-primary colors for styling
+    <color name="nonSearchHint">#7565b2</color>
+    <color name="mqBlueDark">#236ac7</color>
+
 </resources>

@@ -2,7 +2,13 @@ package model.item;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,6 +17,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+
+import model.PhotoUrl;
+import service.ItemService;
 
 // SUMMARY
 // The Track model stores track information
@@ -31,6 +41,9 @@ public class Track implements Serializable {
     private String year;
     private boolean playable;
 
+    // Excluded from database
+    private List<PhotoUrl> photoUrl;
+
     public Track(String id,
                  String name,
                  String albumId,
@@ -42,7 +55,8 @@ public class Track implements Serializable {
                  boolean popularityKnown,
                  String previewUrl,
                  String year,
-                 boolean playable) {
+                 boolean playable,
+                 List<PhotoUrl> photoUrl) {
         this.id = id;
         this.name = name;
         this.albumId = albumId;
@@ -57,11 +71,11 @@ public class Track implements Serializable {
         this.popularityKnown = popularityKnown;
         if (previewUrl == null) {
             previewUrlKnown = false;
-        }
-        else {
+        } else {
             this.previewUrl = previewUrl;
             previewUrlKnown = true;
         }
+        this.photoUrl = photoUrl;
     }
 
     // Used for generated quizzes' questions
@@ -78,40 +92,55 @@ public class Track implements Serializable {
     public String getId() {
         return id;
     }
-    public String getName() { return name; }
+
+    public String getName() {
+        return name;
+    }
+
     public String getAlbumId() {
         return albumId;
     }
+
     public String getAlbumName() {
         return albumName;
     }
+
     public boolean isAlbumKnown() {
         return albumKnown;
     }
+
     public String getArtistId() {
         return artistId;
     }
+
     public Map<String, String> getArtistsMap() {
         return artistsMap;
     }
+
     public Map<String, String> getPlaylistIds() {
         return playlistIds;
     }
+
     public int getPopularity() {
         return popularity;
     }
+
     public boolean isPopularityKnown() {
         return popularityKnown;
     }
+
     public String getPreviewUrl() {
         return previewUrl;
     }
+
     public boolean isPreviewUrlKnown() {
         return previewUrlKnown;
     }
+
     public String getYear() {
         return year;
     }
+
     public boolean isPlayable() {
         return playable;
     }
@@ -120,6 +149,7 @@ public class Track implements Serializable {
     public String getArtistName() {
         return artistsMap.get(artistId);
     }
+
     @Exclude
     public String getFeaturedArtistName() {
         if (artistsMap.size() != 2) {
@@ -132,45 +162,64 @@ public class Track implements Serializable {
         }
         return null;
     }
+    @Exclude
+    public List<PhotoUrl> getPhotoUrl() { return photoUrl; }
     //#endregion
 
     //#region Mutators
     public void setId(String id) {
         this.id = id;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public void setAlbumId(String albumId) {
         this.albumId = albumId;
     }
+
     public void setAlbumName(String albumName) {
         this.albumName = albumName;
     }
+
     public void setAlbumKnown(boolean albumKnown) {
         this.albumKnown = albumKnown;
     }
+
     public void setArtistId(String artistId) {
         this.artistId = artistId;
     }
+
     public void setArtistsMap(Map<String, String> artistsMap) {
         this.artistsMap = artistsMap;
     }
+
     public void setPlaylistIds(Map<String, String> playlistIds) {
         this.playlistIds = playlistIds;
     }
+
     public void setPopularity(int popularity) {
         popularityKnown = true;
         this.popularity = popularity;
     }
-    public void setPopularityKnown(boolean popularityKnown) { this.popularityKnown = popularityKnown; }
+
+    public void setPopularityKnown(boolean popularityKnown) {
+        this.popularityKnown = popularityKnown;
+    }
+
     public void setPreviewUrl(String previewUrl) {
         this.previewUrl = previewUrl;
     }
-    public void setPreviewUrlKnown(boolean previewUrlKnown) { this.previewUrlKnown = previewUrlKnown; }
+
+    public void setPreviewUrlKnown(boolean previewUrlKnown) {
+        this.previewUrlKnown = previewUrlKnown;
+    }
+
     public void setYear(String year) {
         this.year = year;
     }
+
     public void setPlayable(boolean playable) {
         this.playable = playable;
     }

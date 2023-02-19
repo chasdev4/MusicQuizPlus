@@ -1,11 +1,17 @@
 package model.item;
 
+import android.content.Context;
+import android.graphics.BitmapFactory;
+import android.widget.ImageView;
+
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +26,7 @@ import model.PhotoUrl;
 import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
+import service.ItemService;
 import utils.FormatUtil;
 import utils.LogUtil;
 
@@ -197,6 +204,7 @@ public class Artist implements Serializable {
         return null;
     }
 
+    @Exclude
     public String getRandomId() {
         Random rnd = new Random();
         if (compilationIds.size() > 0) {
@@ -352,63 +360,7 @@ public class Artist implements Serializable {
             }
         }
 
-
-//
-//
-//
-//
-//        Map<Integer, Integer> years = new HashMap<>();
-//        JsonArray jArray = discography.getAsJsonObject("albums").getAsJsonArray("items");
-//        for(int i = 0; i < jArray.size(); i++)
-//        {
-//            JsonObject date = jArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonObject("items").getAsJsonObject("0").getAsJsonObject("date");
-//            int year = date.get("year").getAsInt();
-//
-//            int decade = (year/10)*10;
-//            if(decadesMap.containsKey(decade))
-//            {
-//                int val = decades.get(decade);
-//                val++;
-//                decadesMap.put(decade, val);
-//            }
-//            else
-//            {
-//                decadesMap.put(decade, 1);
-//            }
-//        }
-//
-//        for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
-//
-//        }
-//
-//        decadesMapToSortedList();
-
     }
-
-//    private void addSmallestToList()
-//    {
-//        int minVal = 1000000;
-//        int minKey = 0;
-//
-//        for(Map.Entry<Integer, Integer> entry : decades.entrySet())
-//        {
-//            if(entry.getValue() < minVal)
-//            {
-//                minVal = entry.getValue();
-//                minKey = entry.getKey();
-//            }
-//        }
-//        sortedDecades.add(0, minKey);
-//    }
-
-//    private void decadesMapToSortedList() {
-//        int size = decades.size();
-//        for(int i = 0; i < size; i++)
-//        {
-//            addSmallestToList();
-//            decades.remove(sortedDecades.get(0));
-//        }
-//    }
 
     // Extract information from the album JsonObject created in extractArtist
     private Album extractAlbum(JsonObject album) {
@@ -549,9 +501,6 @@ public class Artist implements Serializable {
                 break;
         }
     }
-
-
-
     //#endregion
 
 }

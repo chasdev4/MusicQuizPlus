@@ -5,17 +5,110 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/mqPurple3"
+    android:layout_alignParentTop="true"
     tools:context=".SearchActivity">
 
-
-    <android.widget.SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/search_bar"
-        android:layout_width="390dp"
+        android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_marginTop="16dp"
-        android:paddingHorizontal="16dp"
-        android:background="@color/mqPurple2"
+        android:layout_margin="16dp"
+        android:background="@drawable/search_bar_background"
+        android:backgroundTint="@color/mqPurple2"
+        android:clickable="true"
+        android:layoutDirection="rtl"
+        app:iconifiedByDefault="false"
+        app:layout_constraintBottom_toTopOf="@+id/search_filter_group"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.375"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:queryHint="@string/search_hint"
+        app:theme="@style/SearchViewStyle" />
+
+    <RadioGroup
+        android:id="@+id/search_filter_group"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:layout_centerInParent="true"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintBottom_toTopOf="@+id/search_recycler_view"
+        app:layout_constraintTop_toBottomOf="@id/search_bar">
+
+        <RadioButton
+            android:id="@+id/search_filter_all"
+            style="@style/SearchFilterButtonStyle"
+            android:text="@string/search_filter_all"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/search_filter_artist"
+            style="@style/SearchFilterButtonStyle"
+            android:text="@string/search_filter_artist"
+            android:checked="false"/>
+
+        <RadioButton
+            android:id="@+id/search_filter_album"
+            style="@style/SearchFilterButtonStyle"
+            android:text="@string/search_filter_album"
+            android:checked="false"/>
+
+        <RadioButton
+            android:id="@+id/search_filter_song"
+            style="@style/SearchFilterButtonStyle"
+            android:text="@string/search_filter_song"
+            android:checked="false"/>
+
+        <RadioButton
+            android:id="@+id/search_filter_playlist"
+            style="@style/SearchFilterButtonStyle"
+            android:text="@string/search_filter_playlist"
+            android:checked="false"/>
+    </RadioGroup>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/search_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_margin="16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/search_filter_group"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageButton
+        android:id="@+id/home_button"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/round_button_no_stroke"
+        android:elevation="8dp"
+        android:src="@drawable/search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:contentDescription="@string/home_button_content_description"/>
+
+    <ImageButton
+        android:id="@+id/backToTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_button_no_stroke"
+        android:elevation="8dp"
+        android:src="@drawable/up_chevron"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/home_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="5dp"
+        android:contentDescription="@string/back_to_top_content_description"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

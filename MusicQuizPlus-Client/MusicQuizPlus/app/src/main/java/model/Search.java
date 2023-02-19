@@ -1,5 +1,6 @@
 package model;
 
+import com.example.musicquizplus.SearchAdapter;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -31,11 +32,11 @@ public class Search {
     private SpotifyService spotifyService;
 
     private List<SearchResult> all;
-    private List<Album> albums;
-    private List<Artist> artists;
-    private List<Playlist> playlists;
-    private List<Track> tracks;
-    private List<Album> trackAlbums;
+    private List<SearchResult> albums;
+    private List<SearchResult> artists;
+    private List<SearchResult> playlists;
+    private List<SearchResult> tracks;
+    private List<SearchResult> trackAlbums;
     private SearchFilter currentFilter;
 
     final private static String TAG = "SearchResults.java";
@@ -44,7 +45,7 @@ public class Search {
         this.searchTerm = searchTerm;
         this.limit = limit;
         this.spotifyService = spotifyService;
-
+        currentFilter = SearchFilter.ALL;
     }
 
     public void execute(int offset) {
@@ -53,53 +54,45 @@ public class Search {
     }
 
     //#region Accessors
-    public List<Album> getAlbums() {
+    public List<SearchResult> getAlbums() {
         return albums;
     }
-    public List<Artist> getArtists() {
+    public List<SearchResult> getArtists() {
         return artists;
     }
-    public List<Playlist> getPlaylists() {
+    public List<SearchResult> getPlaylists() {
         return playlists;
     }
-    public List<Track> getTracks() {
+    public List<SearchResult> getTracks() {
         return tracks;
     }
     public SearchFilter getCurrentFilter() { return currentFilter; }
     public List<SearchResult> getAll() {
         LogUtil log = new LogUtil(TAG, "getAll");
-        if (all.size() == 0) {
+        all.clear();
             ExecutorService executorService = Executors.newFixedThreadPool(4);
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (Artist artist : artists) {
-                        all.add(new SearchResult(SearchFilter.ARTIST, artist));
-                    }
+                    all.addAll(artists);
                 }
             });
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (Album album : albums) {
-                        all.add(new SearchResult(SearchFilter.ALBUM, album));
-                    }
+                    all.addAll(albums);
                 }
             });
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (Track track : tracks) {
-                        all.add(new SearchResult(SearchFilter.TRACK, track));
-                    }
+                    all.addAll(tracks);
                 }
             });
             executorService.submit(new Runnable() {
                 @Override
                 public void run() {
-                    for (Playlist playlist : playlists) {
-                        all.add(new SearchResult(SearchFilter.PLAYLIST, playlist));
-                    }
+                    all.addAll(playlists);
                 }
             });
 
@@ -109,7 +102,6 @@ public class Search {
             } catch (InterruptedException e) {
                 log.e(e.getMessage());
             }
-        }
         return all;
     }
     public TrackResult getTrackResult(Track track) {
@@ -117,31 +109,31 @@ public class Search {
         List<String> titleMatchIds = new ArrayList<>();
         List<Album> suggested = new ArrayList<>();
         List<String> suggestedIds = new ArrayList<>();
-        for (Album trackAlbum : trackAlbums) {
-            if (track.getArtistId().equals(trackAlbum.getArtistId())) {
-                if (ValidationUtil.namesMatch(track.getName(), trackAlbum.getTracks().get(0).getName(), TAG)) {
-                    if (suggestedIds.contains(trackAlbum.getId())) {
-                        suggestedIds.remove(trackAlbum.getId());
+        for (SearchResult trackAlbum : trackAlbums) {
+            if (track.getArtistId().equals(trackAlbum.getAlbum().getArtistId())) {
+                if (ValidationUtil.namesMatch(track.getName(), trackAlbum.getAlbum().getTracks().get(0).getName(), TAG)) {
+                    if (suggestedIds.contains(trackAlbum.getAlbum().getId())) {
+                        suggestedIds.remove(trackAlbum.getAlbum().getId());
                         suggested.remove(trackAlbum);
                     }
-                    titleMatchIds.add(trackAlbum.getId());
-                    titleMatch.add(trackAlbum);
+                    titleMatchIds.add(trackAlbum.getAlbum().getId());
+                    titleMatch.add(trackAlbum.getAlbum());
                 }
                 else {
-                    if (!titleMatchIds.contains(trackAlbum.getId())) {
-                        suggestedIds.add(trackAlbum.getId());
-                        suggested.add(trackAlbum);
+                    if (!titleMatchIds.contains(trackAlbum.getAlbum().getId())) {
+                        suggestedIds.add(trackAlbum.getAlbum().getId());
+                        suggested.add(trackAlbum.getAlbum());
                     }
                 }
             }
         }
 
-        for (Album album : albums) {
+        for (SearchResult album : albums) {
             for (Album suggest : suggested) {
-                if (suggest.getArtistId().equals(album.getArtistId())
-                        && !suggest.getId().equals(album.getId())
-                && !titleMatchIds.contains(album.getId())) {
-                    suggested.add(album);
+                if (suggest.getArtistId().equals(album.getAlbum().getArtistId())
+                        && !suggest.getId().equals(album.getAlbum().getId())
+                && !titleMatchIds.contains(album.getAlbum().getId())) {
+                    suggested.add(album.getAlbum());
                 }
             }
         }
@@ -228,7 +220,7 @@ public class Search {
             }
 
             // Add to collection
-            albums.add(new Album(
+            albums.add(new SearchResult(SearchFilter.ALBUM, new Album(
                     jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("name").getAsString(),
                     photoUrls,
@@ -238,7 +230,7 @@ public class Search {
                     null,
                     false, 0,
                     false,
-                    jsonObject.getAsJsonObject("date").get("year").getAsString()));
+                    jsonObject.getAsJsonObject("date").get("year").getAsString())));
         }
         log.i("Album results extracted from JsonObject.");
     }
@@ -274,9 +266,9 @@ public class Search {
             }
 
             // Add to collection
-            artists.add(new Artist(jsonObject.get("uri").getAsString(),
+            artists.add(new SearchResult(SearchFilter.ARTIST, new Artist(jsonObject.get("uri").getAsString(),
                     jsonObject.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString(),
-                    photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0, false));
+                    photoUrls, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), 0, false)));
         }
         log.i("Artist results extracted from JsonObject.");
     }
@@ -310,12 +302,12 @@ public class Search {
                     sourcesJsonArray.get(0).getAsJsonObject().get("url").getAsString(), width, height));
 
             // Add to collection
-            playlists.add(new Playlist(
+            playlists.add(new SearchResult(SearchFilter.PLAYLIST, new Playlist(
                     jsonObject.get("uri").getAsString(),
                     jsonObject.get("name").getAsString(),
                     photoUrls,
                     jsonObject.getAsJsonObject("owner").getAsJsonObject().get("name").getAsString(),
-                    jsonObject.get("description").getAsString()));
+                    jsonObject.get("description").getAsString())));
 
         }
         log.i("Playlist results extracted from JsonObject.");
@@ -335,31 +327,6 @@ public class Search {
 
             // JsonObject to retrieve album information, image array is nested inside.
             JsonObject albumOfTrack = jsonObject.getAsJsonObject("albumOfTrack");
-
-            // Create an inner loop to get artists
-            JsonArray artistsArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
-            Map<String, String> artistsMap = new HashMap<>();
-            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
-            for (int j = 0; j < artistsArray.size(); j++) {
-                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
-                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
-            }
-
-            // Add to collection
-            tracks.add(new Track(
-                    jsonObject.get("uri").getAsString(),
-                    jsonObject.get("name").getAsString(),
-                    albumOfTrack.get("uri").getAsString(),
-                    albumOfTrack.get("name").getAsString(),
-                    false,
-                    artistId,
-                    artistsMap,
-                    0,
-                    false,
-                    null,
-                    null,
-                    jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean()));
-
             List<PhotoUrl> photoUrl = new ArrayList<>();
             JsonArray imageArray = albumOfTrack.getAsJsonObject("coverArt").getAsJsonArray("sources");
             for (int j = 0; j < imageArray.size(); j++) {
@@ -371,7 +338,34 @@ public class Search {
                 ));
             }
 
-            trackAlbums.add(new Album(
+            // Create an inner loop to get artists
+            JsonArray artistsArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
+            Map<String, String> artistsMap = new HashMap<>();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+            for (int j = 0; j < artistsArray.size(); j++) {
+                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
+                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
+            }
+
+            // Add to collection
+            tracks.add(new SearchResult(SearchFilter.SONG, new Track(
+                    jsonObject.get("uri").getAsString(),
+                    jsonObject.get("name").getAsString(),
+                    albumOfTrack.get("uri").getAsString(),
+                    albumOfTrack.get("name").getAsString(),
+                    false,
+                    artistId,
+                    artistsMap,
+                    0,
+                    false,
+                    null,
+                    null,
+                    jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean(),
+                    photoUrl)));
+
+
+
+            trackAlbums.add(new SearchResult(SearchFilter.ALBUM, new Album(
                     albumOfTrack.get("uri").getAsString(),
                     albumOfTrack.get("name").getAsString(),
                     photoUrl,
@@ -379,10 +373,10 @@ public class Search {
                     artistsMap,
                     new ArrayList<>() {
                         {
-                            add(tracks.get(tracks.size() - 1));
+                            add(tracks.get(tracks.size() - 1).getTrack());
                         }
                     }
-            ));
+            )));
         }
         log.v("Track results extracted from JsonObject.");
     }

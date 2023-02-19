@@ -5,5 +5,5 @@ public enum SearchFilter {
     ARTIST,
     ALBUM,
     PLAYLIST,
-    TRACK
+    SONG
 }

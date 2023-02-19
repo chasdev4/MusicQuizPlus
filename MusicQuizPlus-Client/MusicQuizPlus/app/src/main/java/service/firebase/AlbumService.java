@@ -173,7 +173,8 @@ public class AlbumService {
                     false,
                     null,
                     album.getYear(),
-                    jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean());
+                    jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean(),
+                    album.getPhotoUrl());
             album.addTrackId(track.getId());
             db.child("tracks").child(track.getId()).setValue(track);
         }
