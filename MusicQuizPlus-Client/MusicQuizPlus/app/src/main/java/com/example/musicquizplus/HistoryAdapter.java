@@ -1,6 +1,7 @@
 package com.example.musicquizplus;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import model.PhotoUrl;
 import model.item.Track;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
@@ -18,15 +21,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     Context context;
     View photoView;
     HistoryViewHolder viewHolder;
+    List<Bitmap> bitmapList;    //This will need to be a list if we want different pictures for each track
+
 
     //ClickListiner listiner;
 
     //public ImageGalleryAdapter2(List<Track> list, Context context,ClickListiner listiner)
-    public HistoryAdapter(List<Track> list, Context context, int switchOn)
+    public HistoryAdapter(List<Track> list, List<Bitmap> bitmapList, Context context, int switchOn)
     {
         this.list = list;
         this.context = context;
         this.switchOn = switchOn;
+        this.bitmapList = bitmapList;
         //this.listiner = listiner;
     }
 
@@ -64,6 +70,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.historyArtist.setText(list.get(position).getArtistName());
                 viewHolder.historyAlbum.setText(list.get(position).getAlbumName());
                 viewHolder.historyYear.setText(list.get(position).getYear());
+                //viewHolder.historyPreviewImage.setImageBitmap(bitmapList.get(position));
                 break;
             case 1:
                 //if switchOn is 1, its for playlist quiz preview
@@ -71,6 +78,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.playlistArtist.setText(list.get(position).getArtistName());
                 viewHolder.playlistAlbum.setText(list.get(position).getAlbumName());
                 viewHolder.playlistYear.setText(list.get(position).getYear());
+                viewHolder.playlistPreviewImage.setImageBitmap(bitmapList.get(0));
                 break;
         }
         //final index = viewHolder.getAdapterPosition();
