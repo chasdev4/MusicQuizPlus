@@ -108,7 +108,8 @@ public class PlaylistService {
                             true,
                             jsonObject.get("preview_url").getAsString(),
                             jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
-                            jsonObject.get("is_playable").getAsBoolean());
+                            jsonObject.get("is_playable").getAsBoolean(),
+                            playlist.getPhotoUrl());
                 }
 
                 popularity += track.getPopularity();

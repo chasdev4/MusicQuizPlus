@@ -5,7 +5,6 @@ import static android.app.PendingIntent.getActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -29,27 +28,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 
-import model.PhotoUrl;
-import model.Question;
-import model.Quiz;
 import model.User;
 
-import model.item.Album;
-import model.item.Artist;
-import model.item.Playlist;
-import model.type.AlbumType;
 import service.FirebaseService;
 import service.SpotifyService;
-import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.LogUtil;
@@ -139,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
     public void updateUI(FirebaseUser firebaseUser) {
         LogUtil log = new LogUtil(TAG, "updateUI");
         this.firebaseUser = firebaseUser;
+        Context context = this;
         new Thread(new Runnable() {
             public void run() {
 
@@ -159,13 +146,25 @@ public class MainActivity extends AppCompatActivity {
 
                     log.d(firebaseUser.getDisplayName());
                     log.d(firebaseUser.getEmail());
-
-
                     defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     // If there is a database entry for the suer
                     if (user != null) {
+//                        user.initBadges(db);
+//                        log.d("done");
+                        //#region DEBUG: Getting Started
+//                        GettingStarted gettingStarted = new GettingStarted(new User(), db);
+//                        gettingStarted.selectDecade(1980);
+//                        Map<String, Artist> artistMap = gettingStarted.getArtists();
+//                        for (Map.Entry<String, Artist> entry : artistMap.entrySet()) {
+//                            gettingStarted.selectArtist(entry.getKey());
+//                        }
+//                        gettingStarted.finished(db, firebaseUser, spotifyService, context);
+//                        log.d("done");
+                        //#endregion
+
                         //#region DEBUG: Playlist Quiz Sandbox
+//                        user.initBadgeThumbnails(db);
 //                        user.initCollections(db);
 //                        Playlist userPlaylist = user.getPlaylist("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
 //                        userPlaylist.initCollection(db);
@@ -178,15 +177,15 @@ public class MainActivity extends AppCompatActivity {
 //                            i++;
 //                        }
 //
-//                        for (int p = 0; p < 10; p++) {
+//                        for (int p = 0; p < 100; p++) {
 //                            CountDownLatch countDownLatch = new CountDownLatch(1);
 //                            Random rnd = new Random();
 //                            Quiz quiz = new Quiz(userPlaylist, user, db, firebaseUser);
 //                            Question question = quiz.getFirstQuestion();
 //                            quiz.start();
 //                            i = 1;
+//                            log.d(String.valueOf(p));
 //                            while (question != null) {
-//                                log.d(String.valueOf(i));
 //                                i++;
 ////                                int index = ((rnd.nextInt(2) + 1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
 //                                int index = question.getAnswerIndex();
@@ -198,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 //                                question = quiz.nextQuestion(index);
 //                            }
 //
-//                            quiz.end();
+//                            Results results = quiz.end();
 //                            countDownLatch.countDown();
 //                            try {
 //                                countDownLatch.await();
@@ -206,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
 //                                e.printStackTrace();
 //                            }
 //                            try {
-//                                Thread.sleep(200);
+//                                Thread.sleep(50);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
@@ -235,7 +234,8 @@ public class MainActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
 //
-//                        for (int p = 0; p < 3; p++) {
+//                        for (int p = 0; p < 50; p++) {
+//                            log.d(String.valueOf(p+1));
 //                            countDownLatch = new CountDownLatch(1);
 //                            int i = 1;
 //                            Random rnd = new Random();
@@ -243,11 +243,10 @@ public class MainActivity extends AppCompatActivity {
 //                            Question question = quiz.getFirstQuestion();
 //                            quiz.start();
 //                            while (question != null) {
-//                                log.d(String.valueOf(i));
 //                                i++;
 //                                CountDownLatch cdl = new CountDownLatch(1);
-//                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
-////                                int index = question.getAnswerIndex();
+////                            int index = ((rnd.nextInt(2)+1) % 2 == 0) ? rnd.nextInt(4) : question.getAnswerIndex();
+//                                int index = question.getAnswerIndex();
 //                                try {
 //                                    Thread.sleep(rnd.nextInt(1) * 1000);
 //                                } catch (InterruptedException e) {
@@ -262,11 +261,16 @@ public class MainActivity extends AppCompatActivity {
 //                                    e.printStackTrace();
 //                                }
 //                            }
-//                            quiz.end();
+//                            Results results = quiz.end();
 //                            countDownLatch.countDown();
 //
 //                            try {
 //                                countDownLatch.await();
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                                                        try {
+//                                Thread.sleep(200);
 //                            } catch (InterruptedException e) {
 //                                e.printStackTrace();
 //                            }
@@ -318,31 +322,32 @@ public class MainActivity extends AppCompatActivity {
 
                         //#region DEBUG: Uncomment me to test heartAlbum
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                new Album("spotify:album:1LybLcJ9KuOeLHsn1NEe3j",
-//                                        "Inna",
+//                                new Album("spotify:album:6vwexbVstZKBPZS0qjSYtV",
+//                                        "Keep Moving",
 //                                        new ArrayList<PhotoUrl>() {{
-//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d0000b2733257e2b781094bcdc048b2f2",
-//                                                    640, 640));
+//                                            add(new PhotoUrl("https://i.scdn.co/image/ab67616d00001e02607b0acd32f9615ad7ea3cdc",
+//                                                    300, 300));
 //                                        }},
-//                                        "spotify:artist:2w9zwq3AktTeYYMuhMjju8",
+//                                        "spotify:artist:4AYkFtEBnNnGuoo8HaHErd",
 //                                        new HashMap<String, String>() {
 //                                            {
-//                                                put("spotify:artist:2w9zwq3AktTeYYMuhMjju8", "INNA");
+//                                                put("spotify:artist:4AYkFtEBnNnGuoo8HaHErd", "Madness");
 //                                            }
 //                                        },
 //                                        AlbumType.ALBUM, new ArrayList<String>(),
 //                                        false, 0, false,
-//                                        "2015"), spotifyService);
+//                                        "1984"), spotifyService);
 //
 //                        user.initCollections(db);
 //
-//                        Artist artist = user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8");
+//                        Artist artist = user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd");
 //                        artist.initCollections(db, user);
 //
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(1), spotifyService);
+//                                user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd").getAlbums().get(1), spotifyService);
 //                        AlbumService.heart(user, firebaseUser, db,
-//                                user.getArtist("spotify:artist:2w9zwq3AktTeYYMuhMjju8").getAlbums().get(2), spotifyService);
+//                                user.getArtist("spotify:artist:4AYkFtEBnNnGuoo8HaHErd").getAlbums().get(2), spotifyService);
+//                        log.d("Done.");
                         //#endregion
 
                         //#region DEBUG: Uncomment me to test unheartAlbum

@@ -37,4 +37,13 @@
     <string name="accuracy">Accuracy :</string>
     <string name="score">Score :</string>
     <string name="lvl">Lvl. </string>
+    <string name="search_hint">Search for your favorite music</string>
+    <string name="search_filter_all">ALL</string>
+    <string name="search_filter_artist">ARTIST</string>
+    <string name="search_filter_album">ALBUM</string>
+    <string name="search_filter_song">SONG</string>
+    <string name="search_filter_playlist">PLAYLIST</string>
+    <string name="home_button_content_description">Home Button</string>
+    <string name="back_to_top_content_description">Back to Top Button</string>
+    <string name="bullet_char">•</string>
 </resources>

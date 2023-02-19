@@ -10,23 +10,18 @@ public class Results {
     private Quiz quiz;
     private int score;
     private String accuracy;
-    private int bonusXP;
-    List<Badge> earnedBadges;
+    List<Badge> badges;
 
-    public Results(User user, Quiz quiz)
+    public Results(User user, Quiz quiz, List<Badge> badges)
     {
         this.user = user;
         this.quiz = quiz;
         this.score = quiz.getScore();
         this.accuracy = quiz.getAccuracy();
+        this.badges = badges;
     }
 
-    public List<Badge> getEarnedBadges(Context context) {
-        Badge badge = new Badge(user, quiz);
-        earnedBadges = badge.getEarnedBadges(context);
-        bonusXP = badge.getBonusXP();
-        return earnedBadges;
-    }
+    public List<Badge> getBadges() { return badges; }
 
     public int getScore() {
         return score;
@@ -35,6 +30,4 @@ public class Results {
     public String getAccuracy() {
         return accuracy;
     }
-
-    public int getBonusXP() { return bonusXP; }
 }
