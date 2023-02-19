@@ -5,7 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -20,13 +23,19 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import model.PhotoUrl;
 import model.Quiz;
 import model.User;
+import model.item.Album;
 import model.item.Playlist;
 import model.item.Track;
 import model.type.QuizType;
@@ -45,6 +54,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     ImageButton backButton;
+    InputStream inputStream;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,12 +135,20 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
                 playlist.initCollection(reference);
                 List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+                try {
+                    inputStream = new URL(playlist.getPhotoUrl().get(0).getUrl()).openStream();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                List<Bitmap> bitmapList = new ArrayList<>();
+                bitmapList.add(bitmap);
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         if (tracksList.size() > 0) {
-                            adapter = new HistoryAdapter(tracksList, getBaseContext(), 1);
+                            adapter = new HistoryAdapter(tracksList, bitmapList, getBaseContext(), 1);
                             listView.setAdapter(adapter);
                             listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                         }
