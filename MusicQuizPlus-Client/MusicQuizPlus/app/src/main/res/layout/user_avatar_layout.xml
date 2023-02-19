@@ -43,7 +43,7 @@
         android:layout_marginEnd="-10dp"
         android:layout_marginBottom="-12dp"
         android:background="@drawable/avatar_level_background"
-        android:text="@string/guest"
+        android:text="            "
         android:textSize="14sp"
         android:textColor="@color/white"
         android:textStyle="bold"

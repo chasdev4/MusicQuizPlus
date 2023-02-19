@@ -36,6 +36,7 @@
     <string name="continueText">Continue</string>
     <string name="accuracy">Accuracy :</string>
     <string name="score">Score :</string>
+    <string name="lvl">Lvl. </string>
     <string name="search_hint">Search for your favorite music</string>
     <string name="search_filter_all">ALL</string>
     <string name="search_filter_artist">ARTIST</string>

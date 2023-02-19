@@ -1,121 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.PlaylistFragment"
-    android:background="#231559">
+    android:background="@color/mqPurple3">
 
-    <RelativeLayout
-        android:id="@+id/playlistHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <include
+        layout="@layout/user_avatar_layout"
+        android:id="@+id/playlistUserAvatar"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginStart="-24dp"
+        android:layout_marginTop="-24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <include layout="@layout/user_avatar_layout"
-            android:id="@+id/playlistUserAvatar"
-            android:layout_height="150dp"
-            android:layout_width="150dp"
-            android:layout_marginTop="-10dp"
-            android:layout_marginStart="-12dp"/>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="139dp" />
 
-        <Button
-            android:id="@+id/playlistTitle"
-            android:layout_width="310dp"
-            android:layout_height="260dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="-100dp"
-            android:layout_marginEnd="-65dp"
-            android:layout_marginBottom="-85dp"
-            android:background="@drawable/parallelogram_png"
-            android:clickable="false"
-            android:text="@string/playlists"
-            android:textColor="@color/white"
-            android:textSize="33sp"
-            android:paddingTop="30dp"
-            android:paddingStart="12dp"
-            android:fontFamily="@font/concert_one"/>
+    <Button
+        android:layout_width="310dp"
+        android:layout_height="260dp"
+        android:layout_marginTop="-100dp"
+        android:layout_marginEnd="-65dp"
+        android:background="@drawable/parallelogram"
+        android:clickable="false"
+        android:fontFamily="@font/concert_one"
+        android:paddingStart="12dp"
+        android:paddingTop="30dp"
+        android:text="@string/playlists"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageButton
-            android:id="@+id/embeddedHelp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/playlistTitle"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"
-            android:background="@drawable/round_button"
-            android:minWidth="50dp"
-            android:minHeight="50dp"
-            android:src="@drawable/question_mark_foreground" />
+    <ImageButton
+        android:id="@+id/embeddedHelp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/round_button"
+        android:minWidth="50dp"
+        android:minHeight="50dp"
+        android:src="@drawable/question_mark_foreground"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="5dp"/>
 
-        <ImageButton
-            android:id="@+id/embeddedSettings"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:src="@drawable/settings_foreground"
-            android:minHeight="50dp"
-            android:minWidth="50dp"
-            android:layout_below="@id/playlistTitle"
-            android:layout_toStartOf="@id/embeddedHelp"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"/>
+    <ImageButton
+        android:id="@+id/embeddedSettings"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/round_button"
+        android:minWidth="50dp"
+        android:minHeight="50dp"
+        android:src="@drawable/settings_foreground"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/embeddedHelp"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="5dp"/>
 
-        <ImageButton
-            android:id="@+id/embeddedVolume"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/playlistTitle"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"
-            android:layout_toStartOf="@id/embeddedSettings"
-            android:background="@drawable/round_button"
-            android:src="@drawable/volume_on_foreground" />
-
-    </RelativeLayout>
+    <ImageButton
+        android:id="@+id/embeddedVolume"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/round_button"
+        android:minWidth="50dp"
+        android:minHeight="50dp"
+        android:src="@drawable/volume_on_foreground"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/embeddedSettings"
+        android:layout_marginEnd="3dp"
+        android:layout_marginBottom="5dp"/>
 
     <GridView
         android:id="@+id/playlistGridView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/playlistHeader"
+        android:layout_height="0dp"
         android:numColumns="auto_fit"
         android:horizontalSpacing="25dp"
         android:verticalSpacing="25dp"
         android:visibility="visible"
         android:clickable="true"
-        android:focusable="true"/>
+        android:focusable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline" />
 
     <ImageButton
         android:id="@+id/mainSearchButton"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:background="@drawable/round_button_no_stroke"
-        android:src="@drawable/search"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:elevation="8dp"
         android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"/>
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/round_button_no_stroke"
+        android:elevation="8dp"
+        android:src="@drawable/search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/backToTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/mainSearchButton"
-        android:layout_alignParentEnd="true"
-        android:elevation="8dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="30dp"
-        android:src="@drawable/up_chevron"
         android:background="@drawable/round_button_no_stroke"
+        android:elevation="8dp"
+        android:src="@drawable/up_chevron"
         android:visibility="gone"
-        />
+        app:layout_constraintBottom_toTopOf="@+id/mainSearchButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="5dp"/>
 
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
