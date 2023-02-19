@@ -40,16 +40,29 @@ public class Search {
     private SearchFilter currentFilter;
 
     final private static String TAG = "SearchResults.java";
+    final private static Map<SearchFilter, String> TYPE = new HashMap<>() {
+        {
+            put(SearchFilter.ALL, "multi");
+            put(SearchFilter.ARTIST, "artists");
+            put(SearchFilter.ALBUM, "albums");
+            put(SearchFilter.SONG, "tracks");
+            put(SearchFilter.PLAYLIST, "playlists");
+        }
+    };
 
-    public Search(String searchTerm, int limit, SpotifyService spotifyService) {
-        this.searchTerm = searchTerm;
-        this.limit = limit;
-        this.spotifyService = spotifyService;
+    public Search() {
         currentFilter = SearchFilter.ALL;
     }
 
+    public Search(String searchTerm, int limit, SpotifyService spotifyService, SearchFilter filter) {
+        this.searchTerm = searchTerm;
+        this.limit = limit;
+        this.spotifyService = spotifyService;
+        this.currentFilter = filter;
+    }
+
     public void execute(int offset) {
-        JsonObject json = spotifyService.search(searchTerm, limit, offset);
+        JsonObject json = spotifyService.search(searchTerm, limit, offset, TYPE.get(currentFilter));
         init(json);
     }
 
@@ -57,53 +70,63 @@ public class Search {
     public List<SearchResult> getAlbums() {
         return albums;
     }
+
     public List<SearchResult> getArtists() {
         return artists;
     }
+
     public List<SearchResult> getPlaylists() {
         return playlists;
     }
+
     public List<SearchResult> getTracks() {
         return tracks;
     }
-    public SearchFilter getCurrentFilter() { return currentFilter; }
+
+    public SearchFilter getCurrentFilter() {
+        return currentFilter;
+    }
+
     public List<SearchResult> getAll() {
         LogUtil log = new LogUtil(TAG, "getAll");
-        all.clear();
-            ExecutorService executorService = Executors.newFixedThreadPool(4);
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    all.addAll(artists);
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    all.addAll(albums);
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    all.addAll(tracks);
-                }
-            });
-            executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    all.addAll(playlists);
-                }
-            });
-
-            executorService.shutdown();
-            try {
-                executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            } catch (InterruptedException e) {
-                log.e(e.getMessage());
+        if (all != null) {
+            all.clear();
+        }
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                all.addAll(artists);
             }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                all.addAll(albums);
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                all.addAll(tracks);
+            }
+        });
+        executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                all.addAll(playlists);
+            }
+        });
+
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            log.e(e.getMessage());
+        }
         return all;
     }
+
     public TrackResult getTrackResult(Track track) {
         List<Album> titleMatch = new ArrayList<>();
         List<String> titleMatchIds = new ArrayList<>();
@@ -118,8 +141,7 @@ public class Search {
                     }
                     titleMatchIds.add(trackAlbum.getAlbum().getId());
                     titleMatch.add(trackAlbum.getAlbum());
-                }
-                else {
+                } else {
                     if (!titleMatchIds.contains(trackAlbum.getAlbum().getId())) {
                         suggestedIds.add(trackAlbum.getAlbum().getId());
                         suggested.add(trackAlbum.getAlbum());
@@ -132,7 +154,7 @@ public class Search {
             for (Album suggest : suggested) {
                 if (suggest.getArtistId().equals(album.getAlbum().getArtistId())
                         && !suggest.getId().equals(album.getAlbum().getId())
-                && !titleMatchIds.contains(album.getAlbum().getId())) {
+                        && !titleMatchIds.contains(album.getAlbum().getId())) {
                     suggested.add(album.getAlbum());
                 }
             }
@@ -147,6 +169,7 @@ public class Search {
     public void setCurrentFilter(SearchFilter currentFilter) {
         this.currentFilter = currentFilter;
     }
+
     public void setAll(List<SearchResult> all) {
         this.all = all;
     }
@@ -362,7 +385,6 @@ public class Search {
                     null,
                     jsonObject.getAsJsonObject("playability").get("playable").getAsBoolean(),
                     photoUrl)));
-
 
 
             trackAlbums.add(new SearchResult(SearchFilter.ALBUM, new Album(

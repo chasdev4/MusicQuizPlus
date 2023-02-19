@@ -6,11 +6,8 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.SearchManager;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.RadioGroup;
@@ -26,20 +23,25 @@ import service.SpotifyService;
 public class SearchActivity extends AppCompatActivity {
 
     private SearchView searchView;
+    private SearchAdapter searchAdapter;
     private RecyclerView recyclerView;
     private List<SearchResult> results;
     private RadioGroup searchFilters;
     private ImageButton backToTop;
-
+    private Context context;
     private Search search;
     private SpotifyService spotifyService;
     private int offset;
+    private String lastQuery;
+    private boolean allSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        context = this;
+        search = new Search();
         searchView = findViewById(R.id.search_bar);
         // Some devices automatically focus to the search view
         searchView.clearFocus();
@@ -83,7 +85,7 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         recyclerView = findViewById(R.id.search_recycler_view);
-        recyclerView.setAdapter(new SearchAdapter((Context) this, new ArrayList<>()));
+        setupRecyclerView();
         recyclerView.setVisibility(View.GONE);
         recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -93,12 +95,9 @@ public class SearchActivity extends AppCompatActivity {
                 LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
                 int scroll = llm.findFirstVisibleItemPosition();
 
-                if(scroll > 0)
-                {
+                if (scroll > 0) {
                     backToTop.setVisibility(View.VISIBLE);
-                }
-                else
-                {
+                } else {
                     backToTop.setVisibility(View.GONE);
                 }
 
@@ -111,26 +110,59 @@ public class SearchActivity extends AppCompatActivity {
         searchFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                List<SearchResult> results = new ArrayList<>();
+                if (allSearch && i == R.id.search_filter_all) {
+                    results = search.getAll();
+                } else if (search.getCurrentFilter() == SearchFilter.ALL && i != R.id.search_filter_all || allSearch) {
+                    allSearch = true;
+                    switch (i) {
+                        case R.id.search_filter_artist:
+                            results = search.getArtists();
+                            break;
+                        case R.id.search_filter_album:
+                            results = search.getAlbums();
+
+                            break;
+                        case R.id.search_filter_song:
+                            results = search.getTracks();
+                            break;
+                        case R.id.search_filter_playlist:
+                            results = search.getPlaylists();
+                            break;
+                    }
+                }
+                else if (search.getCurrentFilter() != SearchFilter.ALL && i == R.id.search_filter_all) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            doSearch(searchView.getQuery().toString());
+                        }
+                    }).start();
+                }
+                searchAdapter.setSearchResults(results);
+                recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        searchAdapter.notifyDataSetChanged();
+                    }
+                });
+
+
                 switch (i) {
                     case R.id.search_filter_all:
                         search.setCurrentFilter(SearchFilter.ALL);
-                        Log.d("TAG", "onCheckedChanged: ALL");
                         break;
                     case R.id.search_filter_artist:
                         search.setCurrentFilter(SearchFilter.ARTIST);
-                        Log.d("TAG", "onCheckedChanged: ARTIST");
                         break;
                     case R.id.search_filter_album:
                         search.setCurrentFilter(SearchFilter.ALBUM);
-                        Log.d("TAG", "onCheckedChanged: ALBUM");
                         break;
                     case R.id.search_filter_song:
                         search.setCurrentFilter(SearchFilter.SONG);
-                        Log.d("TAG", "onCheckedChanged: SONG");
                         break;
                     case R.id.search_filter_playlist:
                         search.setCurrentFilter(SearchFilter.PLAYLIST);
-                        Log.d("TAG", "onCheckedChanged: PLAYLIST");
                         break;
                 }
             }
@@ -138,17 +170,36 @@ public class SearchActivity extends AppCompatActivity {
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         offset = 0;
+    }
 
-        // Get the intent, verify the action and get the query
-//        Intent intent = getIntent();
-//        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-//            String query = intent.getStringExtra(SearchManager.QUERY);
-//            doSearch(query);
-//        }
+    protected void setupRecyclerView() {
+        searchAdapter = new SearchAdapter(context, new ArrayList<>());
+        searchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                onDataChange();
+            }
+        });
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setHasFixedSize(true);
+
+        recyclerView.setAdapter(searchAdapter);
+        onDataChange();
+    }
+
+    private void onDataChange() {
+
     }
 
     private <T> void doSearch(String query) {
-        search = new Search(query, 50, spotifyService);
+        if (lastQuery != query) {
+            allSearch = false;
+        }
+        lastQuery = query;
+        SearchFilter lastFilter = search.getCurrentFilter();
+        search = new Search(query, 100, spotifyService, lastFilter);
         search.execute(offset);
         runOnUiThread(new Runnable() {
             @Override
@@ -157,30 +208,29 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
         List<SearchResult> results = new ArrayList<>();
-       switch (search.getCurrentFilter()) {
-           case ALL:
-               results = search.getAll();
-               break;
-           case ARTIST:
-               results = search.getArtists();
-               break;
-           case ALBUM:
-               results = search.getAlbums();
-               break;
-           case SONG:
-               results =  search.getTracks();
-               break;
-           case PLAYLIST:
-               results =  search.getPlaylists();
-               break;
-       }
-       recyclerView.setAdapter(new SearchAdapter(this, results));
-       recyclerView.post(new Runnable() {
-           @Override
-           public void run() {
-               recyclerView.getAdapter().notifyDataSetChanged();
-
-           }
-       });
+        switch (search.getCurrentFilter()) {
+            case ALL:
+                results = search.getAll();
+                break;
+            case ARTIST:
+                results = search.getArtists();
+                break;
+            case ALBUM:
+                results = search.getAlbums();
+                break;
+            case SONG:
+                results = search.getTracks();
+                break;
+            case PLAYLIST:
+                results = search.getPlaylists();
+                break;
+        }
+        searchAdapter.setSearchResults(results);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                searchAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }

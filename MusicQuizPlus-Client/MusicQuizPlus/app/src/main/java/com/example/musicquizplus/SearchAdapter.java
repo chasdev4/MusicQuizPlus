@@ -30,6 +30,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
         this.searchResults = searchResults;
     }
 
+    public void setSearchResults(List<SearchResult> searchResults) { this.searchResults = searchResults; }
 
     @NonNull
     @Override

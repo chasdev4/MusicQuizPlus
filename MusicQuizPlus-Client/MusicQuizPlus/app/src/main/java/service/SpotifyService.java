@@ -31,11 +31,15 @@ public class SpotifyService {
     }
 
     // Search endpoint
-    public JsonObject search(String query, int limit, int offset) {
+    public JsonObject search(String query, int limit, int offset, String type) {
         // Create the client and request
         OkHttpClient client = new OkHttpClient();
         final Request request = new Request.Builder()
-                .url("https://spotify23.p.rapidapi.com/search/?q=" + query + "&type=multi&offset=" + offset +"&limit=" + limit + "&numberOfTopResults=5")
+                .url("https://spotify23.p.rapidapi.com/search/?q="
+                        + query
+                        + "&type="
+                        + type
+                        + "&offset=" + offset +"&limit=" + limit + "&numberOfTopResults=5")
                 .get()
                 .addHeader("X-RapidAPI-Key", _key)
                 .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
@@ -45,6 +49,9 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
+            if (json == "\"null\"") {
+                return null;
+            }
             JsonObject jsonObject = gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
             // Populate Search Results model and return
