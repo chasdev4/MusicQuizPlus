@@ -26,13 +26,6 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".constraintPlaylist"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
-        <activity
             android:name=".QuizResults"
             android:exported="false">
             <meta-data
