@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:height="48dp" android:width="48dp" android:drawable="@color/mqPurple3">
+      <shape android:shape="rectangle"/>
+  </item>
+    <item android:drawable="@drawable/music_note" android:width="28dp" android:height="28dp" android:gravity="center">
+    </item>
+</layer-list>

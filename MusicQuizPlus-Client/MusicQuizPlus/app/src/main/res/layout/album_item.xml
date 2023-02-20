@@ -58,11 +58,11 @@
         app:layout_constraintStart_toEndOf="@+id/image"
         app:layout_constraintTop_toBottomOf="@+id/itemTitle" />
 
-    <ImageView
+    <ToggleButton
         android:layout_width="50dp"
         android:layout_height="match_parent"
         android:backgroundTint="@color/mqPurple2"
-        android:src="@drawable/chevron_right"
+        android:button="@drawable/toggle_heart"
         android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
