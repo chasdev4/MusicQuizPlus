@@ -3,13 +3,16 @@ package com.example.musicquizplus;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 
 import java.util.ArrayList;
@@ -72,6 +75,10 @@ public class SearchActivity extends AppCompatActivity {
                 return false;
             }
         });
+        ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
+        searchIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.search));
+        ImageView searchCloseIcon = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
+        searchCloseIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.close));
 
 
         backToTop = findViewById(R.id.backToTop);
@@ -86,7 +93,7 @@ public class SearchActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.search_recycler_view);
         setupRecyclerView();
-        recyclerView.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.INVISIBLE);
         recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -103,6 +110,7 @@ public class SearchActivity extends AppCompatActivity {
 
             }
         });
+
 
         results = new ArrayList<>();
 

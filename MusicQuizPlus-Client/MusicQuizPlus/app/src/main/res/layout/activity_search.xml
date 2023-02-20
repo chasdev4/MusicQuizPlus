@@ -30,7 +30,7 @@
     <RadioGroup
         android:id="@+id/search_filter_group"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="32dp"
         android:layout_margin="16dp"
         android:layout_centerInParent="true"
         android:orientation="horizontal"
@@ -41,7 +41,7 @@
 
         <RadioButton
             android:id="@+id/search_filter_all"
-            style="@style/SearchFilterButtonStyle"
+            style="@style/AllFilterButtonStyle"
             android:text="@string/search_filter_all"
             android:checked="true"/>
 
@@ -65,7 +65,7 @@
 
         <RadioButton
             android:id="@+id/search_filter_playlist"
-            style="@style/SearchFilterButtonStyle"
+            style="@style/PlaylistFilterButtonStyle"
             android:text="@string/search_filter_playlist"
             android:checked="false"/>
     </RadioGroup>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="false">
+        <layer-list>
+            <item android:drawable="@color/mqBlue"
+                android:height="32dp" android:left="20dp"/>
+            <item android:start="10dp" android:height="32dp" android:width="32dp">
+                <rotate android:fromDegrees="45">
+                    <shape>
+                        <solid android:color="@color/mqBlue"/>
+                    </shape>
+                </rotate>
+            </item>
+        </layer-list>
+    </item>
+    <item android:state_checked="true">
+    <layer-list>
+        <item android:drawable="@color/mqBlueDark"
+            android:height="32dp" android:left="20dp"/>
+        <item android:start="10dp" android:height="32dp" android:width="32dp">
+            <rotate android:fromDegrees="45">
+                <shape>
+                    <solid android:color="@color/mqBlueDark"/>
+                </shape>
+            </rotate>
+        </item>
+    </layer-list>
+</item>
+</selector>
