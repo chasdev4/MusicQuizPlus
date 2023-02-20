@@ -58,8 +58,6 @@ public class User implements Serializable {
     private double xpToNextLevel;
     //#endregion
 
-    private boolean allSongsKnown;
-
     //#region Constants
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
@@ -203,11 +201,6 @@ public class User implements Serializable {
     @Exclude
     public Difficulty getDifficulty() {
         return settings.getDifficulty();
-    }
-
-    @Exclude
-    public boolean getAllSongsKnown() {
-        return allSongsKnown;
     }
 
     @Exclude
@@ -806,5 +799,7 @@ public class User implements Serializable {
         }
         return Math.log(level) * 2500;
     }
+
+
     //#endregion
 }

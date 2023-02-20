@@ -15,16 +15,28 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import model.GoogleSignIn;
 import model.Search;
 import model.SearchResult;
+import model.User;
 import model.type.SearchFilter;
+import service.FirebaseService;
 import service.SpotifyService;
 
 public class SearchActivity extends AppCompatActivity {
 
+    private GoogleSignIn googleSignIn;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference db;
+    private User user;
     private SearchView searchView;
     private SearchAdapter searchAdapter;
     private RecyclerView recyclerView;
@@ -42,8 +54,12 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-
         context = this;
+
+        googleSignIn = new GoogleSignIn();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        db = FirebaseDatabase.getInstance().getReference();
+
         search = new Search();
         searchView = findViewById(R.id.search_bar);
         // Some devices automatically focus to the search view
@@ -180,6 +196,21 @@ public class SearchActivity extends AppCompatActivity {
         offset = 0;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        if (firebaseUser != null)
+        {
+            new Thread(new Runnable() {
+                public void run() {
+                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    searchAdapter.setUser(user);
+                }
+            }).start();
+        }
+    }
+
     protected void setupRecyclerView() {
         searchAdapter = new SearchAdapter(context, new ArrayList<>());
         searchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -240,5 +271,9 @@ public class SearchActivity extends AppCompatActivity {
                 searchAdapter.notifyDataSetChanged();
             }
         });
+    }
+
+    public User getUser() {
+        return user;
     }
 }

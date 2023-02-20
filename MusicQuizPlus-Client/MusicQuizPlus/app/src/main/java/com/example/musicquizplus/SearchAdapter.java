@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 import model.SearchResult;
+import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
@@ -27,6 +28,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     private Context context;
     private List<SearchResult> searchResults;
+    private User user;
 
     public SearchAdapter(Context context, List<SearchResult> searchResults) {
         this.context = context;
@@ -78,6 +80,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 Album album = searchResults.get(position).getAlbum();
                 holder.setTitle(album.getName());
                 holder.setSubtitle(String.format("Album • %s", album.getYear()));
+                holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
 
@@ -124,5 +127,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

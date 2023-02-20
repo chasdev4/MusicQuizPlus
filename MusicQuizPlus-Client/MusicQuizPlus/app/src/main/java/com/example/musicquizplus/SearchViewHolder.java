@@ -3,6 +3,7 @@ package com.example.musicquizplus;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +16,7 @@ public class SearchViewHolder extends RecyclerView.ViewHolder {
     private TextView title;
     private TextView subtitle;
     private ImageView image;
+    private ToggleButton toggleButton;
 
     public SearchViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -22,6 +24,11 @@ public class SearchViewHolder extends RecyclerView.ViewHolder {
         title = itemView.findViewById(R.id.itemTitle);
         subtitle = itemView.findViewById(R.id.itemSubtitle);
         image = itemView.findViewById(R.id.image);
+        toggleButton = itemView.findViewById(R.id.heart_toggle_button);
+    }
+
+    public void setChecked(boolean checked) {
+        toggleButton.setChecked(checked);
     }
 
     public TextView getTitle() {
