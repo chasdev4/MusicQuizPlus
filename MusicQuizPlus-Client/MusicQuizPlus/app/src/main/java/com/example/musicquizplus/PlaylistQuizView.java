@@ -7,8 +7,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -17,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -55,6 +58,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     ImageButton backButton;
     InputStream inputStream;
+    ImageButton spotifyButton;
+    ImageButton shareButton;
+    boolean isSpotifyInstalled;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +75,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
         backButton = findViewById(R.id.pqvBackButton);
+        spotifyButton = findViewById(R.id.pqvSpotifyButton);
+        shareButton = findViewById(R.id.pqvShareButton);
+        PackageManager pm = getPackageManager();
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -101,6 +111,42 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+
+        spotifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    pm.getPackageInfo("com.spotify.music", 0);
+                    isSpotifyInstalled = true;
+                } catch (PackageManager.NameNotFoundException e) {
+                    isSpotifyInstalled = false;
+                }
+
+                if(isSpotifyInstalled)
+                {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(playlist.getId()));
+                    intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + getBaseContext().getPackageName()));
+                    startActivity(intent);
+                }
+                else
+                {
+                    Toast.makeText(getBaseContext(), "Spotify Not Downloaded", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //TODO: Get this working as a link rather than plain text
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, playlist.getId());
+                shareIntent.setType("text/plain");
+                startActivity(Intent.createChooser(shareIntent, "Share Playlist"));
             }
         });
     }
