@@ -2,7 +2,6 @@ package com.example.musicquizplus;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +12,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 
 import model.SearchResult;
+import model.TrackResult;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
@@ -49,8 +51,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 layout = R.layout.album_item;
                 break;
         }
-        View view = LayoutInflater.from(context).inflate(layout, parent, false);
-        return new SearchViewHolder(view);
+        return new SearchViewHolder(LayoutInflater.from(context).inflate(layout, parent, false));
     }
 
     @Override
@@ -79,7 +80,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
             case ALBUM:
                 Album album = searchResults.get(position).getAlbum();
                 holder.setTitle(album.getName());
-                holder.setSubtitle(String.format("Album • %s", album.getYear()));
+                holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getYear()));
                 holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
@@ -94,8 +95,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent intent = new Intent(view.getContext(), TrackResultView.class);
-                        intent.putExtra("currentTrack", track);
+                        TrackResult trackResult = ((SearchActivity)context).getTrackResult(track);
+                        Intent intent = new Intent(view.getContext(), TrackResultActivity.class);
+                        intent.putExtra("search", ((SearchActivity)context).getSearch());
                         view.getContext().startActivity(intent);
                     }
                 });

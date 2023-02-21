@@ -26,7 +26,9 @@ import java.util.Locale;
 import model.GoogleSignIn;
 import model.Search;
 import model.SearchResult;
+import model.TrackResult;
 import model.User;
+import model.item.Track;
 import model.type.SearchFilter;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -40,7 +42,6 @@ public class SearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private SearchAdapter searchAdapter;
     private RecyclerView recyclerView;
-    private List<SearchResult> results;
     private RadioGroup searchFilters;
     private ImageButton backToTop;
     private Context context;
@@ -127,9 +128,6 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-
-        results = new ArrayList<>();
-
         searchFilters = findViewById(R.id.search_filter_group);
         searchFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -211,7 +209,11 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    protected void setupRecyclerView() {
+    public TrackResult getTrackResult(Track track) {
+        return search.getTrackResult(track);
+    }
+
+    private void setupRecyclerView() {
         searchAdapter = new SearchAdapter(context, new ArrayList<>());
         searchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -273,7 +275,7 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    public User getUser() {
-        return user;
+    public Search getSearch() {
+        return search;
     }
 }

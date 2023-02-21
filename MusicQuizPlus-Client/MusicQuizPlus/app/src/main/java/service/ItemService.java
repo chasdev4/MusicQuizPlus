@@ -22,4 +22,8 @@ public class ItemService {
         }
         return temp == null || temp.getUrl().isEmpty() || temp.getUrl() == null ? null : temp.getUrl();
     }
+
+    public static String formatAlbumSubtitle(String year) {
+        return String.format("Album • %s", year);
+    }
 }

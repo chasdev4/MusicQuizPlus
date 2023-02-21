@@ -1,15 +1,17 @@
 package model;
 
+import java.io.Serializable;
 import java.util.List;
 
 import model.item.Album;
 
-public class TrackResult {
+public class TrackResult implements Serializable {
     private String name;
     private String id;
     private String artistName;
     private List<Album> titleMatch;
     private List<Album> suggested;
+    private boolean currentPageOne;
 
     public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested) {
         this.name = name;
@@ -17,6 +19,7 @@ public class TrackResult {
         this.artistName = artistName;
         this.titleMatch = titleMatch;
         this.suggested = suggested;
+        currentPageOne = true;
     }
 
 
@@ -38,5 +41,11 @@ public class TrackResult {
 
     public List<Album> getSuggested() {
         return suggested;
+    }
+
+    public boolean isCurrentPageOne(){ return currentPageOne; }
+
+    public void changeTab() {
+        currentPageOne = !currentPageOne;
     }
 }
