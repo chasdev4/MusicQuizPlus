@@ -42,7 +42,6 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 playlistAlbum = itemView.findViewById(R.id.quizViewTrackAlbum);
                 playlistAlbum.setSelected(true);
                 playlistYear = itemView.findViewById(R.id.quizViewTrackYear);
-                playlistPreviewImage = itemView.findViewById(R.id.quizViewPreviewImage);
                 break;
         }
         view  = itemView;

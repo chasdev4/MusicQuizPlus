@@ -21,7 +21,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     Context context;
     View photoView;
     HistoryViewHolder viewHolder;
-    List<Bitmap> bitmapList;    //This will need to be a list if we want different pictures for each track
+    List<Bitmap> bitmapList;
 
 
     //ClickListiner listiner;
@@ -78,7 +78,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.playlistArtist.setText(list.get(position).getArtistName());
                 viewHolder.playlistAlbum.setText(list.get(position).getAlbumName());
                 viewHolder.playlistYear.setText(list.get(position).getYear());
-                viewHolder.playlistPreviewImage.setImageBitmap(bitmapList.get(0));
                 break;
         }
         //final index = viewHolder.getAdapterPosition();
