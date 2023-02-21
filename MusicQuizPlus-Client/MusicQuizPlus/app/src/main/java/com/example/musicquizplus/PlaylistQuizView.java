@@ -133,7 +133,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 }
                 else
                 {
-                    Toast.makeText(getBaseContext(), "Spotify Not Downloaded", Toast.LENGTH_SHORT).show();
+                    String url = getPlaylistIdAsUrl(playlist.getId());
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    browserIntent.setData(Uri.parse(url));
+                    startActivity(browserIntent);
                 }
             }
         });
@@ -220,6 +223,12 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
 
+    }
+
+    public String getPlaylistIdAsUrl(String playlistID)
+    {
+        String id = playlistID.substring(17);
+        return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
     }
 
 }
