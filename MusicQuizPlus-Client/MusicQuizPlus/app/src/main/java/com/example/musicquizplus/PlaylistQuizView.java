@@ -144,12 +144,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Get this working as a link rather than plain text
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_TEXT, playlist.getId());
-                shareIntent.setType("text/plain");
-                startActivity(Intent.createChooser(shareIntent, "Share Playlist"));
+                shareIntent.putExtra(Intent.EXTRA_TEXT, getPlaylistIdAsUrl(playlist.getId()));
+                shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Playlist");
+                //TODO: Add MQP logo to share menu when available.
+                // Here we're passing a content URI to an image to be displayed
+                //sendIntent.setData(contentUri);
+                //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setType("text/*");
+                startActivity(Intent.createChooser(shareIntent, null));
             }
         });
     }
