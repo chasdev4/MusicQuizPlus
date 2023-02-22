@@ -31,6 +31,7 @@ public class TrackResultActivity extends AppCompatActivity {
     private TextView title;
     private TextView subtitle;
     private ImageView image;
+    private ImageButton backButton;
     private ImageView noResults;
     private TextView noResultsText;
     private Context context;
@@ -63,6 +64,13 @@ public class TrackResultActivity extends AppCompatActivity {
         noResults.setVisibility(View.GONE);
         noResultsText = findViewById(R.id.track_result_no_results_text);
         noResultsText.setVisibility(View.GONE);
+        backButton = findViewById(R.id.track_result_back);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
 
         radioGroup = findViewById(R.id.track_result_radio_group);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
