@@ -1,6 +1,5 @@
 package model;
 
-import com.example.musicquizplus.SearchAdapter;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -18,6 +17,7 @@ import model.item.Playlist;
 import model.item.Track;
 import model.type.AlbumType;
 import model.type.SearchFilter;
+import service.ItemService;
 import service.SpotifyService;
 import utils.LogUtil;
 import utils.ValidationUtil;
@@ -160,8 +160,12 @@ public class Search {
             }
         }
 
-        TrackResult trackResult = new TrackResult(track.getName(), track.getId(), track.getArtistName(), titleMatch, suggested);
-        return trackResult;
+        return new TrackResult(track.getName(),
+                track.getId(),
+                track.getArtistName(),
+                titleMatch,
+                suggested,
+                ItemService.getSmallestPhotoUrl(track.getPhotoUrl()));
     }
     //#endregion
 
@@ -364,10 +368,10 @@ public class Search {
             // Create an inner loop to get artists
             JsonArray artistsArray = jsonObject.getAsJsonObject("artists").getAsJsonArray("items");
             Map<String, String> artistsMap = new HashMap<>();
-            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").toString();
+            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
             for (int j = 0; j < artistsArray.size(); j++) {
-                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").toString(),
-                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").toString());
+                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").getAsString());
             }
 
             // Add to collection

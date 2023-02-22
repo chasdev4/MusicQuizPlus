@@ -26,4 +26,8 @@ public class ItemService {
     public static String formatAlbumSubtitle(String year) {
         return String.format("Album • %s", year);
     }
+
+    public static String formatTrackResultSubtitle(String name) {
+        return String.format("Song by %s", name);
+    }
 }

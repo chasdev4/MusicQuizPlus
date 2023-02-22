@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -97,7 +102,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                     public void onClick(View view) {
                         TrackResult trackResult = ((SearchActivity)context).getTrackResult(track);
                         Intent intent = new Intent(view.getContext(), TrackResultActivity.class);
-                        intent.putExtra("search", ((SearchActivity)context).getSearch());
+                        Gson gson = new Gson();
+                        String jsonTrack = gson.toJson(trackResult);
+                        String jsonUser = gson.toJson(user);
+                        intent.putExtra("track", jsonTrack);
+                        intent.putExtra("user", jsonUser);
                         view.getContext().startActivity(intent);
                     }
                 });

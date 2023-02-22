@@ -35,18 +35,20 @@ import service.SpotifyService;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private GoogleSignIn googleSignIn;
-    private FirebaseUser firebaseUser;
-    private DatabaseReference db;
-    private User user;
     private SearchView searchView;
     private SearchAdapter searchAdapter;
     private RecyclerView recyclerView;
     private RadioGroup searchFilters;
     private ImageButton backToTop;
     private Context context;
+
     private Search search;
+    private GoogleSignIn googleSignIn;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference db;
+    private User user;
     private SpotifyService spotifyService;
+
     private int offset;
     private String lastQuery;
     private boolean allSearch;
@@ -143,7 +145,6 @@ public class SearchActivity extends AppCompatActivity {
                             break;
                         case R.id.search_filter_album:
                             results = search.getAlbums();
-
                             break;
                         case R.id.search_filter_song:
                             results = search.getTracks();

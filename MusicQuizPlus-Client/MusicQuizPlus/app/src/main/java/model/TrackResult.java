@@ -1,24 +1,25 @@
 package model;
 
-import java.io.Serializable;
 import java.util.List;
 
 import model.item.Album;
 
-public class TrackResult implements Serializable {
+public class TrackResult {
     private String name;
     private String id;
     private String artistName;
     private List<Album> titleMatch;
     private List<Album> suggested;
+    private String imageUrl;
     private boolean currentPageOne;
 
-    public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested) {
+    public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested, String imageUrl) {
         this.name = name;
         this.id = id;
         this.artistName = artistName;
         this.titleMatch = titleMatch;
         this.suggested = suggested;
+        this.imageUrl = imageUrl;
         currentPageOne = true;
     }
 
@@ -47,5 +48,9 @@ public class TrackResult implements Serializable {
 
     public void changeTab() {
         currentPageOne = !currentPageOne;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 }

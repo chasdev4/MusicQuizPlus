@@ -7,52 +7,84 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.view.ContentInfo;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.RadioButton;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
-import model.Search;
+import model.GoogleSignIn;
 import model.TrackResult;
 import model.User;
-import model.item.Album;
-import model.item.Playlist;
+import service.ItemService;
+import service.SpotifyService;
 
 public class TrackResultActivity extends AppCompatActivity {
 
+    private TextView title;
+    private TextView subtitle;
+    private ImageView image;
+    private ImageView noResults;
+    private TextView noResultsText;
     private Context context;
-    private TrackResult trackResult;
     private TrackResultAdapter trackResultAdapter;
     private RecyclerView recyclerView;
     private RadioGroup radioGroup;
-    private List<Album> albums;
     private ImageButton backToTop;
+
+    private TrackResult trackResult;
+    private GoogleSignIn googleSignIn;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference db;
+    private User user;
+    private SpotifyService spotifyService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_track_result);
-
         context = this;
-        albums = new ArrayList<>();
-        radioGroup = findViewById(R.id.track_radio_group);
+
+        googleSignIn = new GoogleSignIn();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        db = FirebaseDatabase.getInstance().getReference();
+
+        title = findViewById(R.id.track_result_title);
+        subtitle = findViewById(R.id.track_result_subtitle);
+        image = findViewById(R.id.track_result_image);
+        noResults = findViewById(R.id.track_result_no_results);
+        noResults.setVisibility(View.GONE);
+        noResultsText = findViewById(R.id.track_result_no_results_text);
+        noResultsText.setVisibility(View.GONE);
+
+        radioGroup = findViewById(R.id.track_result_radio_group);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                trackResult.changeTab();
                 if (i == R.id.title_match_tab) {
-                    albums = trackResult.getTitleMatch();
+                    trackResultAdapter.setCollection(trackResult.getTitleMatch());
                 }
                 else {
-                    albums = trackResult.getSuggested();
+                    trackResultAdapter.setCollection(trackResult.getSuggested());
                 }
+                recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        trackResultAdapter.notifyDataSetChanged();
+                    }
+                });
             }
         });
 
-        backToTop = findViewById(R.id.trvBackToTop);
+        backToTop = findViewById(R.id.track_result_back_to_top);
 
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +121,7 @@ public class TrackResultActivity extends AppCompatActivity {
             @Override
             public void onChanged() {
                 super.onChanged();
-               // onDataChange();
+                onDataChange();
             }
         });
 
@@ -97,7 +129,20 @@ public class TrackResultActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
 
         recyclerView.setAdapter(trackResultAdapter);
-        //onDataChange();
+        onDataChange();
+    }
+
+    private void onDataChange() {
+        if (trackResultAdapter.getItemCount() == 0) {
+            recyclerView.setVisibility(View.GONE);
+            noResults.setVisibility(View.VISIBLE);
+            noResultsText.setVisibility(View.VISIBLE);
+        }
+        else {
+            recyclerView.setVisibility(View.VISIBLE);
+            noResults.setVisibility(View.GONE);
+            noResultsText.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -105,8 +150,24 @@ public class TrackResultActivity extends AppCompatActivity {
         super.onStart();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            Search search = (Search) extras.getSerializable("search");
-            trackResult = search.getTrackResult(s)
+            String jsonTrack = extras.getString("track");
+            String jsonUser = extras.getString("user");
+            Gson gson = new Gson();
+            trackResult = gson.fromJson(jsonTrack, TrackResult.class);
+            user = gson.fromJson(jsonUser, User.class);
+            trackResultAdapter.setUser(user);
+            trackResultAdapter.setCollection(trackResult.getTitleMatch());
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    trackResultAdapter.notifyDataSetChanged();
+                }
+            });
+            title.setText(trackResult.getName());
+            subtitle.setText(ItemService.formatTrackResultSubtitle(trackResult.getArtistName()));
+            Picasso.get().load(trackResult.getImageUrl()).placeholder(R.drawable.placeholder).into(image);
+            recyclerView.setVisibility(View.VISIBLE);
+            Log.d("TAG", "onStart: ");
         }
     }
 }

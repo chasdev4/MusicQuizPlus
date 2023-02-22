@@ -49,7 +49,12 @@ public class Album implements Serializable {
     }
 
     // Used for track result page
-    public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId, Map<String, String> artistsMa, List<Track> tracks) {
+    public Album(String id,
+                 String name,
+                 List<PhotoUrl> photoUrl,
+                 String artistId,
+                 Map<String, String> artistsMap,
+                 List<Track> tracks) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;

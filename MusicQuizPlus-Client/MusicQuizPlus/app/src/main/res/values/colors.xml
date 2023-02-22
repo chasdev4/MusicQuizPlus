@@ -26,5 +26,6 @@
     //Non-primary colors for styling
     <color name="nonSearchHint">#7565b2</color>
     <color name="mqBlueDark">#236ac7</color>
+    <color name="translucentWhite">#33FFFFFF</color>
 
 </resources>
