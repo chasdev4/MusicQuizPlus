@@ -134,6 +134,7 @@ public class SearchActivity extends AppCompatActivity {
         searchFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                boolean skip =false;
                 List<SearchResult> results = new ArrayList<>();
                 if (allSearch && i == R.id.search_filter_all) {
                     results = search.getAll();
@@ -154,7 +155,10 @@ public class SearchActivity extends AppCompatActivity {
                             break;
                     }
                 }
-                else if (search.getCurrentFilter() != SearchFilter.ALL && i == R.id.search_filter_all) {
+                else if (search.getCurrentFilter() != SearchFilter.ALL && i == R.id.search_filter_all
+                        || search.getCurrentFilter() != SearchFilter.ALL && searchView.getQuery().toString().equals(lastQuery)) {
+                    search.setCurrentFilter(SearchFilter.ALL);
+                    skip = true;
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -170,23 +174,24 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 });
 
-
-                switch (i) {
-                    case R.id.search_filter_all:
-                        search.setCurrentFilter(SearchFilter.ALL);
-                        break;
-                    case R.id.search_filter_artist:
-                        search.setCurrentFilter(SearchFilter.ARTIST);
-                        break;
-                    case R.id.search_filter_album:
-                        search.setCurrentFilter(SearchFilter.ALBUM);
-                        break;
-                    case R.id.search_filter_song:
-                        search.setCurrentFilter(SearchFilter.SONG);
-                        break;
-                    case R.id.search_filter_playlist:
-                        search.setCurrentFilter(SearchFilter.PLAYLIST);
-                        break;
+                if (!skip) {
+                    switch (i) {
+                        case R.id.search_filter_all:
+                            search.setCurrentFilter(SearchFilter.ALL);
+                            break;
+                        case R.id.search_filter_artist:
+                            search.setCurrentFilter(SearchFilter.ARTIST);
+                            break;
+                        case R.id.search_filter_album:
+                            search.setCurrentFilter(SearchFilter.ALBUM);
+                            break;
+                        case R.id.search_filter_song:
+                            search.setCurrentFilter(SearchFilter.SONG);
+                            break;
+                        case R.id.search_filter_playlist:
+                            search.setCurrentFilter(SearchFilter.PLAYLIST);
+                            break;
+                    }
                 }
             }
         });
