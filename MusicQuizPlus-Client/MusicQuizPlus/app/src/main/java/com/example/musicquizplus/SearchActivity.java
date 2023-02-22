@@ -13,7 +13,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -21,7 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import model.GoogleSignIn;
 import model.Search;
@@ -41,6 +42,9 @@ public class SearchActivity extends AppCompatActivity {
     private RadioGroup searchFilters;
     private ImageButton backToTop;
     private Context context;
+    private ImageView emptySearchImage;
+    private TextView emptySearchText;
+    private ProgressBar progressBar;
 
     private Search search;
     private GoogleSignIn googleSignIn;
@@ -52,12 +56,20 @@ public class SearchActivity extends AppCompatActivity {
     private int offset;
     private String lastQuery;
     private boolean allSearch;
+    private boolean searchStarted;
+    private boolean doingSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         context = this;
+
+        searchStarted = false;
+        doingSearch = false;
+
+        progressBar = findViewById(R.id.search_progress_bar);
+        progressBar.setVisibility(View.GONE);
 
         googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
@@ -99,6 +111,10 @@ public class SearchActivity extends AppCompatActivity {
         ImageView searchCloseIcon = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
         searchCloseIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.close));
 
+        emptySearchImage = findViewById(R.id.search_empty_image);
+        emptySearchText = findViewById(R.id.search_empty_text);
+        emptySearchImage.setVisibility(View.VISIBLE);
+        emptySearchText.setVisibility(View.VISIBLE);
 
         backToTop = findViewById(R.id.backToTop);
 
@@ -237,10 +253,41 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void onDataChange() {
-
+        if (searchStarted && !doingSearch) {
+            if (searchAdapter.getItemCount() == 0) {
+                recyclerView.setVisibility(View.INVISIBLE);
+                emptySearchImage.setVisibility(View.VISIBLE);
+                emptySearchText.setVisibility(View.VISIBLE);
+            } else {
+                recyclerView.setVisibility(View.VISIBLE);
+                emptySearchImage.setVisibility(View.INVISIBLE);
+                emptySearchText.setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     private <T> void doSearch(String query) {
+        doingSearch = true;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+                searchAdapter.setSearchResults(new ArrayList<>());
+            }
+        });
+        if (!searchStarted) {
+            searchStarted = true;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    emptySearchImage.setVisibility(View.INVISIBLE);
+                    emptySearchText.setVisibility(View.INVISIBLE);
+                    emptySearchImage.setImageResource(R.drawable.no_results);
+                    emptySearchText.setText(R.string.search_no_results_text);
+                }
+            });
+
+        }
         if (lastQuery != query) {
             allSearch = false;
         }
@@ -276,7 +323,9 @@ public class SearchActivity extends AppCompatActivity {
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
+                progressBar.setVisibility(View.GONE);
                 searchAdapter.notifyDataSetChanged();
+                doingSearch = false;
             }
         });
     }
