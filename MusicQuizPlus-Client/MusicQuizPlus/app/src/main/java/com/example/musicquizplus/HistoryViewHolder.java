@@ -27,6 +27,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
             case 0:
                 //if switchOn is 0, its for history view
                 historyTrackTitle = itemView.findViewById(R.id.historyTrackTitle);
+                historyTrackTitle.setSelected(true);
                 historyArtist = itemView.findViewById(R.id.historyArtist);
                 historyAlbum = itemView.findViewById(R.id.historyAlbum);
                 historyYear = itemView.findViewById(R.id.historyYear);
