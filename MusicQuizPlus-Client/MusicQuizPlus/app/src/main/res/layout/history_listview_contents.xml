@@ -26,24 +26,31 @@
         android:layout_width="75dp"
         android:layout_height="0dp"
         android:layout_margin="1dp"
-        android:src="@drawable/spotify_todays_hits"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/historyTrackTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="-18dp"
+        android:layout_marginTop="20dp"
         android:fontFamily="@font/concert_one"
         android:text="@string/sample_song_title"
         android:textColor="@color/mqWhite"
         android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/guidelineVert"
         app:layout_constraintStart_toEndOf="@+id/historyPreviewImage"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true"/>
 
     <TextView
         android:id="@+id/historyArtist"
@@ -54,17 +61,18 @@
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
         android:layout_marginStart="2dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintStart_toEndOf="@+id/historyPreviewImage"
         app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
     <TextView
         android:id="@+id/middleDotAfterArtist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="2dp"
+        android:layout_width="4dp"
+        android:layout_height="20dp"
         android:text="@string/middle_dot"
         android:textColor="@color/mqWhite"
         android:textStyle="bold"
+        android:layout_marginHorizontal="2dp"
         app:layout_constraintStart_toEndOf="@+id/historyArtist"
         app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
@@ -77,6 +85,7 @@
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
         android:layout_marginStart="2dp"
+        android:layout_marginEnd="5dp"
         app:layout_constraintStart_toEndOf="@+id/middleDotAfterArtist"
         app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
@@ -84,11 +93,10 @@
         android:id="@+id/middleDotAfterAlbum"
         android:layout_width="4dp"
         android:layout_height="20dp"
-        android:layout_marginStart="2dp"
-        android:layout_toEndOf="@id/historyAlbum"
         android:text="@string/middle_dot"
         android:textColor="@color/mqWhite"
         android:textStyle="bold"
+        android:layout_marginHorizontal="2dp"
         app:layout_constraintStart_toEndOf="@+id/historyAlbum"
         app:layout_constraintTop_toBottomOf="@+id/historyTrackTitle" />
 
@@ -96,6 +104,7 @@
         android:id="@+id/historyYear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
         android:fontFamily="@font/commissioner"
         android:text="@string/sample_year"
         android:textColor="@color/mqWhite"
