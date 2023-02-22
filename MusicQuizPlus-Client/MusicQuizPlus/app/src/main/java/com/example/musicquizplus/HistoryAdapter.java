@@ -7,32 +7,34 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+import model.ImageLoadTask;
 import model.PhotoUrl;
 import model.item.Track;
+import service.ItemService;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
-    List<Track> list = new ArrayList<>();
+    List<Track> list;
     int switchOn;
     Context context;
     View photoView;
     HistoryViewHolder viewHolder;
-    List<Bitmap> bitmapList;
-
 
     //ClickListiner listiner;
 
-    //public ImageGalleryAdapter2(List<Track> list, Context context,ClickListiner listiner)
-    public HistoryAdapter(List<Track> list, List<Bitmap> bitmapList, Context context, int switchOn)
+    //public HistoryAdapter(List<Track> list, Context context,ClickListiner listiner)
+    public HistoryAdapter(List<Track> list, Context context, int switchOn)
     {
         this.list = list;
         this.context = context;
         this.switchOn = switchOn;
-        this.bitmapList = bitmapList;
         //this.listiner = listiner;
     }
 
@@ -66,11 +68,31 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
         {
             case 0:
                 //if switchOn is 0, its for history view
+
                 viewHolder.historyTrackTitle.setText(list.get(position).getName());
-                viewHolder.historyArtist.setText(list.get(position).getArtistName());
-                viewHolder.historyAlbum.setText(list.get(position).getAlbumName());
+
+                if (list.get(position).getArtistName().length() > 15)
+                {
+                    String artist = list.get(position).getArtistName().substring(0, 12) + "\u2026";
+                    viewHolder.historyArtist.setText(artist);
+                }
+                else
+                {
+                    viewHolder.historyArtist.setText(list.get(position).getArtistName());
+                }
+
+                if (list.get(position).getAlbumName().length() > 15)
+                {
+                    String album = list.get(position).getAlbumName().substring(0, 12) + "\u2026";
+                    viewHolder.historyAlbum.setText(album);
+                }
+                else
+                {
+                    viewHolder.historyAlbum.setText(list.get(position).getAlbumName());
+                }
+
                 viewHolder.historyYear.setText(list.get(position).getYear());
-                //viewHolder.historyPreviewImage.setImageBitmap(bitmapList.get(position));
+                Picasso.get().load(ItemService.getSmallestPhotoUrl(list.get(position).getPhotoUrl())).into(viewHolder.historyPreviewImage);
                 break;
             case 1:
                 //if switchOn is 1, its for playlist quiz preview

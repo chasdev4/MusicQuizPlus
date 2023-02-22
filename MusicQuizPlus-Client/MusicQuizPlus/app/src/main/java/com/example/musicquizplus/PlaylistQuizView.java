@@ -187,16 +187,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             public void run() {
 
                 playlist.initCollection(reference);
-                List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+                List<Track> tracks = new ArrayList<>(playlist.getTracks().values());
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (tracksList.size() > 0) {
-                            adapter = new HistoryAdapter(tracksList, null, getBaseContext(), 1);
-                            listView.setAdapter(adapter);
-                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                        }
+                        adapter = new HistoryAdapter(tracks, getBaseContext(), 1);
+                        listView.setAdapter(adapter);
+                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                     }
                 });
 
