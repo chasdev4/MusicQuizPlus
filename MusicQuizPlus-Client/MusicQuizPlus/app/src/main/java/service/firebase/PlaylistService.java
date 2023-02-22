@@ -75,63 +75,65 @@ public class PlaylistService {
             if (!jsonString.equals("null")) {
                 JsonObject jsonObject = spotifyService.getGson().fromJson(jsonString, JsonElement.class).getAsJsonObject();
 
-                // Grabbing the trackId
-                String trackId = jsonObject.get("uri").getAsString();
+                if (!jsonObject.get("preview_url").isJsonNull() && jsonObject.get("is_playable").getAsBoolean()) {
 
-                // Add the trackId to the playlist
-                playlist.addTrackId(trackId);
 
-                // Check the database to see if the track exists
-                Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+                    // Grabbing the trackId
+                    String trackId = jsonObject.get("uri").getAsString();
 
-                // If the track doesn't exist
-                if (track == null) {
-                    // Extract track's artist info
-                    JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
-                    Map<String, String> artistsMap = new HashMap<>();
-                    String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
-                    for (int j = 0; j < 1; j++) {
-                        artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
-                                artistsArray.get(j).getAsJsonObject().get("name").getAsString());
+                    // Add the trackId to the playlist
+                    playlist.addTrackId(trackId);
+
+                    // Check the database to see if the track exists
+                    Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+
+                    // If the track doesn't exist
+                    if (track == null) {
+                        // Extract track's artist info
+                        JsonArray artistsArray = jsonObject.getAsJsonArray("artists");
+                        Map<String, String> artistsMap = new HashMap<>();
+                        String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
+                        for (int j = 0; j < 1; j++) {
+                            artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                                    artistsArray.get(j).getAsJsonObject().get("name").getAsString());
+                        }
+
+                        // Build a new track
+                        track = new Track(
+                                trackId,
+                                jsonObject.get("name").getAsString(),
+                                jsonObject.getAsJsonObject("album").get("uri").getAsString(),
+                                jsonObject.getAsJsonObject("album").get("name").getAsString(),
+                                false,
+                                artistId,
+                                artistsMap,
+                                jsonObject.get("popularity").getAsInt(),
+                                true,
+                                jsonObject.get("preview_url").getAsString(),
+                                jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
+                                jsonObject.get("is_playable").getAsBoolean(),
+                                playlist.getPhotoUrl());
                     }
 
-                    // Build a new track
-                    track = new Track(
-                            trackId,
-                            jsonObject.get("name").getAsString(),
-                            jsonObject.getAsJsonObject("album").get("uri").getAsString(),
-                            jsonObject.getAsJsonObject("album").get("name").getAsString(),
-                            false,
-                            artistId,
-                            artistsMap,
-                            jsonObject.get("popularity").getAsInt(),
-                            true,
-                            jsonObject.get("preview_url").getAsString(),
-                            jsonObject.getAsJsonObject("album").get("release_date").toString().substring(1, 5),
-                            jsonObject.get("is_playable").getAsBoolean(),
-                            playlist.getPhotoUrl());
+                    popularity += track.getPopularity();
+                    numTracks++;
+
+                    // Get a key to add the playlist Id to the track
+                    DatabaseReference trackRef = db.child("tracks").child(trackId);
+                    String key = trackRef.child("playlistIds").push().getKey();
+
+                    // Try and add the playlistId to the track
+                    boolean result = track.addPlaylistId(key, playlist.getId());
+                    if (result) {
+                        // Add the track to the playlist
+                        playlist.putTrack(playlist.getTrackIds().size() - 1, track);
+                    }
+                } else {
+                    log.i(String.format("Track #%s in items was null", String.valueOf(i)));
                 }
 
-                popularity += track.getPopularity();
-                numTracks++;
-
-                // Get a key to add the playlist Id to the track
-                DatabaseReference trackRef = db.child("tracks").child(trackId);
-                String key = trackRef.child("playlistIds").push().getKey();
-
-                // Try and add the playlistId to the track
-                boolean result = track.addPlaylistId(key, playlist.getId());
-                if (result) {
-                    // Add the track to the playlist
-                    playlist.putTrack(playlist.getTrackIds().size() - 1, track);
-                }
             }
-            else {
-                log.i(String.format("Track #%s in items was null", String.valueOf(i)));
-            }
-
         }
-
         playlist.setAveragePopularity(popularity / numTracks);
         return playlist;
     }
