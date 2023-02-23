@@ -1,6 +1,8 @@
 package com.example.musicquizplus;
 
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,11 +13,13 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView historyArtist;
     TextView historyYear;
     ImageView historyPreviewImage;
+    Button viewOnSpotify;
+    Button shareTrack;
     TextView playlistTrackTitle;
     TextView playlistAlbum;
     TextView playlistArtist;
     TextView playlistYear;
-    ImageView playlistPreviewImage;
+    ImageButton playlistAudio;
     View view;
 
     HistoryViewHolder(View itemView, int switchOn)
@@ -32,6 +36,8 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 historyAlbum = itemView.findViewById(R.id.historyAlbum);
                 historyYear = itemView.findViewById(R.id.historyYear);
                 historyPreviewImage = itemView.findViewById(R.id.historyPreviewImage);
+                viewOnSpotify = itemView.findViewById(R.id.spotifyView);
+                shareTrack = itemView.findViewById(R.id.shareTrack);
                 break;
 
             case 1:
@@ -43,6 +49,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 playlistAlbum = itemView.findViewById(R.id.quizViewTrackAlbum);
                 playlistAlbum.setSelected(true);
                 playlistYear = itemView.findViewById(R.id.quizViewTrackYear);
+                playlistAudio = itemView.findViewById(R.id.playSampleAudio);
                 break;
         }
         view  = itemView;
