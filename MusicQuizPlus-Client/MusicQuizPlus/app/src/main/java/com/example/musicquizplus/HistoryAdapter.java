@@ -1,40 +1,45 @@
 package com.example.musicquizplus;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.squareup.picasso.Picasso;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
-import model.ImageLoadTask;
 import model.PhotoUrl;
 import model.item.Track;
 import service.ItemService;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
-    List<Track> list;
+    List<Track> trackList;
     int switchOn;
     Context context;
     View photoView;
     HistoryViewHolder viewHolder;
-
+    Track track;
+    MediaPlayer mediaPlayer = new MediaPlayer();
     //ClickListiner listiner;
 
     //public HistoryAdapter(List<Track> list, Context context,ClickListiner listiner)
-    public HistoryAdapter(List<Track> list, Context context, int switchOn)
+    public HistoryAdapter(List<Track> trackList, Context context, int switchOn)
     {
-        this.list = list;
+        this.trackList = trackList;
         this.context = context;
         this.switchOn = switchOn;
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         //this.listiner = listiner;
     }
 
@@ -64,71 +69,151 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     @Override
     public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position)
     {
+        track = trackList.get(position);
+
         switch (switchOn)
         {
             case 0:
                 //if switchOn is 0, its for history view
 
-                viewHolder.historyTrackTitle.setText(list.get(position).getName());
+                viewHolder.historyTrackTitle.setText(track.getName());
 
-                if (list.get(position).getArtistName().length() > 15)
+                if (track.getArtistName().length() > 15)
                 {
-                    String artist = list.get(position).getArtistName().substring(0, 12) + "\u2026";
+                    String artist = track.getArtistName().substring(0, 12) + "\u2026";
                     viewHolder.historyArtist.setText(artist);
                 }
                 else
                 {
-                    viewHolder.historyArtist.setText(list.get(position).getArtistName());
+                    viewHolder.historyArtist.setText(track.getArtistName());
                 }
 
-                if (list.get(position).getAlbumName().length() > 15)
+                if (track.getAlbumName().length() > 15)
                 {
-                    String album = list.get(position).getAlbumName().substring(0, 12) + "\u2026";
+                    String album = track.getAlbumName().substring(0, 12) + "\u2026";
                     viewHolder.historyAlbum.setText(album);
                 }
                 else
                 {
-                    viewHolder.historyAlbum.setText(list.get(position).getAlbumName());
+                    viewHolder.historyAlbum.setText(track.getAlbumName());
                 }
 
-                viewHolder.historyYear.setText(list.get(position).getYear());
-                Picasso.get().load(ItemService.getSmallestPhotoUrl(list.get(position).getPhotoUrl())).into(viewHolder.historyPreviewImage);
+                viewHolder.historyYear.setText(track.getYear());
+                Picasso.get().load(ItemService.getSmallestPhotoUrl(track.getPhotoUrl())).into(viewHolder.historyPreviewImage);
+
+                viewHolder.viewOnSpotify.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        boolean isSpotifyInstalled;
+                        try {
+                            context.getPackageManager().getPackageInfo("com.spotify.music", 0);
+                            isSpotifyInstalled = true;
+                        } catch (PackageManager.NameNotFoundException e) {
+                            isSpotifyInstalled = false;
+                        }
+
+                        if(isSpotifyInstalled)
+                        {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setData(Uri.parse(trackList.get(viewHolder.getAdapterPosition()).getId()));
+                            intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
+                            context.startActivity(intent);
+                        }
+                        else
+                        {
+                            String url = getTrackIdAsUrl(trackList.get(viewHolder.getAdapterPosition()).getId());
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                            browserIntent.setData(Uri.parse(url));
+                            context.startActivity(browserIntent);
+                        }
+                    }
+                });
+
+                viewHolder.shareTrack.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Intent shareIntent = new Intent();
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.putExtra(Intent.EXTRA_TEXT, getTrackIdAsUrl(trackList.get(viewHolder.getAdapterPosition()).getId()));
+                        shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Track");
+                        //TODO: Add MQP logo to share menu when available.
+                        // Below we're passing a content URI to an image to be displayed
+                        //sendIntent.setData(mqpLogoUri);
+                        //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        shareIntent.setType("text/*");
+                        context.startActivity(Intent.createChooser(shareIntent, null));
+                    }
+                });
+
                 break;
             case 1:
                 //if switchOn is 1, its for playlist quiz preview
-                viewHolder.playlistTrackTitle.setText(list.get(position).getName());
-                viewHolder.playlistArtist.setText(list.get(position).getArtistName());
-                viewHolder.playlistAlbum.setText(list.get(position).getAlbumName());
-                viewHolder.playlistYear.setText(list.get(position).getYear());
+                viewHolder.playlistTrackTitle.setText(track.getName());
+                viewHolder.playlistArtist.setText(track.getArtistName());
+                viewHolder.playlistAlbum.setText(track.getAlbumName());
+                viewHolder.playlistYear.setText(track.getYear());
+                viewHolder.playlistAudio.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+
+                        if (mediaPlayer.isPlaying()) {
+                            mediaPlayer.stop();
+                            mediaPlayer.reset();
+                            mediaPlayer.release();
+                        }
+
+                        mediaPlayer = new MediaPlayer();
+
+                        if(viewHolder.playlistAudio.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.stop_audio).getConstantState()))
+                        {
+                            viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
+                            //viewHolder.playlistAudio.setImageResource();
+                        }
+                        else
+                        {
+                            viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.stop_audio));
+
+                            mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
+                        }
+                    }
+                });
                 break;
         }
-        //final index = viewHolder.getAdapterPosition();
-
-        //Album tracksAlbum = FirebaseService.checkDatabase(FirebaseDatabase.getInstance().getReference(), "albums", list.get(position).getAlbumId(), Album.class);
-        //Uri uri = Uri.parse(tracksAlbum.getPhotoUrl().get(0).getUrl());
-        //viewHolder.albumCover.setImageURI(uri);
-
-/*
-        viewHolder.view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view)
-            {
-                //listiner.click(index);
-            }
-        });
- */
     }
 
     @Override
     public int getItemCount()
     {
-        return list.size();
+        return trackList.size();
     }
 
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView)
     {
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public String getTrackIdAsUrl(String trackId)
+    {
+        String id = trackId.substring(14);
+        return String.format(Locale.ENGLISH, "https://open.spotify.com/track/%s", id);
+    }
+
+    private MediaPlayer playAudio(String url)
+    {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+
+        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        try {
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return mediaPlayer;
     }
 }
 
