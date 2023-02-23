@@ -27,6 +27,7 @@ import utils.ValidationUtil;
 
 public class Search {
 
+    private boolean override;
     private String searchTerm;
     private int limit;
     private SpotifyService spotifyService;
@@ -54,15 +55,17 @@ public class Search {
         currentFilter = SearchFilter.ALL;
     }
 
-    public Search(String searchTerm, int limit, SpotifyService spotifyService, SearchFilter filter) {
+    public Search(String searchTerm, int limit, SpotifyService spotifyService, SearchFilter filter, boolean override) {
         this.searchTerm = searchTerm;
         this.limit = limit;
         this.spotifyService = spotifyService;
         this.currentFilter = filter;
+        this.override = override;
     }
 
     public void execute(int offset) {
-        JsonObject json = spotifyService.search(searchTerm, limit, offset, TYPE.get(currentFilter));
+        SearchFilter filter = override ? SearchFilter.ALL : currentFilter;
+        JsonObject json = spotifyService.search(searchTerm, limit, offset, TYPE.get(filter));
         init(json);
     }
 

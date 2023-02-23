@@ -111,6 +111,8 @@ public class SearchActivity extends AppCompatActivity {
         ImageView searchCloseIcon = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
         searchCloseIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.close));
 
+        lastQuery = searchView.getQuery().toString();
+
         emptySearchImage = findViewById(R.id.search_empty_image);
         emptySearchText = findViewById(R.id.search_empty_text);
         emptySearchImage.setVisibility(View.VISIBLE);
@@ -150,70 +152,157 @@ public class SearchActivity extends AppCompatActivity {
         searchFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                boolean skip =false;
-                List<SearchResult> results = new ArrayList<>();
-                if (allSearch && i == R.id.search_filter_all) {
-                    results = search.getAll();
-                } else if (search.getCurrentFilter() == SearchFilter.ALL && i != R.id.search_filter_all || allSearch) {
-                    allSearch = true;
-                    switch (i) {
-                        case R.id.search_filter_artist:
-                            results = search.getArtists();
-                            break;
-                        case R.id.search_filter_album:
-                            results = search.getAlbums();
-                            break;
-                        case R.id.search_filter_song:
-                            results = search.getTracks();
-                            break;
-                        case R.id.search_filter_playlist:
-                            results = search.getPlaylists();
-                            break;
-                    }
-                }
-                else if (search.getCurrentFilter() != SearchFilter.ALL && i == R.id.search_filter_all
-                        || search.getCurrentFilter() != SearchFilter.ALL && searchView.getQuery().toString().equals(lastQuery)) {
-                    search.setCurrentFilter(SearchFilter.ALL);
-                    skip = true;
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            doSearch(searchView.getQuery().toString());
-                        }
-                    }).start();
-                }
-                searchAdapter.setSearchResults(results);
-                recyclerView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        searchAdapter.notifyDataSetChanged();
-                    }
-                });
-
-                if (!skip) {
-                    switch (i) {
-                        case R.id.search_filter_all:
-                            search.setCurrentFilter(SearchFilter.ALL);
-                            break;
-                        case R.id.search_filter_artist:
-                            search.setCurrentFilter(SearchFilter.ARTIST);
-                            break;
-                        case R.id.search_filter_album:
-                            search.setCurrentFilter(SearchFilter.ALBUM);
-                            break;
-                        case R.id.search_filter_song:
-                            search.setCurrentFilter(SearchFilter.SONG);
-                            break;
-                        case R.id.search_filter_playlist:
-                            search.setCurrentFilter(SearchFilter.PLAYLIST);
-                            break;
-                    }
-                }
+                onSearchFilterChanged(radioGroup, i);
             }
         });
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         offset = 0;
+    }
+
+    private <T> void doSearch(String query) {
+        doingSearch = true;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.VISIBLE);
+                searchAdapter.setSearchResults(new ArrayList<>());
+            }
+        });
+        if (!searchStarted) {
+            searchStarted = true;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    emptySearchImage.setVisibility(View.INVISIBLE);
+                    emptySearchText.setVisibility(View.INVISIBLE);
+                    emptySearchImage.setImageResource(R.drawable.no_results);
+                    emptySearchText.setText(R.string.search_no_results_text);
+                }
+            });
+
+        }
+        if (!lastQuery.equals(query)) {
+            allSearch = false;
+        }
+
+        lastQuery = query;
+        SearchFilter lastFilter = search.getCurrentFilter();
+        search = new Search(query, 100, spotifyService, lastFilter, allSearch);
+        search.execute(offset);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.setVisibility(View.VISIBLE);
+            }
+        });
+        List<SearchResult> results = new ArrayList<>();
+
+        switch (search.getCurrentFilter()) {
+            case ALL:
+                results = search.getAll();
+                break;
+            case ARTIST:
+                results = search.getArtists();
+                break;
+            case ALBUM:
+                results = search.getAlbums();
+                break;
+            case SONG:
+                results = search.getTracks();
+                break;
+            case PLAYLIST:
+                results = search.getPlaylists();
+                break;
+        }
+        searchAdapter.setSearchResults(results);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.GONE);
+                searchAdapter.notifyDataSetChanged();
+                doingSearch = false;
+            }
+        });
+    }
+
+    private void onSearchFilterChanged(RadioGroup radioGroup, int i) {
+        List<SearchResult> results = new ArrayList<>();
+
+        // If the search hasn't been started skip a lot of the logic
+        if (searchStarted) {
+            // If all results are already retrieved
+            if (allSearch) {
+                switch (i) {
+                    case R.id.search_filter_all:
+                        results = search.getAll();
+                        break;
+                    case R.id.search_filter_artist:
+                        results = search.getArtists();
+                        break;
+                    case R.id.search_filter_album:
+                        results = search.getAlbums();
+                        break;
+                    case R.id.search_filter_song:
+                        results = search.getTracks();
+                        break;
+                    case R.id.search_filter_playlist:
+                        results = search.getPlaylists();
+                        break;
+                }
+                setSearchResults(results);
+                setFilterOnPosition(i);
+            }
+            // Else if the search has started
+            // and the query hasn't changed
+            // and all hasn't been retrieved yet
+            // OR
+            // if the query did change and search has already started
+            else if ((searchStarted
+                    && lastQuery.equals(searchView.getQuery().toString())
+                    && !allSearch)
+                    || !lastQuery.equals(searchView.getQuery().toString()) && searchStarted) {
+                // Set allSearch to true, so this block doesn't repeat until the search query changes
+                allSearch = true;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doSearch(searchView.getQuery().toString());
+                        setFilterOnPosition(i);
+                    }
+                }).start();
+            }
+        }
+    }
+
+    private void setSearchResults(List<SearchResult> results) {
+        searchAdapter.setSearchResults(results);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                searchAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void setFilterOnPosition(int i) {
+        switch (i) {
+            case R.id.search_filter_all:
+                search.setCurrentFilter(SearchFilter.ALL);
+                break;
+            case R.id.search_filter_artist:
+                search.setCurrentFilter(SearchFilter.ARTIST);
+                break;
+            case R.id.search_filter_album:
+                search.setCurrentFilter(SearchFilter.ALBUM);
+                break;
+            case R.id.search_filter_song:
+                search.setCurrentFilter(SearchFilter.SONG);
+                break;
+            case R.id.search_filter_playlist:
+                search.setCurrentFilter(SearchFilter.PLAYLIST);
+                break;
+        }
     }
 
     @Override
@@ -266,69 +355,7 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    private <T> void doSearch(String query) {
-        doingSearch = true;
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.VISIBLE);
-                searchAdapter.setSearchResults(new ArrayList<>());
-            }
-        });
-        if (!searchStarted) {
-            searchStarted = true;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    emptySearchImage.setVisibility(View.INVISIBLE);
-                    emptySearchText.setVisibility(View.INVISIBLE);
-                    emptySearchImage.setImageResource(R.drawable.no_results);
-                    emptySearchText.setText(R.string.search_no_results_text);
-                }
-            });
 
-        }
-        if (lastQuery != query) {
-            allSearch = false;
-        }
-        lastQuery = query;
-        SearchFilter lastFilter = search.getCurrentFilter();
-        search = new Search(query, 100, spotifyService, lastFilter);
-        search.execute(offset);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                recyclerView.setVisibility(View.VISIBLE);
-            }
-        });
-        List<SearchResult> results = new ArrayList<>();
-        switch (search.getCurrentFilter()) {
-            case ALL:
-                results = search.getAll();
-                break;
-            case ARTIST:
-                results = search.getArtists();
-                break;
-            case ALBUM:
-                results = search.getAlbums();
-                break;
-            case SONG:
-                results = search.getTracks();
-                break;
-            case PLAYLIST:
-                results = search.getPlaylists();
-                break;
-        }
-        searchAdapter.setSearchResults(results);
-        recyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.GONE);
-                searchAdapter.notifyDataSetChanged();
-                doingSearch = false;
-            }
-        });
-    }
 
     public Search getSearch() {
         return search;

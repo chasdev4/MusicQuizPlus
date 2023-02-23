@@ -28,6 +28,9 @@ public class SearchViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setChecked(boolean checked) {
+        if (toggleButton == null) {
+            return;
+        }
         toggleButton.setChecked(checked);
     }
 
