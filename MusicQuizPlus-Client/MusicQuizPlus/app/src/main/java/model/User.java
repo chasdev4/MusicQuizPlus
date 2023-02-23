@@ -71,6 +71,9 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
         historyIds = new ArrayList<>();
+        artists = new HashMap<>();
+        playlists = new HashMap<>();
+        history = new LinkedList<>();
         badges = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;

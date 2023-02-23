@@ -73,7 +73,18 @@ public class Artist implements Serializable {
         extractArtist(jsonObject, spotifyService);
     }
 
-    public Artist() { }
+    public Artist() {
+        photoUrl = new ArrayList<>();
+        externalLinks = new ArrayList<>();
+        singleIds = new ArrayList<>();
+        albumIds = new ArrayList<>();
+        compilationIds = new ArrayList<>();
+        singles = new ArrayList<>();
+        albums = new ArrayList<>();
+        compilations = new ArrayList<>();
+        sortedDecades = new ArrayList<>();
+        decadesMap = new HashMap<>();
+    }
 
     //#region Accessors
     public String getId() { return id; }
