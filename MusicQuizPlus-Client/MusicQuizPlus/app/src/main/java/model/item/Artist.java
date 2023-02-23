@@ -27,6 +27,7 @@ import model.User;
 import model.type.AlbumType;
 import service.FirebaseService;
 import service.ItemService;
+import service.SpotifyService;
 import utils.FormatUtil;
 import utils.LogUtil;
 
@@ -52,6 +53,7 @@ public class Artist implements Serializable {
     private List<Album> albums;
     private List<Album> compilations;
     private List<Integer> sortedDecades;
+    private Map<Integer, Integer> decadesMap;
 
     private static String TAG = "Artist.java";
 
@@ -67,8 +69,8 @@ public class Artist implements Serializable {
         this.followersKnown = followersKnown;
     }
 
-    public Artist(JsonObject jsonObject) {
-        extractArtist(jsonObject);
+    public Artist(JsonObject jsonObject, SpotifyService spotifyService) {
+        extractArtist(jsonObject, spotifyService);
     }
 
     public Artist() { }
@@ -236,7 +238,7 @@ public class Artist implements Serializable {
 
     //#region Data Extraction
     // Extract information from the Artist Overview JsonObject into the model
-    private void extractArtist(JsonObject jsonObject) {
+    private void extractArtist(JsonObject jsonObject, SpotifyService spotifyService) {
         JsonObject jsonArtist = jsonObject.getAsJsonObject("data").getAsJsonObject("artist");
         id = jsonArtist.get("uri").getAsString();
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
@@ -289,38 +291,113 @@ public class Artist implements Serializable {
         albumIds = new ArrayList<>();
         compilations = new ArrayList<>();
         compilationIds = new ArrayList<>();
+        decadesMap = new HashMap<>();
 
-        List<String> discographyCollections = new ArrayList<>() {
-            {
-                add("singles");
-                add("albums");
-                add("compilations");
+
+
+        // Save compilations from artist overview
+        jsonArray = discography.getAsJsonObject("compilations")
+                .getAsJsonArray("items");
+        addReleases(jsonArray);
+            jsonArray = retrieveArtistAlbums(AlbumType.ALBUM, spotifyService);
+            addReleases(jsonArray);
+            jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
+            addReleases(jsonArray);
+
+
+
+
+//
+//
+//
+//
+//            List<String> discographyCollections = new ArrayList<>() {
+//                {
+//                    add("singles");
+//                    add("albums");
+//                    add("compilations");
+//                }
+//            };
+//
+//            // Loop thru to extract each album's info and add to it's collection
+//            Map<Integer, Integer> decadesMap = new HashMap<>();
+//            for (int k = 0; k < discographyCollections.size(); k++) {
+//                jsonArray = discography.getAsJsonObject(discographyCollections.get(k).toString())
+//                        .getAsJsonArray("items");
+//
+//                for (int i = 0; i < jsonArray.size(); i++) {
+//                    Album album = extractAlbum(jsonArray.get(i).getAsJsonObject()
+//                            .getAsJsonObject("releases").getAsJsonArray("items").get(0)
+//                            .getAsJsonObject());
+//
+//                    int year = Integer.parseInt(album.getYear());
+//                    int decade = (year / 10) * 10;
+//                    if (year % 10 == 9) {
+//                        decade += 10;
+//                    }
+//
+//                    if (decadesMap.containsKey(decade)) {
+//                        int val = decadesMap.get(decade);
+//                        val++;
+//                        decadesMap.put(decade, val);
+//                    } else {
+//                        decadesMap.put(decade, 1);
+//                    }
+//
+//                    switch (album.getType()) {
+//                        case UNINITIALIZED:
+//                        case ALBUM:
+//                            albums.add(album);
+//                            albumIds.add(album.getId());
+//                            break;
+//                        case SINGLE:
+//                            singles.add(album);
+//                            singleIds.add(album.getId());
+//                            break;
+//                        case COMPILATION:
+//                            compilations.add(album);
+//                            compilationIds.add(album.getId());
+//                            break;
+//
+//                    }
+//                }
+//            }
+
+            decades = new ArrayList<>();
+            for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
+                if (decades.size() == 0) {
+                    decades.add(d.getKey());
+                } else {
+                    int index = decades.size();
+                    for (int i = 0; i < decades.size(); i++) {
+                        if (d.getValue() < decadesMap.get(decades.get(i))) {
+                            index = decades.indexOf(decades.get(i));
+                            break;
+                        }
+                    }
+                    decades.add(decades.size() - index, d.getKey());
+                }
             }
-        };
 
-        // Loop thru to extract each album's info and add to it's collection
-        Map<Integer, Integer> decadesMap = new HashMap<>();
-        for (int k = 0; k < discographyCollections.size(); k++) {
-            jsonArray = discography.getAsJsonObject(discographyCollections.get(k).toString())
-                    .getAsJsonArray("items");
+        }
 
-            for (int i = 0; i < jsonArray.size(); i++) {
-                Album album = extractAlbum(jsonArray.get(i).getAsJsonObject()
-                        .getAsJsonObject("releases").getAsJsonArray("items").get(0)
-                        .getAsJsonObject());
+    private void addReleases(JsonArray jsonArray) {
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonArray releases = jsonArray.get(i).getAsJsonObject().getAsJsonObject("releases").getAsJsonArray("items");
+            for (int j = 0; j < releases.size(); j++) {
+                Album album = extractAlbum(releases.get(j).getAsJsonObject());
 
                 int year = Integer.parseInt(album.getYear());
-                int decade = (year/10)*10;
+                int decade = (year / 10) * 10;
                 if (year % 10 == 9) {
                     decade += 10;
                 }
 
-                if(decadesMap.containsKey(decade)) {
+                if (decadesMap.containsKey(decade)) {
                     int val = decadesMap.get(decade);
                     val++;
                     decadesMap.put(decade, val);
-                }
-                else {
+                } else {
                     decadesMap.put(decade, 1);
                 }
 
@@ -341,25 +418,12 @@ public class Artist implements Serializable {
 
                 }
             }
-        }
+    }
 
-        decades = new ArrayList<>();
-        for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
-            if (decades.size() == 0) {
-                decades.add(d.getKey());
-            }
-            else {
-                int index = decades.size();
-                for (int i = 0; i < decades.size(); i++) {
-                    if (d.getValue() < decadesMap.get(decades.get(i))) {
-                        index = decades.indexOf(decades.get(i));
-                        break;
-                    }
-                }
-                decades.add(decades.size() - index, d.getKey());
-            }
-        }
+}
 
+    private JsonArray retrieveArtistAlbums(AlbumType albumType, SpotifyService spotifyService) {
+        return spotifyService.artistAlbums(id, albumType);
     }
 
     // Extract information from the album JsonObject created in extractArtist
@@ -386,6 +450,10 @@ public class Artist implements Serializable {
                 albumType = type;
                 break;
             }
+        }
+
+        if (albumType == AlbumType.UNINITIALIZED) {
+            albumType = AlbumType.ALBUM;
         }
 
         return new Album(

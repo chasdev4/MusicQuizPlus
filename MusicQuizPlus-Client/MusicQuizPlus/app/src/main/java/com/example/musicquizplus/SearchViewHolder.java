@@ -61,4 +61,6 @@ public class SearchViewHolder extends RecyclerView.ViewHolder {
     public View getItemView() {
         return itemView;
     }
+
+    public ToggleButton getToggleButton() { return toggleButton; }
 }

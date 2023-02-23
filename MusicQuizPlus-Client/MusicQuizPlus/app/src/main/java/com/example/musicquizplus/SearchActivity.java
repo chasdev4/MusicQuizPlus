@@ -273,6 +273,9 @@ public class SearchActivity extends AppCompatActivity {
                 }).start();
             }
         }
+            else {
+                setFilterOnPosition(i);
+            }
     }
 
     private void setSearchResults(List<SearchResult> results) {
@@ -355,7 +358,13 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    public FirebaseUser getFirebaseUser() {
+        return firebaseUser;
+    }
 
+    public DatabaseReference getDb() { return db;}
+
+    public SpotifyService getSpotifyService() { return spotifyService; }
 
     public Search getSearch() {
         return search;

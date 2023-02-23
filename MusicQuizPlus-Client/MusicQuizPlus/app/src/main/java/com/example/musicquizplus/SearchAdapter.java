@@ -6,10 +6,13 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -30,6 +33,8 @@ import model.item.Track;
 import model.type.SearchFilter;
 import model.type.Source;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
@@ -85,8 +90,39 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
             case ALBUM:
                 Album album = searchResults.get(position).getAlbum();
                 holder.setTitle(album.getName());
-                holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getYear()));
-                holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
+                holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getArtistsMap().get(album.getArtistId()), album.getYear()));
+                FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
+                if (firebaseUser != null) {
+                    DatabaseReference db = ((SearchActivity)context).getDb();
+                    holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
+                    holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (holder.getToggleButton().isChecked()) {
+                                        SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
+                                        AlbumService.heart(user, firebaseUser, db, album, spotifyService);
+                                    }
+                                    else {
+                                        AlbumService.unheart(user, firebaseUser, db, album);
+                                    }
+                                }
+                            }).start();
+
+                        }
+                    });
+                }
+                else {
+                    holder.setChecked(false);
+                    holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // TODO: Display the sign-up pop up
+                        }
+                    });
+                }
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
 
