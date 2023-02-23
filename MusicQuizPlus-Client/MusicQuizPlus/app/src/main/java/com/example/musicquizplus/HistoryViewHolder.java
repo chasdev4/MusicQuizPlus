@@ -20,6 +20,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView playlistArtist;
     TextView playlistYear;
     ImageButton playlistAudio;
+    RecyclerView recyclerView;
     View view;
 
     HistoryViewHolder(View itemView, int switchOn)
@@ -50,6 +51,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 playlistAlbum.setSelected(true);
                 playlistYear = itemView.findViewById(R.id.quizViewTrackYear);
                 playlistAudio = itemView.findViewById(R.id.playSampleAudio);
+                recyclerView = itemView.findViewById(R.id.pqvRecyclerView);
                 break;
         }
         view  = itemView;

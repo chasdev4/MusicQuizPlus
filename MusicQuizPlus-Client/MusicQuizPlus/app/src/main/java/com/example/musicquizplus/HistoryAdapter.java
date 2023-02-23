@@ -31,16 +31,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     HistoryViewHolder viewHolder;
     Track track;
     MediaPlayer mediaPlayer = new MediaPlayer();
-    //ClickListiner listiner;
+    int old;
 
-    //public HistoryAdapter(List<Track> list, Context context,ClickListiner listiner)
     public HistoryAdapter(List<Track> trackList, Context context, int switchOn)
     {
         this.trackList = trackList;
         this.context = context;
         this.switchOn = switchOn;
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        //this.listiner = listiner;
     }
 
     @Override
@@ -156,25 +154,36 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                     @Override
                     public void onClick(View view) {
 
+
                         if (mediaPlayer.isPlaying()) {
                             mediaPlayer.stop();
                             mediaPlayer.reset();
                             mediaPlayer.release();
                         }
 
+                        int pos = viewHolder.getAdapterPosition();
+
                         mediaPlayer = new MediaPlayer();
 
                         if(viewHolder.playlistAudio.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.stop_audio).getConstantState()))
                         {
                             viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
-                            //viewHolder.playlistAudio.setImageResource();
                         }
                         else
                         {
                             viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.stop_audio));
-
                             mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
                         }
+
+                        /*
+                        if(old != pos)
+                        {
+                            //set image at position old to stop
+                            //View v = viewHolder.recyclerView.getChildAt(old);
+
+                        }
+                        */
+                        old = pos;
                     }
                 });
                 break;
