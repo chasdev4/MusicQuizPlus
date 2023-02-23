@@ -149,8 +149,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 shareIntent.putExtra(Intent.EXTRA_TEXT, getPlaylistIdAsUrl(playlist.getId()));
                 shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Playlist");
                 //TODO: Add MQP logo to share menu when available.
-                // Here we're passing a content URI to an image to be displayed
-                //sendIntent.setData(contentUri);
+                // Below we're passing a content URI to an image to be displayed
+                //sendIntent.setData(mqpLogoUri);
                 //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setType("text/*");
                 startActivity(Intent.createChooser(shareIntent, null));
