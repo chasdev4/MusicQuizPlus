@@ -17,14 +17,23 @@
         android:theme="@style/Theme.MusicQuizPlus.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".ArtistQuizView"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".SearchActivity"
             android:exported="false"
             android:theme="@style/Theme.MusicQuizPlus.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
-            <meta-data android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
@@ -49,7 +58,8 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
-            <meta-data android:name="android.app.default_searchable"
+            <meta-data
+                android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
         </activity>
         <activity
