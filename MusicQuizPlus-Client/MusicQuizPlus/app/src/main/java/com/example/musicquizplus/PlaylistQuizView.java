@@ -57,7 +57,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     ImageButton backButton;
-    InputStream inputStream;
     ImageButton spotifyButton;
     ImageButton shareButton;
     boolean isSpotifyInstalled;
@@ -70,7 +69,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
+        title.setSelected(true);
         owner = findViewById(R.id.pqvPlaylistOwner);
+        owner.setSelected(true);
         listView = findViewById(R.id.pqvRecyclerView);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);

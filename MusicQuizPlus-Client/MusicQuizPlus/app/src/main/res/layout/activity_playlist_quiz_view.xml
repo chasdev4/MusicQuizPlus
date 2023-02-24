@@ -51,17 +51,27 @@
 
     <TextView
         android:id="@+id/pqvTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:layout_marginTop="-18dp"
+        android:layout_marginEnd="5dp"
         android:fontFamily="@font/concert_one"
         android:text="@string/sample_song_title"
         android:textColor="@color/mqWhite"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@+id/imageButton"
         app:layout_constraintStart_toEndOf="@+id/pqvCoverImage"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -78,22 +88,33 @@
 
     <TextView
         android:id="@+id/pqvPlaylistOwner"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
         android:fontFamily="@font/commissioner"
         android:text="@string/playlist_by_spotify"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="3dp"
+        app:layout_constraintEnd_toStartOf="@+id/imageButton"
         app:layout_constraintStart_toEndOf="@+id/pqvPlaylistBy"
-        app:layout_constraintTop_toBottomOf="@+id/pqvTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/pqvTitle"
+
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true"/>
 
     <ImageButton
+        android:id="@+id/imageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/empty_heart"
         android:background="@null"
+        android:src="@drawable/empty_heart"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75"
