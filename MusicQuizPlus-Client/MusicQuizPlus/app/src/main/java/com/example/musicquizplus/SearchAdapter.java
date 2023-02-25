@@ -140,9 +140,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         Intent intent = new Intent(view.getContext(), TrackResultActivity.class);
                         Gson gson = new Gson();
                         String jsonTrack = gson.toJson(trackResult);
-                        String jsonUser = gson.toJson(user);
                         intent.putExtra("track", jsonTrack);
-                        intent.putExtra("user", jsonUser);
+                        intent.putExtra("user", user);
                         view.getContext().startActivity(intent);
                     }
                 });

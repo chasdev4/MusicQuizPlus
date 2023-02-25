@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,27 +23,24 @@ import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 
-public class Settings {
+public class Settings implements Serializable {
     //#region Members
     private Difficulty difficulty;
     private boolean ignorePlaylistDifficulty;
     private boolean ignoreArtistDifficulty;
 
     private User user;
-    private FirebaseUser firebaseUser;
-    private DatabaseReference db;
-    private GoogleSignIn googleSignIn;
     //#endregion
 
     //#region Constructors
-    public Settings(Difficulty difficulty, User user, FirebaseUser firebaseUser, boolean ignorePlaylistDifficulty, boolean ignoreArtistDifficulty, DatabaseReference db, String versionNumber, GoogleSignIn googleSignIn) {
+    public Settings(Difficulty difficulty,
+                    User user,
+                    boolean ignorePlaylistDifficulty,
+                    boolean ignoreArtistDifficulty) {
         this.difficulty = difficulty;
         this.user = user;
-        this.firebaseUser = firebaseUser;
         this.ignorePlaylistDifficulty = ignorePlaylistDifficulty;
         this.ignoreArtistDifficulty = ignoreArtistDifficulty;
-        this.db = db;
-        this.googleSignIn = googleSignIn;
     }
 
     public Settings() {
@@ -102,7 +100,7 @@ public class Settings {
     //#endregion
 
     //#region Methods
-    public void unheartAllPlaylists() {
+    public void unheartAllPlaylists(FirebaseUser firebaseUser, DatabaseReference db) {
         for (Map.Entry<String, Playlist> playlist : user.getPlaylists().entrySet()) {
             PlaylistService.unheart(user, firebaseUser, db, playlist.getValue());
         }
@@ -111,7 +109,7 @@ public class Settings {
         db.child("users").child(firebaseUser.getUid()).child("playlistIds").removeValue();
     }
 
-    public void unheartAllAlbums() {
+    public void unheartAllAlbums(FirebaseUser firebaseUser, DatabaseReference db) {
         for (Map.Entry<String, Artist> artist : user.getArtists().entrySet()) {
             List<Album> albums = new ArrayList<>();
             albums.addAll(artist.getValue().getAlbums());
@@ -134,7 +132,7 @@ public class Settings {
         user.setArtistIds(new HashMap<>());
     }
 
-    public void clearHistory() {
+    public void clearHistory(FirebaseUser firebaseUser, DatabaseReference db) {
         if (firebaseUser != null) {
             user.setHistory(new LinkedList<>());
             user.setHistoryIds(new ArrayList<>());
@@ -142,16 +140,16 @@ public class Settings {
         }
     }
 
-    public boolean deleteAccount() {
-        unheartAllPlaylists();
-        unheartAllAlbums();
+    public boolean deleteAccount(FirebaseUser firebaseUser, DatabaseReference db) {
+        unheartAllPlaylists(firebaseUser, db);
+        unheartAllAlbums(firebaseUser, db);
         return user.delete(firebaseUser, db);
     }
 
-    public void signOut() { googleSignIn.signOut(); }
+    public void signOut(GoogleSignIn googleSignIn) { googleSignIn.signOut(); }
 
     // Create a copy of settings before modification, pass it here
-    public void close(Settings oldSettings) {
+    public void close(FirebaseUser firebaseUser, DatabaseReference db, Settings oldSettings) {
         if (firebaseUser == null) {
             // TODO: Save difficulty locally
             // Note: This might need to be done from an activity

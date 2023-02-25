@@ -159,10 +159,9 @@ public class TrackResultActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String jsonTrack = extras.getString("track");
-            String jsonUser = extras.getString("user");
+            user = (User) extras.getSerializable("user");
             Gson gson = new Gson();
             trackResult = gson.fromJson(jsonTrack, TrackResult.class);
-            user = gson.fromJson(jsonUser, User.class);
             trackResultAdapter.setUser(user);
             trackResultAdapter.setCollection(trackResult.getTitleMatch());
             recyclerView.post(new Runnable() {

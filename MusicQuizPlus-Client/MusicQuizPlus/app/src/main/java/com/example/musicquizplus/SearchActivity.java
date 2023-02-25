@@ -59,7 +59,6 @@ public class SearchActivity extends AppCompatActivity {
     private boolean allSearch;
     private boolean searchStarted;
     private boolean doingSearch;
-    private boolean searchLimitReached;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,28 +162,28 @@ public class SearchActivity extends AppCompatActivity {
     private <T> void doSearch(String query) {
         SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        if (searchLimitReached || firebaseUser == null
-                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
-            searchLimitReached = true;
-            // TODO: Display the sign up popup
-            return;
-        }
-        else if (searchLimitReached || firebaseUser != null
-                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
-
-            Context context = this;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    final Toast toast = Toast.makeText(context,
-                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            });
-
-            // TODO: Return the user to the home screen
-            return;
-        }
+//        if (searchLimitReached || firebaseUser == null
+//                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
+//            searchLimitReached = true;
+//            // TODO: Display the sign up popup
+//            return;
+//        }
+//        else if (searchLimitReached || firebaseUser != null
+//                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
+//
+//            Context context = this;
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    final Toast toast = Toast.makeText(context,
+//                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
+//                    toast.show();
+//                }
+//            });
+//
+//            // TODO: Return the user to the home screen
+//            return;
+//        }
 
 
 

@@ -4,12 +4,13 @@ import android.util.Log;
 
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import model.item.Track;
 
-public class ArtistHistory {
+public class ArtistHistory implements Serializable {
     private Map<String, TopicHistory> albums;
     private int albumsTotal;
     private int albumsCount;
