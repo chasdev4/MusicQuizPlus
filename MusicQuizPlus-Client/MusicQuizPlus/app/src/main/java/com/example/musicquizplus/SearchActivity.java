@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -30,6 +32,7 @@ import model.SearchResult;
 import model.TrackResult;
 import model.User;
 import model.item.Track;
+import model.type.Role;
 import model.type.SearchFilter;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -39,7 +42,6 @@ public class SearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private SearchAdapter searchAdapter;
     private RecyclerView recyclerView;
-    private RadioGroup searchFilters;
     private ImageButton backToTop;
     private Context context;
     private ImageView emptySearchImage;
@@ -47,7 +49,6 @@ public class SearchActivity extends AppCompatActivity {
     private ProgressBar progressBar;
 
     private Search search;
-    private GoogleSignIn googleSignIn;
     private FirebaseUser firebaseUser;
     private DatabaseReference db;
     private User user;
@@ -58,6 +59,7 @@ public class SearchActivity extends AppCompatActivity {
     private boolean allSearch;
     private boolean searchStarted;
     private boolean doingSearch;
+    private boolean searchLimitReached;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +73,7 @@ public class SearchActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.search_progress_bar);
         progressBar.setVisibility(View.GONE);
 
-        googleSignIn = new GoogleSignIn();
+        GoogleSignIn googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
@@ -82,10 +84,8 @@ public class SearchActivity extends AppCompatActivity {
         searchView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.search_bar:
+                if (v.getId() == R.id.search_bar) {
                         searchView.onActionViewExpanded();
-                        break;
                 }
             }
         });
@@ -148,7 +148,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        searchFilters = findViewById(R.id.search_filter_group);
+        RadioGroup searchFilters = findViewById(R.id.search_filter_group);
         searchFilters.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
@@ -161,6 +161,33 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private <T> void doSearch(String query) {
+        SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if (searchLimitReached || firebaseUser == null
+                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
+            searchLimitReached = true;
+            // TODO: Display the sign up popup
+            return;
+        }
+        else if (searchLimitReached || firebaseUser != null
+                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
+
+            Context context = this;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final Toast toast = Toast.makeText(context,
+                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+
+            // TODO: Return the user to the home screen
+            return;
+        }
+
+
+
         doingSearch = true;
         runOnUiThread(new Runnable() {
             @Override
@@ -190,6 +217,11 @@ public class SearchActivity extends AppCompatActivity {
         SearchFilter lastFilter = search.getCurrentFilter();
         search = new Search(query, 100, spotifyService, lastFilter, allSearch);
         search.execute(offset);
+
+        user.incrementSearchCount();
+        editor.putInt(getString(R.string.searchCount), user.getSearchCount());
+        editor.apply();
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -314,9 +346,12 @@ public class SearchActivity extends AppCompatActivity {
 
         if (firebaseUser != null)
         {
+            Activity activity = this;
             new Thread(new Runnable() {
                 public void run() {
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+                    user.setSearchCount(sharedPref.getInt(activity.getString(R.string.searchCount), 0));
                     searchAdapter.setUser(user);
                 }
             }).start();

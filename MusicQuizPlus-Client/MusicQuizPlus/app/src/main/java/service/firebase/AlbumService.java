@@ -107,6 +107,12 @@ public class AlbumService {
 
         Album album1 = FirebaseService.checkDatabase(db, "albums", album.getId(), Album.class);
 
+        if (album1 == null) {
+            //TODO: Inform the user? Error occurs when hearting directly from search view
+            log.e("Album can't be saved because it isn't saved to artist.");
+            return;
+        }
+
         if (!album1.isTrackIdsKnown()) {
             // Save the hearted album's tracks to the database
             saveAlbumTracks(album, db, spotifyService);

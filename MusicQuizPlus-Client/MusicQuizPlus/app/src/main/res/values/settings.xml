@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="difficulty">0</integer>
+    <string name="difficulty">0</string>
+    <string name="searchCount">0</string>
+    <string name="limitReached">-1</string>
 </resources>
