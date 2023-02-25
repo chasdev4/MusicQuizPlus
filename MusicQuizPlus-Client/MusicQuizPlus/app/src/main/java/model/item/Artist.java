@@ -2,6 +2,7 @@ package model.item;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.google.firebase.database.DatabaseReference;
@@ -10,9 +11,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +44,6 @@ public class Artist implements Serializable {
     private List<PhotoUrl> photoUrl;
     private String bio;
     private List<ExternalLink> externalLinks;
-    private String latest;
     private List<String> singleIds;
     private List<String> albumIds;
     private List<String> compilationIds;
@@ -54,6 +57,7 @@ public class Artist implements Serializable {
     private List<Album> compilations;
     private List<Integer> sortedDecades;
     private Map<Integer, Integer> decadesMap;
+    private String latest;
 
     private static String TAG = "Artist.java";
 
@@ -98,7 +102,17 @@ public class Artist implements Serializable {
     public List<ExternalLink> getExternalLinks() {
         return externalLinks;
     }
+    @Exclude
     public String getLatest() {
+        String latest = null;
+        int newest = 0;
+        for (Album a : albums) {
+            int year = Integer.parseInt(a.getYear());
+            if (year > newest) {
+                newest = year;
+                latest = a.getId();
+            }
+        }
         return latest;
     }
     public List<String> getSingleIds() { return singleIds; }
@@ -263,6 +277,10 @@ public class Artist implements Serializable {
                 .get("text")
                 .getAsString());
 
+        if (bio.length() > 250) {
+            bio = bio.substring(0, 250);
+        }
+
 
         JsonArray jsonArray = jsonArtist.getAsJsonObject()
                 .get("profile")
@@ -294,7 +312,6 @@ public class Artist implements Serializable {
         }
 
         JsonObject discography = jsonArtist.getAsJsonObject("discography");
-        latest = discography.getAsJsonObject("latest").get("uri").getAsString();
 
         singles = new ArrayList<>();
         singleIds = new ArrayList<>();
@@ -315,64 +332,7 @@ public class Artist implements Serializable {
             jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
             addReleases(jsonArray);
 
-
-
-
-//
-//
-//
-//
-//            List<String> discographyCollections = new ArrayList<>() {
-//                {
-//                    add("singles");
-//                    add("albums");
-//                    add("compilations");
-//                }
-//            };
-//
-//            // Loop thru to extract each album's info and add to it's collection
-//            Map<Integer, Integer> decadesMap = new HashMap<>();
-//            for (int k = 0; k < discographyCollections.size(); k++) {
-//                jsonArray = discography.getAsJsonObject(discographyCollections.get(k).toString())
-//                        .getAsJsonArray("items");
-//
-//                for (int i = 0; i < jsonArray.size(); i++) {
-//                    Album album = extractAlbum(jsonArray.get(i).getAsJsonObject()
-//                            .getAsJsonObject("releases").getAsJsonArray("items").get(0)
-//                            .getAsJsonObject());
-//
-//                    int year = Integer.parseInt(album.getYear());
-//                    int decade = (year / 10) * 10;
-//                    if (year % 10 == 9) {
-//                        decade += 10;
-//                    }
-//
-//                    if (decadesMap.containsKey(decade)) {
-//                        int val = decadesMap.get(decade);
-//                        val++;
-//                        decadesMap.put(decade, val);
-//                    } else {
-//                        decadesMap.put(decade, 1);
-//                    }
-//
-//                    switch (album.getType()) {
-//                        case UNINITIALIZED:
-//                        case ALBUM:
-//                            albums.add(album);
-//                            albumIds.add(album.getId());
-//                            break;
-//                        case SINGLE:
-//                            singles.add(album);
-//                            singleIds.add(album.getId());
-//                            break;
-//                        case COMPILATION:
-//                            compilations.add(album);
-//                            compilationIds.add(album.getId());
-//                            break;
-//
-//                    }
-//                }
-//            }
+            latest = getLatest();
 
             decades = new ArrayList<>();
             for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
