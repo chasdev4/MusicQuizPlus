@@ -106,11 +106,31 @@ public class Artist implements Serializable {
     public String getLatest() {
         String latest = null;
         int newest = 0;
-        for (Album a : albums) {
-            int year = Integer.parseInt(a.getYear());
-            if (year > newest) {
-                newest = year;
-                latest = a.getId();
+        if (albums != null) {
+            for (Album a : albums) {
+                int year = Integer.parseInt(a.getYear());
+                if (year > newest) {
+                    newest = year;
+                    latest = a.getId();
+                }
+            }
+        }
+        if (singles != null) {
+            for (Album a : singles) {
+                int year = Integer.parseInt(a.getYear());
+                if (year > newest) {
+                    newest = year;
+                    latest = a.getId();
+                }
+            }
+        }
+        if (compilations != null) {
+            for (Album a : compilations) {
+                int year = Integer.parseInt(a.getYear());
+                if (year > newest) {
+                    newest = year;
+                    latest = a.getId();
+                }
             }
         }
         return latest;
