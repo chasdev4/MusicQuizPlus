@@ -10,6 +10,7 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -190,11 +191,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
                         if(old != pos)
                         {
+                            //notifyDataSetChanged();
                             //set image at position old to stop
                             //View v = viewHolder.recyclerView.getChildAt(old);
                             //View itemView =  viewHolder.recyclerView.findViewHolderForAdapterPosition(old).itemView;
                             //ImageButton btn = itemView.findViewById(R.id.playSampleAudio);
                             //btn.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
+                            //viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
+                            //notifyItemChanged(old);
                         }
 
                         old = pos;

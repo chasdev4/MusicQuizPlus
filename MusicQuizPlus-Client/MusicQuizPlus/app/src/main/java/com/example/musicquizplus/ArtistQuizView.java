@@ -118,10 +118,12 @@ public class ArtistQuizView extends AppCompatActivity {
             artistNameTV.setText(artist.getName());
             artistBioTV.setText(artist.getBio());
             Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+
             if(artist.getExternalLinks() != null)
             {
                 initializeExternalLinkButtons();
             }
+
             if(artist.getLatest() != null)
             {
                 reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -380,33 +382,6 @@ public class ArtistQuizView extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     log.e(e.getMessage());
                 }
-
-
-
-
-
-
-
-
-
-/*
-                playlist.initCollection(reference);
-                List<Track> tracks = new ArrayList<>(playlist.getTracks().values());
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter = new HistoryAdapter(tracks, getBaseContext(), 1);
-                        listView.setAdapter(adapter);
-                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                    }
-                });
-
-                // TODO: Pass in our DatabaseReference
-                // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
-
-
- */
             }
         }).start();
 
