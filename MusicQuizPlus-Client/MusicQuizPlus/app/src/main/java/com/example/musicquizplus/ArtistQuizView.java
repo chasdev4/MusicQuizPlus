@@ -2,6 +2,8 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,6 +14,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,15 +22,25 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.ExternalLink;
+import model.GoogleSignIn;
+import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.AlbumType;
 import model.type.ExternalLinkType;
+import service.FirebaseService;
 import service.ItemService;
+import utils.LogUtil;
 
 public class ArtistQuizView extends AppCompatActivity {
 
@@ -48,7 +61,12 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView latestYear;
     TextView latestText;
     View latestRelease;
-
+    RecyclerView albumsRV;
+    RecyclerView compilationsRV;
+    RecyclerView singlesRV;
+    TextView singlesTextView;
+    TextView compilationsTextView;
+    TextView albumsTextView;
     Album latest;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
@@ -59,13 +77,15 @@ public class ArtistQuizView extends AppCompatActivity {
     String twitterURL;
     String wikipediaURL;
     String instagramURL;
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    GoogleSignIn googleSignIn = new GoogleSignIn();
+    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+    HistoryAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_quiz_view);
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
         artistNameTV = findViewById(R.id.aqvArtistName);
         artistBioTV = findViewById(R.id.aqvArtistDescription);
@@ -84,6 +104,10 @@ public class ArtistQuizView extends AppCompatActivity {
         latestYear = findViewById(R.id.aqvTrackYear);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
+        albumsRV = findViewById(R.id.aqvAlbums);
+        compilationsRV = findViewById(R.id.aqvCompilations);
+        singlesRV = findViewById(R.id.aqvSingles);
+        singlesTextView = findViewById(R.id.singlesTextView);
 
         PackageManager pm = getPackageManager();
 
@@ -266,6 +290,126 @@ public class ArtistQuizView extends AppCompatActivity {
                 startActivity(Intent.createChooser(shareIntent, null));
             }
         });
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        new Thread(new Runnable() {
+            public void run() {
+                User user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+
+                artist.initCollections(reference, user);
+
+                LogUtil log = new LogUtil("ArtistQuizView", "onStart");
+                ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+                if(artist.getSingles() != null)
+                {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new HistoryAdapter(null, artist.getSingles(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    singlesRV.setAdapter(adapter);
+                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                }
+                else
+                {
+                    singlesRV.setVisibility(View.GONE);
+                    singlesTextView.setVisibility(View.GONE);
+                }
+
+                if(artist.getCompilations() != null)
+                {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new HistoryAdapter(null, artist.getCompilations(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    compilationsRV.setAdapter(adapter);
+                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                }
+                else
+                {
+                    compilationsRV.setVisibility(View.GONE);
+                    compilationsTextView.setVisibility(View.GONE);
+                }
+
+                if(artist.getAlbums() != null)
+                {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new HistoryAdapter(null, artist.getAlbums(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    albumsRV.setAdapter(adapter);
+                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                }
+                else
+                {
+                    albumsRV.setVisibility(View.GONE);
+                    albumsTextView.setVisibility(View.GONE);
+                }
+
+                executorService.shutdown();
+
+                try {
+                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    log.e(e.getMessage());
+                }
+
+
+
+
+
+
+
+
+
+/*
+                playlist.initCollection(reference);
+                List<Track> tracks = new ArrayList<>(playlist.getTracks().values());
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter = new HistoryAdapter(tracks, getBaseContext(), 1);
+                        listView.setAdapter(adapter);
+                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                    }
+                });
+
+                // TODO: Pass in our DatabaseReference
+                // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
+
+
+ */
+            }
+        }).start();
+
     }
 
     private void initializeExternalLinkButtons()

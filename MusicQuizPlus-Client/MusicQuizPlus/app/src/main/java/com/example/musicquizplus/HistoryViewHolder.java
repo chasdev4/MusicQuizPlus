@@ -21,6 +21,12 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView playlistYear;
     ImageButton playlistAudio;
     RecyclerView recyclerView;
+    ImageView aqvPreviewImage;
+    TextView aqvAlbumTitle;
+    TextView aqvAlbumType;
+    TextView aqvAlbumYear;
+    ImageButton aqvHeartAlbum;
+
     View view;
 
     HistoryViewHolder(View itemView, int switchOn)
@@ -53,6 +59,14 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 playlistAudio = itemView.findViewById(R.id.playSampleAudio);
                 recyclerView = itemView.findViewById(R.id.pqvRecyclerView);
                 break;
+
+            case 2:
+                //if switchOn is 2, its for artist quiz preview
+                aqvPreviewImage = itemView.findViewById(R.id.aqvTrackImage);
+                aqvAlbumTitle = itemView.findViewById(R.id.aqvTrackTitle);
+                aqvAlbumType = itemView.findViewById(R.id.aqvTrackAlbum);
+                aqvAlbumYear = itemView.findViewById(R.id.aqvTrackYear);
+                aqvHeartAlbum = itemView.findViewById(R.id.aqvHeartTrack);
         }
         view  = itemView;
     }

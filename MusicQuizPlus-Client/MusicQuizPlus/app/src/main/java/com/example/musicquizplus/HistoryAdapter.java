@@ -10,6 +10,8 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+
 import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 import java.io.IOException;
@@ -19,23 +21,27 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import model.PhotoUrl;
+import model.item.Album;
 import model.item.Track;
 import service.ItemService;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     List<Track> trackList;
+    List<Album> albumList;
     int switchOn;
     Context context;
     View photoView;
     HistoryViewHolder viewHolder;
     Track track;
+    Album album;
     MediaPlayer mediaPlayer = new MediaPlayer();
     int old;
 
-    public HistoryAdapter(List<Track> trackList, Context context, int switchOn)
+    public HistoryAdapter(List<Track> trackList, List<Album> albumList, Context context, int switchOn)
     {
         this.trackList = trackList;
+        this.albumList = albumList;
         this.context = context;
         this.switchOn = switchOn;
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -59,6 +65,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 photoView = inflater.inflate(R.layout.playlist_quiz_listview_contents, parent, false);
                 viewHolder = new HistoryViewHolder(photoView, 1);
                 break;
+            case 2:
+                //if switchOn is 2, its for artist quiz preview
+                photoView = inflater.inflate(R.layout.artist_quiz_contents, parent, false);
+                viewHolder = new HistoryViewHolder(photoView, 2);
         }
 
         return viewHolder;
@@ -67,12 +77,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     @Override
     public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position)
     {
-        track = trackList.get(position);
 
         switch (switchOn)
         {
             case 0:
                 //if switchOn is 0, its for history view
+                track = trackList.get(position);
 
                 viewHolder.historyTrackTitle.setText(track.getName());
 
@@ -146,6 +156,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 break;
             case 1:
                 //if switchOn is 1, its for playlist quiz preview
+                track = trackList.get(position);
+
                 viewHolder.playlistTrackTitle.setText(track.getName());
                 viewHolder.playlistArtist.setText(track.getArtistName());
                 viewHolder.playlistAlbum.setText(track.getAlbumName());
@@ -175,24 +187,54 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                             mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
                         }
 
-                        /*
+
                         if(old != pos)
                         {
                             //set image at position old to stop
                             //View v = viewHolder.recyclerView.getChildAt(old);
-
+                            //View itemView =  viewHolder.recyclerView.findViewHolderForAdapterPosition(old).itemView;
+                            //ImageButton btn = itemView.findViewById(R.id.playSampleAudio);
+                            //btn.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
                         }
-                        */
+
                         old = pos;
                     }
                 });
                 break;
+
+            case 2:
+                //if switchOn is 2, its for artist quiz preview
+                album = albumList.get(position);
+
+                Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
+                viewHolder.aqvAlbumTitle.setText(album.getName());
+                viewHolder.aqvAlbumType.setText(album.getType().toString());
+                viewHolder.aqvAlbumYear.setText(album.getYear());
+                viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(viewHolder.aqvHeartAlbum.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.empty_heart).getConstantState()))
+                        {
+                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.filled_heart));
+                        }
+                        else
+                        {
+                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.empty_heart));
+                        }
+
+                        //TODO: Actually Heart the Album
+                    }
+                });
         }
     }
 
     @Override
     public int getItemCount()
     {
+        if(switchOn == 2)
+        {
+            return albumList.size();
+        }
         return trackList.size();
     }
 
