@@ -55,6 +55,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ImageButton wikipedia;
     ImageButton instagram;
     ImageButton share;
+    ImageButton heartLatest;
     ImageView latestImage;
     TextView latestTitle;
     TextView latestType;
@@ -102,6 +103,7 @@ public class ArtistQuizView extends AppCompatActivity {
         latestTitle.setSelected(true);
         latestType = findViewById(R.id.aqvTrackAlbum);
         latestYear = findViewById(R.id.aqvTrackYear);
+        heartLatest = findViewById(R.id.aqvHeartTrack);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
         albumsRV = findViewById(R.id.aqvAlbums);
@@ -293,6 +295,19 @@ public class ArtistQuizView extends AppCompatActivity {
             }
         });
 
+        heartLatest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(heartLatest.getDrawable().getConstantState().equals(getBaseContext().getResources().getDrawable(R.drawable.empty_heart).getConstantState()))
+                {
+                    heartLatest.setImageDrawable(getBaseContext().getResources().getDrawable(R.drawable.filled_heart));
+                }
+                else
+                {
+                    heartLatest.setImageDrawable(getBaseContext().getResources().getDrawable(R.drawable.empty_heart));
+                }
+            }
+        });
 
     }
 
