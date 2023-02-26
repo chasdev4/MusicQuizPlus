@@ -231,5 +231,10 @@ public class Track implements Serializable {
         playlistIds.put(key, playlistId);
         return true;
     }
+
+    public void setPhotoUrl(List<PhotoUrl> photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
     //#endregion
 }

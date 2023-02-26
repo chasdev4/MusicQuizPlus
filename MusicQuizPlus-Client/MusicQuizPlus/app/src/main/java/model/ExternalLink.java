@@ -2,12 +2,14 @@ package model;
 
 import android.util.Log;
 
+import java.io.Serializable;
+
 import model.type.ExternalLinkType;
 
 // SUMMARY
 // The ExternalLink model stores an external link attached to an Artist
 
-public class ExternalLink {
+public class ExternalLink implements Serializable {
     private ExternalLinkType type;
     private String url;
 

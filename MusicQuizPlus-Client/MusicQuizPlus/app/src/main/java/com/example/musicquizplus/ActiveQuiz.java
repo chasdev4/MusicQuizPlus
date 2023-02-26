@@ -71,7 +71,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         answers = currentQuestion.getAnswers();
         audioURL = currentQuestion.getPreviewUrl();
 
-        mediaPlayer = playAudio(audioURL);
+        mediaPlayer = playAudio();
 
         currentQuestionType.setText(type.toString());
         answerA.setText(answers.get(0));
@@ -102,7 +102,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             answers = currentQuestion.getAnswers();
 
             audioURL = currentQuestion.getPreviewUrl();
-            mediaPlayer = playAudio(audioURL);
+            mediaPlayer = playAudio();
 
             currentQuestionType.setText(type.toString());
             answerA.setText(answers.get(0));
@@ -112,7 +112,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         }
     }
 
-    private MediaPlayer playAudio(String Url)
+    private MediaPlayer playAudio()
     {
         MediaPlayer mediaPlayer = new MediaPlayer();
 

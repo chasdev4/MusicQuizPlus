@@ -46,4 +46,8 @@
     <string name="home_button_content_description">Home Button</string>
     <string name="back_to_top_content_description">Back to Top Button</string>
     <string name="bullet_char">•</string>
+    <string name="latest">Latest</string>
+    <string name="singles">Singles</string>
+    <string name="albums">Albums</string>
+    <string name="compilations">Compilations</string>
 </resources>

@@ -46,7 +46,6 @@ public class PlaylistQuizAdapter extends ArrayAdapter<Track> {
         }
 
         // initializing the imageview and textview and setting data
-        ImageView imageView = v.findViewById(R.id.quizViewPreviewImage);
         TextView textView = v.findViewById(R.id.quizViewTrackTitle);
         TextView qvTrackArtist = v.findViewById(R.id.quizViewTrackArtist);
         TextView qvTrackAlbum = v.findViewById(R.id.quizViewTrackAlbum);

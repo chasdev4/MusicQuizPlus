@@ -45,8 +45,10 @@ import java.util.Locale;
 import java.util.Objects;
 
 import model.GoogleSignIn;
+import model.Quiz;
 import model.SignUpPopUp;
 import model.User;
+import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
@@ -109,27 +111,7 @@ public class HistoryFragment extends Fragment {
         {
             historyRecyclerView.setVisibility(View.VISIBLE);
             noCurrentUser.setVisibility(View.GONE);
-            //TODO: retreive history from firebase and populate listview
-
         }
-
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("tracks");
-        reference.limitToFirst(50).addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                {
-                    Track track = dataSnapshot.getValue(Track.class);
-                    list.add(track);
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
 
         historyRecyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -173,6 +155,82 @@ public class HistoryFragment extends Fragment {
             }
         });
 
+        //TODO: retreive history from firebase and populate listview
+        //DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        db.child("tracks").limitToFirst(50).addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot : snapshot.getChildren())
+                {
+                    Track track = dataSnapshot.getValue(Track.class);
+                    //list.add(track);
+                    if(track.isAlbumKnown())
+                    {
+                        //get photourl from album
+                        db.child("albums").child(track.getAlbumId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Album album = (Album) dataSnapshot.getValue(Album.class);
+                                //String url = album.getPhotoUrl().get(0).getUrl();
+                                //imageUrlList.add(url);
+                                track.setPhotoUrl(album.getPhotoUrl());
+                                list.add(track);
+                                if(list.size() == 50)
+                                {
+                                    populateView();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                            }
+
+                        });
+                    }
+                    else if(track.getPlaylistIds().size() > 0)
+                    {
+                        //get photourl from playlist
+                        String id = track.getPlaylistIds().entrySet().iterator().next().getValue();
+                        db.child("playlists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Playlist playlist = (Playlist) dataSnapshot.getValue(Playlist.class);
+                                //String url = playlist.getPhotoUrl().get(0).getUrl();
+                                track.setPhotoUrl(playlist.getPhotoUrl());
+                                list.add(track);
+                                if(list.size() == 50)
+                                {
+                                    populateView();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                            }
+
+                        });
+                    }
+                    else
+                    {
+                        //TODO: Get bitmap and use placeholder image made by Charles
+                        //String placeholder = "https://i.pinimg.com/originals/30/7e/28/307e285cde65e9af6a931a546094379c.jpg";
+                        list.add(track);
+                        if(list.size() == 50)
+                        {
+                            populateView();
+                        }
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
         // Inflate the layout for this fragment
         return view;
     }
@@ -180,7 +238,7 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        populateView();
+
     }
 
     public void populateView() {
@@ -201,12 +259,9 @@ public class HistoryFragment extends Fragment {
                             {
                                 userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
                             }
-                            if (list.size() > 0) {
-                                //TODO: Add List<Bitmap> to adapter constructor for images of history tracks
-                                //adapter = new HistoryAdapter(list, getContext(), 0);
-                                //historyRecyclerView.setAdapter(adapter);
-                                historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-                            }
+                            adapter = new HistoryAdapter(list, null, getContext(), 0);
+                            historyRecyclerView.setAdapter(adapter);
+                            historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
                         }
                     });
@@ -216,6 +271,15 @@ public class HistoryFragment extends Fragment {
     }
 
     private static Bitmap getBitmapFromURL(String src) {
+        Bitmap image = null;
+        try {
+            URL url = new URL(src);
+            image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return image;
+        /*
         try {
             URL url = new URL(src);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -228,5 +292,7 @@ public class HistoryFragment extends Fragment {
             e.printStackTrace();
             return null;
         }
+
+         */
     }
 }
