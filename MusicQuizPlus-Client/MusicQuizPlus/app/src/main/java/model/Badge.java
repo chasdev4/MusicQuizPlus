@@ -4,6 +4,8 @@ import com.google.firebase.database.Exclude;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.io.Serializable;
+
 import model.type.BadgeType;
 
 /*
@@ -25,7 +27,7 @@ import model.type.BadgeType;
 //            3 = 7 Quick Reactions On Quiz
 //    */
 
-public class Badge {
+public class Badge implements Serializable {
     private BadgeType type;
     private String id;
     private String photoUrl;

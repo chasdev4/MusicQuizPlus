@@ -3,6 +3,7 @@ package model.item;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,7 @@ import service.FirebaseService;
 // SUMMARY
 // The Album item model stores album information
 
-public class Album {
+public class Album implements Serializable {
 
     private String id;
     private String name;
@@ -48,7 +49,12 @@ public class Album {
     }
 
     // Used for track result page
-    public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId, Map<String, String> artistsMa, List<Track> tracks) {
+    public Album(String id,
+                 String name,
+                 List<PhotoUrl> photoUrl,
+                 String artistId,
+                 Map<String, String> artistsMap,
+                 List<Track> tracks) {
         this.id = id;
         this.name = name;
         this.photoUrl = photoUrl;

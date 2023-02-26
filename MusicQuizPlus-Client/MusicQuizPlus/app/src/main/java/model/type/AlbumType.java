@@ -1,8 +1,10 @@
 package model.type;
 
-public enum AlbumType {
-    UNINITIALIZED,
-    SINGLE,
+import java.io.Serializable;
+
+public enum AlbumType implements Serializable {
     ALBUM,
-    COMPILATION
+    SINGLE,
+    COMPILATION,
+    UNINITIALIZED
 }

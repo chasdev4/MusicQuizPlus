@@ -1,16 +1,24 @@
 package model;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 
+import com.example.musicquizplus.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
+import com.google.type.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +34,7 @@ import model.item.Track;
 import model.type.AlbumType;
 import model.type.BadgeType;
 import model.type.Difficulty;
+import model.type.Role;
 import service.BadgeService;
 import service.FirebaseService;
 import utils.LogUtil;
@@ -49,6 +58,7 @@ public class User implements Serializable {
     private Map<String, Map<String, String>> generatedQuizHistory;
     private int playlistQuizCount;
     private int artistQuizCount;
+    private int searchCount;
 
     //#region Excluded members
     private Map<String, Playlist> playlists;
@@ -58,13 +68,18 @@ public class User implements Serializable {
     private double xpToNextLevel;
     //#endregion
 
-    private boolean allSongsKnown;
-
     //#region Constants
     private final static String TAG = "User.java";
     private final static int HISTORY_LIMIT = 50;
     private final static int MIN_LEVEL = 1;
     private final static int MAX_LEVEL = 100;
+    private final static long ONE_DAY = 24*60*60*1000;
+    private final static Map<Role, Integer> SEARCH_LIMITS = new HashMap<>() {
+        {
+            put(Role.GUEST, 3); // 3 searches total
+            put(Role.USER, 5);  // 5 a day
+        }
+    };
     private final static Map<Integer, Integer> LEVELS = new HashMap<>();
     //#endregion
 
@@ -73,9 +88,13 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         playlistIds = new HashMap<>();
         historyIds = new ArrayList<>();
+        artists = new HashMap<>();
+        playlists = new HashMap<>();
+        history = new LinkedList<>();
         badges = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        searchCount = 0;
         level = MIN_LEVEL;
         xp = 0;
         settings = new Settings();
@@ -99,6 +118,7 @@ public class User implements Serializable {
         generatedQuizHistory = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        searchCount = 0;
         earnedBadges = new ArrayList<>();
         initLevels();
     }
@@ -113,6 +133,7 @@ public class User implements Serializable {
         badges = user.badges;
         playlistQuizCount = user.playlistQuizCount;
         artistQuizCount = user.artistQuizCount;
+        searchCount = user.searchCount;
         level = user.level;
         xp = user.xp;
         settings = user.settings;
@@ -135,6 +156,7 @@ public class User implements Serializable {
         generatedQuizHistory = new HashMap<>();
         playlistQuizCount = 0;
         artistQuizCount = 0;
+        searchCount = 0;
         earnedBadges = new ArrayList<>();
         initLevels();
     }
@@ -201,13 +223,14 @@ public class User implements Serializable {
     }
 
     @Exclude
-    public Difficulty getDifficulty() {
-        return settings.getDifficulty();
-    }
+    public int getSearchCount() { return searchCount; }
 
     @Exclude
-    public boolean getAllSongsKnown() {
-        return allSongsKnown;
+    private int getSearchLimit(Role role) { return SEARCH_LIMITS.get(role); }
+
+    @Exclude
+    public Difficulty getDifficulty() {
+        return settings.getDifficulty();
     }
 
     @Exclude
@@ -318,6 +341,8 @@ public class User implements Serializable {
         earnedBadges = new ArrayList<>();
     }
 
+    public void incrementSearchCount() { searchCount++; }
+
     public boolean addAlbumId(String key, String albumId) {
         if (albumIds.containsValue(albumId)) {
             return false;
@@ -380,12 +405,8 @@ public class User implements Serializable {
         return key;
     }
 
-    private void initLevels() {
-        int xp = 0;
-        for (int i = MIN_LEVEL; i <= MAX_LEVEL; i++) {
-            xp += (int) doEquation(i);
-            LEVELS.put(i, xp);
-        }
+    public void setSearchCount(int count) {
+        searchCount =count;
     }
     //#endregion
 
@@ -709,7 +730,26 @@ public class User implements Serializable {
     }
     //#endregion
 
-    //#region Collections initialization
+    //#region Initialization
+    public void initGuest(Activity activity) {
+        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+        setDifficulty(Difficulty.values()[sharedPref.getInt(activity.getString(R.string.difficulty),
+                0)]);
+        searchCount = sharedPref.getInt(activity.getString(R.string.searchCount), 0);
+
+
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(activity.getString(R.string.searchCount), searchCount);
+        editor.apply();
+    }
+    private void initLevels() {
+        int xp = 0;
+        for (int i = MIN_LEVEL; i <= MAX_LEVEL; i++) {
+            xp += (int) doEquation(i);
+            LEVELS.put(i, xp);
+        }
+    }
+
     public void initCollections(DatabaseReference db) {
         initArtists(db);
         initPlaylists(db);
@@ -807,4 +847,49 @@ public class User implements Serializable {
         return Math.log(level) * 2500;
     }
     //#endregion
+
+    @Exclude
+    public boolean isSearchLimitReached(FirebaseUser firebaseUser, Role role, Activity activity) {
+        return searchLimitCheck(firebaseUser, role, activity);
+    }
+
+    private boolean searchLimitCheck(FirebaseUser firebaseUser, Role role, Activity activity) {
+        LogUtil log = new LogUtil(TAG, "isSearchLimitReached");
+        if ((firebaseUser == null && role == Role.USER) || (firebaseUser != null && role == Role.GUEST)) {
+            log.e("Parameter error.");
+            return true;
+        }
+
+        if (firebaseUser != null && role == Role.USER) {
+            SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+
+            // DEBUG: Uncomment me to reset the search limit
+//            editor.putInt(activity.getString(R.string.searchCount), 0);
+//            editor.apply();
+
+            Long lastTime = sharedPref.getLong(activity.getString(R.string.limitReached), -1);
+
+            if (searchCount >= getSearchLimit(role) && lastTime == -1) {
+                editor.putLong(activity.getString(R.string.limitReached), System.currentTimeMillis());
+                editor.apply();
+                return true;
+            }
+
+            if (lastTime == -1) {
+                return false;
+            }
+            Long thisTime = System.currentTimeMillis();
+            if (thisTime - lastTime >= ONE_DAY) {
+
+                editor.putInt(activity.getString(R.string.searchCount), 0);
+                editor.putLong(activity.getString(R.string.limitReached), -1);
+                editor.apply();
+                searchCount = 0;
+                return false;
+            }
+        }
+
+        return searchCount >= getSearchLimit(role);
+    }
 }

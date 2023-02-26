@@ -8,6 +8,12 @@
     android:layout_alignParentTop="true"
     tools:context=".SearchActivity">
 
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHor40"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
@@ -30,7 +36,7 @@
     <RadioGroup
         android:id="@+id/search_filter_group"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="32dp"
         android:layout_margin="16dp"
         android:layout_centerInParent="true"
         android:orientation="horizontal"
@@ -41,7 +47,7 @@
 
         <RadioButton
             android:id="@+id/search_filter_all"
-            style="@style/SearchFilterButtonStyle"
+            style="@style/AllFilterButtonStyle"
             android:text="@string/search_filter_all"
             android:checked="true"/>
 
@@ -65,7 +71,7 @@
 
         <RadioButton
             android:id="@+id/search_filter_playlist"
-            style="@style/SearchFilterButtonStyle"
+            style="@style/PlaylistFilterButtonStyle"
             android:text="@string/search_filter_playlist"
             android:checked="false"/>
     </RadioGroup>
@@ -83,6 +89,32 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/search_empty_image"
+        android:src="@drawable/search"
+        android:padding="10dp"
+        android:alpha="0.4"
+        app:layout_constraintBottom_toTopOf="@id/search_empty_text"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHor40"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <TextView
+        android:id="@+id/search_empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/search_initial_text"
+        android:textColor="@color/mqWhite"
+        android:fontFamily="@font/commissioner"
+        android:textSize="16sp"
+        android:alpha="0.4"
+        android:gravity="center"
+
+        app:layout_constraintTop_toBottomOf="@id/search_empty_image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <ImageButton
         android:id="@+id/home_button"
@@ -92,7 +124,7 @@
         android:layout_marginEnd="15dp"
         android:background="@drawable/round_button_no_stroke"
         android:elevation="8dp"
-        android:src="@drawable/search"
+        android:src="@drawable/home_icon"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:contentDescription="@string/home_button_content_description"/>
@@ -110,5 +142,19 @@
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="5dp"
         android:contentDescription="@string/back_to_top_content_description"/>
+
+    <ProgressBar
+        android:id="@+id/search_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:indeterminateTintMode="src_atop"
+        android:alpha="0.4"
+        android:indeterminateTint="@color/mqWhite"
+        app:layout_constraintBottom_toBottomOf="@+id/search_recycler_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

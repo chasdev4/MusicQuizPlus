@@ -5,44 +5,39 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.ProgressDialog;
+import android.app.Application;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
-import model.PhotoUrl;
 import model.Quiz;
-import model.User;
-import model.item.Album;
 import model.item.Playlist;
 import model.item.Track;
-import model.type.QuizType;
-import service.FirebaseService;
+import model.type.Source;
+import service.SpotifyService;
+import service.firebase.PlaylistService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
 
@@ -60,13 +55,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     ImageButton spotifyButton;
     ImageButton shareButton;
     boolean isSpotifyInstalled;
+    private Source source;
+    private SpotifyService spotifyService;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
-
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
         title.setSelected(true);
@@ -114,6 +110,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 finish();
             }
         });
+        spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
         spotifyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,7 +120,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     isSpotifyInstalled = true;
                 } catch (PackageManager.NameNotFoundException e) {
                     isSpotifyInstalled = false;
-                }
+    }
 
                 if(isSpotifyInstalled)
                 {
@@ -143,7 +140,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         });
 
         shareButton.setOnClickListener(new View.OnClickListener() {
-            @Override
+    @Override
             public void onClick(View view) {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
@@ -168,6 +165,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         if (extras != null)
         {
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
+            source = (Source) extras.getSerializable("source");
+
+            Log.d("TAG", "onStart: ");
 
             if(playlist.getName().length() >= 19)
             {
@@ -186,17 +186,29 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
         new Thread(new Runnable() {
             public void run() {
-
-                playlist.initCollection(reference);
-                List<Track> tracks = new ArrayList<>(playlist.getTracks().values());
+                if (source != Source.SEARCH) {
+                    playlist.initCollection(reference);
+                }
+                else {
+                    PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
+                }
+                List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+                try {
+                    inputStream = new URL(playlist.getPhotoUrl().get(0).getUrl()).openStream();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                List<Bitmap> bitmapList = new ArrayList<>();
+                bitmapList.add(bitmap);
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         adapter = new HistoryAdapter(tracks, null, getBaseContext(), 1);
-                        listView.setAdapter(adapter);
-                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                    }
+                            listView.setAdapter(adapter);
+                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                        }
                 });
 
                 // TODO: Pass in our DatabaseReference

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PlaylistQuizView"
+    android:background="@color/mqPurple3">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="100dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVert50"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHor40"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVert75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/track_result_back"
+        android:background="@null"
+        android:src="@drawable/left_chevron"
+        android:layout_marginStart="3dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/track_result_image"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_marginStart="5dp"
+        android:src="@drawable/placeholder"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/track_result_back"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/track_result_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="-18dp"
+        android:fontFamily="@font/concert_one"
+        android:text="@string/sample_song_title"
+        android:textColor="@color/mqWhite"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/track_result_image"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/track_result_subtitle"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/commissioner"
+        android:text="Song by"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@id/track_result_image"
+        app:layout_constraintTop_toBottomOf="@id/track_result_title" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="148dp" />
+
+    <ImageButton
+        android:id="@+id/track_result_spotify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/spotify_logo_in_mqpurple2"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toStartOf="@+id/guidelineVert50"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+    <ImageButton
+        android:id="@+id/track_result_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:src="@drawable/share_icon"
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert50"
+        app:layout_constraintTop_toTopOf="@+id/guideline" />
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/track_recycler_view"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/track_result_no_results"
+        android:src="@drawable/no_results"
+        android:padding="10dp"
+        android:alpha="0.4"
+        app:layout_constraintBottom_toTopOf="@id/track_result_no_results_text"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHor40"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <TextView
+        android:id="@+id/track_result_no_results_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nothing to show here..."
+        android:textColor="@color/mqWhite"
+        android:alpha="0.4"
+        android:fontFamily="@font/commissioner"
+        android:textSize="16dp"
+        android:gravity="center"
+
+        app:layout_constraintTop_toBottomOf="@id/track_result_no_results"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="196dp" />
+    <RadioGroup
+        android:id="@+id/track_result_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline2">
+        <RadioButton
+            android:id="@+id/title_match_tab"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/track_tab_selector"
+            android:checked="true"
+            android:layoutDirection="rtl"
+            android:button="@android:color/transparent"
+            android:text="@string/title_match"
+            android:fontFamily="@font/titan_one"
+            android:textSize="16dp"
+            android:textColor="@color/mqWhite"
+            app:layout_constraintBottom_toTopOf="@+id/guideline3"
+            app:layout_constraintEnd_toStartOf="@+id/guidelineVert50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline2" />
+        <RadioButton
+            android:id="@+id/suggested_tab"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:padding="10dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/track_tab_selector"
+            android:checked="false"
+            android:layoutDirection="rtl"
+            android:button="@android:color/transparent"
+            android:text="@string/suggested"
+            android:fontFamily="@font/titan_one"
+            android:textSize="16dp"
+            android:textColor="@color/mqWhite"
+            app:layout_constraintBottom_toTopOf="@+id/guideline3"
+            app:layout_constraintEnd_toStartOf="@+id/guidelineVert50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/guideline2" />
+    </RadioGroup>
+
+    <ImageButton
+        android:id="@+id/track_result_back_to_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/round_button_no_stroke"
+        android:elevation="8dp"
+        android:src="@drawable/up_chevron"
+        android:visibility="gone"
+        android:layout_marginBottom="38dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

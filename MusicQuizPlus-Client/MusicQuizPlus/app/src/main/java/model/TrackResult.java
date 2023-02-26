@@ -10,13 +10,17 @@ public class TrackResult {
     private String artistName;
     private List<Album> titleMatch;
     private List<Album> suggested;
+    private String imageUrl;
+    private boolean currentPageOne;
 
-    public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested) {
+    public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested, String imageUrl) {
         this.name = name;
         this.id = id;
         this.artistName = artistName;
         this.titleMatch = titleMatch;
         this.suggested = suggested;
+        this.imageUrl = imageUrl;
+        currentPageOne = true;
     }
 
 
@@ -38,5 +42,15 @@ public class TrackResult {
 
     public List<Album> getSuggested() {
         return suggested;
+    }
+
+    public boolean isCurrentPageOne(){ return currentPageOne; }
+
+    public void changeTab() {
+        currentPageOne = !currentPageOne;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
     }
 }

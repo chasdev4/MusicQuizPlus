@@ -22,4 +22,12 @@ public class ItemService {
         }
         return temp == null || temp.getUrl().isEmpty() || temp.getUrl() == null ? null : temp.getUrl();
     }
+
+    public static String formatAlbumSubtitle(String artistName, String year) {
+        return String.format("Album by %s • %s", artistName, year);
+    }
+
+    public static String formatTrackResultSubtitle(String name) {
+        return String.format("Song by %s", name);
+    }
 }

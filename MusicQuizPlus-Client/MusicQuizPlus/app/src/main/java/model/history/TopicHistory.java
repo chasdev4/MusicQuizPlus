@@ -2,13 +2,14 @@ package model.history;
 
 import com.google.firebase.database.Exclude;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 // SUMMARY
 // The TopicHistory model is used for keeping track of a playlist history or individual album history.
 
-public class TopicHistory {
+public class TopicHistory implements Serializable {
     private Map<String, String> trackIds;
     private int total;
     private int count;

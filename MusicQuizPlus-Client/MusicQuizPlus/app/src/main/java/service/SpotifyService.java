@@ -6,9 +6,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import model.Search;
 import model.item.Artist;
+import model.type.AlbumType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -20,6 +23,19 @@ public class SpotifyService {
 
     private final String _key;
     private final Gson gson;
+
+    private final static Map<AlbumType, String> ALBUM_ENDPOINTS = new HashMap<>() {
+        {
+            put(AlbumType.ALBUM, "artist_albums");
+            put(AlbumType.SINGLE, "artist_singles");
+        }
+    };
+    private final static Map<AlbumType, String> ALBUM_NODES = new HashMap<>() {
+        {
+            put(AlbumType.ALBUM, "albums");
+            put(AlbumType.SINGLE, "singles");
+        }
+    };
 
     public SpotifyService(String key) {
         _key = key;
@@ -85,7 +101,40 @@ public class SpotifyService {
             JsonObject jsonObject = gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
             // Populate Artist model and return
-            return new Artist(jsonObject);
+            return new Artist(jsonObject, this);
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    // Artist Albums/Singles Endpoint
+    public JsonArray artistAlbums(String artistId, AlbumType albumType) {
+        String[] artistIdArray = artistId.split(":");
+
+        // Create the client and request
+        OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder()
+                .url("https://spotify23.p.rapidapi.com/"
+                        + ALBUM_ENDPOINTS.get(albumType)
+                        + "/?id=" + artistIdArray[2])
+                .get()
+                .addHeader("X-RapidAPI-Key", _key)
+                .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
+                .build();
+
+        try (Response response = client.newCall(request).execute())
+        {
+            // Use gson to get a JsonObject
+            String json = response.body().string();
+
+            // Populate Artist model and return
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject()
+                    .getAsJsonObject("data").getAsJsonObject("artist").getAsJsonObject("discography")
+                    .getAsJsonObject(ALBUM_NODES.get(albumType)).getAsJsonArray("items");
 
 
         } catch (IOException e) {
