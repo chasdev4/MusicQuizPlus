@@ -83,6 +83,7 @@
         android:id="@+id/playlistGridView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_margin="10dp"
         android:numColumns="auto_fit"
         android:horizontalSpacing="25dp"
         android:verticalSpacing="25dp"

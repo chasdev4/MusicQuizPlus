@@ -8,8 +8,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.Application;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -49,9 +52,12 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     ImageButton backButton;
-    InputStream inputStream;
+    ImageButton spotifyButton;
+    ImageButton shareButton;
+    boolean isSpotifyInstalled;
     private Source source;
     private SpotifyService spotifyService;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +65,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         setContentView(R.layout.activity_playlist_quiz_view);
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
+        title.setSelected(true);
         owner = findViewById(R.id.pqvPlaylistOwner);
+        owner.setSelected(true);
         listView = findViewById(R.id.pqvRecyclerView);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
         backButton = findViewById(R.id.pqvBackButton);
+        spotifyButton = findViewById(R.id.pqvSpotifyButton);
+        shareButton = findViewById(R.id.pqvShareButton);
+        PackageManager pm = getPackageManager();
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -100,6 +111,49 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+
+        spotifyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    pm.getPackageInfo("com.spotify.music", 0);
+                    isSpotifyInstalled = true;
+                } catch (PackageManager.NameNotFoundException e) {
+                    isSpotifyInstalled = false;
+    }
+
+                if(isSpotifyInstalled)
+                {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(playlist.getId()));
+                    intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + getBaseContext().getPackageName()));
+                    startActivity(intent);
+                }
+                else
+                {
+                    String url = getPlaylistIdAsUrl(playlist.getId());
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    browserIntent.setData(Uri.parse(url));
+                    startActivity(browserIntent);
+                }
+            }
+        });
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+    @Override
+            public void onClick(View view) {
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, getPlaylistIdAsUrl(playlist.getId()));
+                shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Playlist");
+                //TODO: Add MQP logo to share menu when available.
+                // Below we're passing a content URI to an image to be displayed
+                //sendIntent.setData(mqpLogoUri);
+                //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setType("text/*");
+                startActivity(Intent.createChooser(shareIntent, null));
+            }
+        });
     }
 
 
@@ -151,12 +205,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (tracksList.size() > 0) {
-                            adapter = new HistoryAdapter(tracksList, bitmapList, getBaseContext(), 1);
+                        adapter = new HistoryAdapter(tracks, null, getBaseContext(), 1);
                             listView.setAdapter(adapter);
                             listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                         }
-                    }
                 });
 
                 // TODO: Pass in our DatabaseReference
@@ -178,6 +230,12 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
 
+    }
+
+    public String getPlaylistIdAsUrl(String playlistID)
+    {
+        String id = playlistID.substring(17);
+        return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
     }
 
 }
