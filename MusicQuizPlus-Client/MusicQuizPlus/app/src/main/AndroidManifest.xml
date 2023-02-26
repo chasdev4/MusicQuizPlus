@@ -21,15 +21,10 @@
         </activity>
         <activity
             android:name=".SearchActivity"
-            android:exported="true"
+            android:exported="false"
             android:theme="@style/Theme.MusicQuizPlus.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
             <meta-data
@@ -99,6 +94,11 @@
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
     </application>
 
