@@ -138,10 +138,7 @@ public class Search {
         for (SearchResult trackAlbum : trackAlbums) {
             if (track.getArtistId().equals(trackAlbum.getAlbum().getArtistId())) {
                 if (ValidationUtil.namesMatch(track.getName(), trackAlbum.getAlbum().getTracks().get(0).getName(), TAG)) {
-                    if (suggestedIds.contains(trackAlbum.getAlbum().getId())) {
-                        suggestedIds.remove(trackAlbum.getAlbum().getId());
-                        suggested.remove(trackAlbum);
-                    }
+
                     titleMatchIds.add(trackAlbum.getAlbum().getId());
                     titleMatch.add(trackAlbum.getAlbum());
                 } else {
@@ -150,6 +147,13 @@ public class Search {
                         suggested.add(trackAlbum.getAlbum());
                     }
                 }
+            }
+        }
+
+        for (Album t : titleMatch) {
+            if (suggested.contains(t)) {
+                    suggestedIds.remove(t.getId());
+                    suggested.remove(t);
             }
         }
 
