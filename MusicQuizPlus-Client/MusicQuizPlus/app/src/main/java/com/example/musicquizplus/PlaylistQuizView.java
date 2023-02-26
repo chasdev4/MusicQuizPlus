@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import model.Quiz;
 import model.item.Playlist;
@@ -193,19 +194,24 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
                 }
                 List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
-                try {
-                    inputStream = new URL(playlist.getPhotoUrl().get(0).getUrl()).openStream();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                List<Bitmap> bitmapList = new ArrayList<>();
-                bitmapList.add(bitmap);
-
+//                InputStream inputStream = null;
+//                try {
+//                    inputStream = new URL(playlist.getPhotoUrl().get(0).getUrl()).openStream();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//                Bitmap bitmap = null;
+//                if (inputStream != null) {
+//                    bitmap = BitmapFactory.decodeStream(inputStream);
+//                }
+//                if (bitmap != null) {
+//                    List<Bitmap> bitmapList = new ArrayList<>();
+//                    bitmapList.add(bitmap);
+//                }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        adapter = new HistoryAdapter(tracks, null, getBaseContext(), 1);
+                        adapter = new HistoryAdapter(tracksList, null, getBaseContext(), 1);
                             listView.setAdapter(adapter);
                             listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                         }
