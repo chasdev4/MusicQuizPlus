@@ -1,5 +1,6 @@
 package com.example.musicquizplus.fragments;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Paint;
@@ -12,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Adapter;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
@@ -19,7 +22,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.musicquizplus.ArtistQuizView;
 import com.example.musicquizplus.HistoryAdapter;
+import com.example.musicquizplus.PlaylistQuizView;
 import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +40,7 @@ import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
 import model.item.Artist;
+import model.item.Playlist;
 import service.FirebaseService;
 
 public class ArtistsFragment extends Fragment {
@@ -135,6 +141,17 @@ public class ArtistsFragment extends Fragment {
             }
         });
 
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                Adapter artistAdapter = adapterView.getAdapter();
+                Artist clickedOnArtist = (Artist) artistAdapter.getItem(i);
+                Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
+                intent.putExtra("currentArtist", clickedOnArtist);
+                startActivity(intent);
+            }
+        });
 
         // Inflate the layout for this fragment
         return view;
