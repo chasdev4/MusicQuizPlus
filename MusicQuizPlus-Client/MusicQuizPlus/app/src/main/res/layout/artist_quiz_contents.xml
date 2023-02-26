@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/mqPurple2"
+    android:layout_margin="1dp">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="80dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.83" />
+
+    <ImageView
+        android:id="@+id/aqvTrackImage"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:layout_margin="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/aqvTrackTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/concert_one"
+        android:text="@string/sample_song_title"
+        android:textColor="@color/mqWhite"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toStartOf="@+id/guidelineVert"
+        app:layout_constraintStart_toEndOf="@+id/aqvTrackImage"
+        app:layout_constraintTop_toTopOf="parent"
+
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true"/>
+
+    <TextView
+        android:id="@+id/aqvTrackAlbum"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/sample_album"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/aqvTrackImage"
+        app:layout_constraintTop_toBottomOf="@+id/aqvTrackTitle" />
+
+    <TextView
+        android:id="@+id/middleDotAfterAlbum"
+        android:layout_width="4dp"
+        android:layout_height="20dp"
+        android:text="@string/middle_dot"
+        android:textColor="@color/mqWhite"
+        android:textStyle="bold"
+        android:layout_marginHorizontal="2dp"
+        app:layout_constraintStart_toEndOf="@+id/aqvTrackAlbum"
+        app:layout_constraintTop_toBottomOf="@+id/aqvTrackTitle" />
+
+    <TextView
+        android:id="@+id/aqvTrackYear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="2dp"
+        android:fontFamily="@font/commissioner"
+        android:text="@string/sample_year"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/middleDotAfterAlbum"
+        app:layout_constraintTop_toBottomOf="@+id/aqvTrackTitle" />
+
+    <ImageButton
+        android:id="@+id/aqvHeartTrack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/empty_heart"
+        android:background="@null"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
