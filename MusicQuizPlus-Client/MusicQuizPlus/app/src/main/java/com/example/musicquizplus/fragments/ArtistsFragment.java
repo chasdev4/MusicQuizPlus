@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.example.musicquizplus.ArtistQuizView;
 import com.example.musicquizplus.HistoryAdapter;
+import com.example.musicquizplus.ParentOfFragments;
 import com.example.musicquizplus.PlaylistQuizView;
 import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,13 +49,13 @@ public class ArtistsFragment extends Fragment {
 
     private View popupSignUpView = null;
     private User user;
-    private TextView userLevel;
-    private ImageView userCustomAvatar;
+//    private TextView userLevel;
+//    private ImageView userCustomAvatar;
     private GoogleSignIn googleSignIn;
     private FirebaseUser firebaseUser;
     private DatabaseReference db;
-    private View artistsUserAvatar;
-    private ImageButton backToTop;
+//    private View artistsUserAvatar;
+//    private ImageButton backToTop;
     private GridView gridView;
     private Button googleSignInBtn;
     private View noUser;
@@ -66,19 +67,20 @@ public class ArtistsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_artists, container, false);
 
         gridView = view.findViewById(R.id.artistGridView);
-        userLevel = view.findViewById(R.id.userLevel);
+//        userLevel = view.findViewById(R.id.userLevel);
         noUser = view.findViewById(R.id.artistNoCurrentUser);
-        backToTop = view.findViewById(R.id.backToTop);
-        artistsUserAvatar = view.findViewById(R.id.artistsUserAvatar);
+//        backToTop = view.findViewById(R.id.backToTop);
+        ImageButton backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
+//        artistsUserAvatar = view.findViewById(R.id.artistsUserAvatar);
         googleSignInBtn = view.findViewById(R.id.googleSignInButton);
-        userCustomAvatar = view.findViewById(R.id.userCustomAvatar);
+//        userCustomAvatar = view.findViewById(R.id.userCustomAvatar);
         googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
         if(firebaseUser == null)
         {
-            userLevel.setText(getString(R.string.guest));
+//            userLevel.setText(getString(R.string.guest));
             gridView.setVisibility(View.GONE);
             noUser.setVisibility(View.VISIBLE);
             googleSignInBtn.setOnClickListener(new View.OnClickListener() {
@@ -128,19 +130,19 @@ public class ArtistsFragment extends Fragment {
         });
 
 
-        artistsUserAvatar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(firebaseUser == null) {
-                    SignUpPopUp signUpPopUp = new SignUpPopUp(getActivity(), getContext(), getString(R.string.user_profile_signup_header));
-                    signUpPopUp.createAndShow();
-                }
-                else
-                {
-                    //pull up user profile
-                }
-            }
-        });
+//        artistsUserAvatar.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if(firebaseUser == null) {
+//                    SignUpPopUp signUpPopUp = new SignUpPopUp(getActivity(), getContext(), getString(R.string.user_profile_signup_header));
+//                    signUpPopUp.createAndShow();
+//                }
+//                else
+//                {
+//                    //pull up user profile
+//                }
+//            }
+//        });
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -170,10 +172,10 @@ public class ArtistsFragment extends Fragment {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+//                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
                             if(user.getPhotoUrl() != null)
                             {
-                                Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
+//                                Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
 
 //                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
                             }

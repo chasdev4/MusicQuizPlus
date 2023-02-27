@@ -7,85 +7,84 @@
     tools:context=".ArtistsView"
     android:background="#231559">
 
-    <RelativeLayout
-        android:id="@+id/artistHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<!--    <RelativeLayout-->
+<!--        android:id="@+id/artistHeader"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content">-->
 
-        <include layout="@layout/user_avatar_layout"
-            android:id="@+id/artistsUserAvatar"
-            android:layout_height="150dp"
-            android:layout_width="150dp"
-            android:layout_marginTop="-10dp"
-            android:layout_marginStart="-12dp" />
+<!--        <include layout="@layout/user_avatar_layout"-->
+<!--            android:id="@+id/artistsUserAvatar"-->
+<!--            android:layout_height="150dp"-->
+<!--            android:layout_width="150dp"-->
+<!--            android:layout_marginTop="-10dp"-->
+<!--            android:layout_marginStart="-12dp" />-->
 
-        <Button
-            android:id="@+id/artistTitle"
-            android:layout_width="310dp"
-            android:layout_height="260dp"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="-100dp"
-            android:layout_marginEnd="-65dp"
-            android:layout_marginBottom="-85dp"
-            android:background="@drawable/parallelogram_png"
-            android:clickable="false"
-            android:text="@string/artists"
-            android:textColor="@color/white"
-            android:textSize="33sp"
-            android:paddingTop="30dp"
-            android:paddingStart="12dp"
-            android:fontFamily="@font/concert_one"/>
+<!--        <Button-->
+<!--            android:id="@+id/artistTitle"-->
+<!--            android:layout_width="310dp"-->
+<!--            android:layout_height="260dp"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_marginTop="-100dp"-->
+<!--            android:layout_marginEnd="-65dp"-->
+<!--            android:layout_marginBottom="-85dp"-->
+<!--            android:background="@drawable/parallelogram_png"-->
+<!--            android:clickable="false"-->
+<!--            android:text="@string/artists"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textSize="33sp"-->
+<!--            android:paddingTop="30dp"-->
+<!--            android:paddingStart="12dp"-->
+<!--            android:fontFamily="@font/concert_one"/>-->
 
-        <ImageButton
-            android:id="@+id/embeddedHelp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/artistTitle"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"
-            android:background="@drawable/round_button"
-            android:minWidth="50dp"
-            android:minHeight="50dp"
-            android:src="@drawable/question_mark_foreground" />
+<!--        <ImageButton-->
+<!--            android:id="@+id/embeddedHelp"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_below="@id/artistTitle"-->
+<!--            android:layout_alignParentEnd="true"-->
+<!--            android:layout_marginStart="2dp"-->
+<!--            android:layout_marginTop="5dp"-->
+<!--            android:layout_marginEnd="2dp"-->
+<!--            android:layout_marginBottom="2dp"-->
+<!--            android:background="@drawable/round_button"-->
+<!--            android:minWidth="50dp"-->
+<!--            android:minHeight="50dp"-->
+<!--            android:src="@drawable/question_mark_foreground" />-->
 
-        <ImageButton
-            android:id="@+id/embeddedSettings"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/round_button"
-            android:src="@drawable/settings_foreground"
-            android:minHeight="50dp"
-            android:minWidth="50dp"
-            android:layout_below="@id/artistTitle"
-            android:layout_toStartOf="@id/embeddedHelp"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"/>
+<!--        <ImageButton-->
+<!--            android:id="@+id/embeddedSettings"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:background="@drawable/round_button"-->
+<!--            android:src="@drawable/settings_foreground"-->
+<!--            android:minHeight="50dp"-->
+<!--            android:minWidth="50dp"-->
+<!--            android:layout_below="@id/artistTitle"-->
+<!--            android:layout_toStartOf="@id/embeddedHelp"-->
+<!--            android:layout_marginStart="2dp"-->
+<!--            android:layout_marginTop="5dp"-->
+<!--            android:layout_marginEnd="2dp"-->
+<!--            android:layout_marginBottom="2dp"/>-->
 
-        <ImageButton
-            android:id="@+id/embeddedVolume"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:layout_below="@id/artistTitle"
-            android:layout_marginStart="2dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginEnd="2dp"
-            android:layout_marginBottom="2dp"
-            android:layout_toStartOf="@id/embeddedSettings"
-            android:background="@drawable/round_button"
-            android:src="@drawable/volume_on_foreground" />
+<!--        <ImageButton-->
+<!--            android:id="@+id/embeddedVolume"-->
+<!--            android:layout_width="50dp"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_below="@id/artistTitle"-->
+<!--            android:layout_marginStart="2dp"-->
+<!--            android:layout_marginTop="5dp"-->
+<!--            android:layout_marginEnd="2dp"-->
+<!--            android:layout_marginBottom="2dp"-->
+<!--            android:layout_toStartOf="@id/embeddedSettings"-->
+<!--            android:background="@drawable/round_button"-->
+<!--            android:src="@drawable/volume_on_foreground" />-->
 
-    </RelativeLayout>
+<!--    </RelativeLayout>-->
 
     <GridView
         android:id="@+id/artistGridView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/artistHeader"
         android:numColumns="auto_fit"
         android:horizontalSpacing="25dp"
         android:verticalSpacing="25dp"
