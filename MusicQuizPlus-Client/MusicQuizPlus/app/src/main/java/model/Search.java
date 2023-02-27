@@ -63,10 +63,14 @@ public class Search {
         this.override = override;
     }
 
-    public void execute(int offset) {
+    public boolean execute(int offset) {
         SearchFilter filter = override ? SearchFilter.ALL : currentFilter;
         JsonObject json = spotifyService.search(searchTerm, limit, offset, TYPE.get(filter));
+        if (json == null) {
+            return false;
+        }
         init(json);
+        return true;
     }
 
     //#region Accessors
