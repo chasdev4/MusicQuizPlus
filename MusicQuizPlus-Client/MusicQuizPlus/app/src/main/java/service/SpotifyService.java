@@ -65,7 +65,7 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            if (json == "\"null\"") {
+            if (json.equals("\"null\"")) {
                 return null;
             }
             JsonObject jsonObject = gson.fromJson(json, JsonElement.class).getAsJsonObject();
