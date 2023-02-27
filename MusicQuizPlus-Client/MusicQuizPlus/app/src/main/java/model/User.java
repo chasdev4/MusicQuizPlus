@@ -864,7 +864,7 @@ public class User implements Serializable {
             SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
 
-            // DEBUG: Uncomment me to reset the search limit
+//            // DEBUG: Uncomment me to reset the search limit
 //            editor.putInt(activity.getString(R.string.searchCount), 0);
 //            editor.apply();
 

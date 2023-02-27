@@ -29,6 +29,7 @@ import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,7 +173,9 @@ public class ArtistsFragment extends Fragment {
                             userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
                             if(user.getPhotoUrl() != null)
                             {
-                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
+                                Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
+
+//                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
                             }
                         }
                     });

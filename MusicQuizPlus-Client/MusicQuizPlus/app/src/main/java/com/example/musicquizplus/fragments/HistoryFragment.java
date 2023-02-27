@@ -174,11 +174,13 @@ public class HistoryFragment extends Fragment {
                                 Album album = (Album) dataSnapshot.getValue(Album.class);
                                 //String url = album.getPhotoUrl().get(0).getUrl();
                                 //imageUrlList.add(url);
-                                track.setPhotoUrl(album.getPhotoUrl());
-                                list.add(track);
-                                if(list.size() == 50)
-                                {
-                                    populateView();
+                                // TODO: Solve reason for crash. Null check prevents crash but motivations not understood
+                                if (album != null) {
+                                    track.setPhotoUrl(album.getPhotoUrl());
+                                    list.add(track);
+                                    if (list.size() == 50) {
+                                        populateView();
+                                    }
                                 }
                             }
 
