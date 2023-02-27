@@ -216,7 +216,11 @@ public class SearchActivity extends AppCompatActivity {
         lastQuery = query;
         SearchFilter lastFilter = search.getCurrentFilter();
         search = new Search(query, 100, spotifyService, lastFilter, allSearch);
-        search.execute(offset);
+        if (!search.execute(offset)) {
+            Toast toast = Toast.makeText(context,
+                    "Encountered an error while searching, try again later.", Toast.LENGTH_SHORT);
+            toast.show();
+        }
 
         user.incrementSearchCount();
         editor.putInt(getString(R.string.searchCount), user.getSearchCount());
