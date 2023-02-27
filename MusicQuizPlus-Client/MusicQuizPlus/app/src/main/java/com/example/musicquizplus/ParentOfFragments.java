@@ -51,29 +51,37 @@ public class ParentOfFragments extends AppCompatActivity {
     private FirebaseUser firebaseUser;
     private User user;
 
+    private boolean ignoreMuteAction;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_of_fragments);
+        ignoreMuteAction = true;
         mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                ignoreMuteAction = false;
+            }
+        });
 
         muteButton = findViewById(R.id.embeddedVolume);
         muteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-            }
-        });
-        muteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (muteButton.isChecked()) {
+                if (!ignoreMuteAction) {
+                    if (muteButton.isChecked()) {
 //                    mediaPlayer.setVolume(100,100);
-                    mediaPlayer.start();
-                } else {
+                        mediaPlayer.start();
+                    } else {
 //                    mediaPlayer.setVolume(0, 0);
-                    mediaPlayer.pause();
+                        mediaPlayer.pause();
 
+                    }
+                }
+                else {
+                    muteButton.setChecked(!muteButton.isChecked());
                 }
             }
         });
