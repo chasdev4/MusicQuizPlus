@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_artists"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragments.ArtistsFragment"
     android:background="#231559">
 
@@ -13,71 +14,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="139dp" />
-
-    <include
-        layout="@layout/user_avatar_layout"
-        android:id="@+id/artistsUserAvatar"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginStart="-24dp"
-        android:layout_marginTop="-24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:layout_width="310dp"
-        android:layout_height="260dp"
-        android:layout_marginTop="-100dp"
-        android:layout_marginEnd="-65dp"
-        android:background="@drawable/parallelogram"
-        android:clickable="false"
-        android:fontFamily="@font/concert_one"
-        android:paddingStart="12dp"
-        android:paddingTop="30dp"
-        android:text="@string/artists"
-        android:textColor="@color/white"
-        android:textSize="32sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/embeddedHelp"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/round_button"
-        android:minWidth="50dp"
-        android:minHeight="50dp"
-        android:src="@drawable/question_mark_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="5dp"/>
-
-    <ImageButton
-        android:id="@+id/embeddedSettings"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/round_button"
-        android:minWidth="50dp"
-        android:minHeight="50dp"
-        android:src="@drawable/settings_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintEnd_toStartOf="@+id/embeddedHelp"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="5dp"/>
-
-    <ImageButton
-        android:id="@+id/embeddedVolume"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:background="@drawable/round_button"
-        android:minWidth="50dp"
-        android:minHeight="50dp"
-        android:src="@drawable/volume_on_foreground"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintEnd_toStartOf="@+id/embeddedSettings"
-        android:layout_marginEnd="3dp"
-        android:layout_marginBottom="5dp"/>
 
     <include
         android:id="@+id/artistNoCurrentUser"
@@ -102,30 +38,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline" />
-
-    <ImageButton
-        android:id="@+id/mainSearchButton"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"
-        android:background="@drawable/round_button_no_stroke"
-        android:elevation="8dp"
-        android:src="@drawable/search"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <ImageButton
-        android:id="@+id/backToTop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/round_button_no_stroke"
-        android:elevation="8dp"
-        android:src="@drawable/up_chevron"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/mainSearchButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="5dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

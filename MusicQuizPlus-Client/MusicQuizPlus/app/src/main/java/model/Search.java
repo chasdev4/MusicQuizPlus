@@ -63,10 +63,14 @@ public class Search {
         this.override = override;
     }
 
-    public void execute(int offset) {
+    public boolean execute(int offset) {
         SearchFilter filter = override ? SearchFilter.ALL : currentFilter;
         JsonObject json = spotifyService.search(searchTerm, limit, offset, TYPE.get(filter));
+        if (json == null) {
+            return false;
+        }
         init(json);
+        return true;
     }
 
     //#region Accessors
@@ -138,10 +142,7 @@ public class Search {
         for (SearchResult trackAlbum : trackAlbums) {
             if (track.getArtistId().equals(trackAlbum.getAlbum().getArtistId())) {
                 if (ValidationUtil.namesMatch(track.getName(), trackAlbum.getAlbum().getTracks().get(0).getName(), TAG)) {
-                    if (suggestedIds.contains(trackAlbum.getAlbum().getId())) {
-                        suggestedIds.remove(trackAlbum.getAlbum().getId());
-                        suggested.remove(trackAlbum);
-                    }
+
                     titleMatchIds.add(trackAlbum.getAlbum().getId());
                     titleMatch.add(trackAlbum.getAlbum());
                 } else {
@@ -150,6 +151,13 @@ public class Search {
                         suggested.add(trackAlbum.getAlbum());
                     }
                 }
+            }
+        }
+
+        for (Album t : titleMatch) {
+            if (suggested.contains(t)) {
+                    suggestedIds.remove(t.getId());
+                    suggested.remove(t);
             }
         }
 

@@ -163,28 +163,28 @@ public class SearchActivity extends AppCompatActivity {
     private <T> void doSearch(String query) {
         SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        if (searchLimitReached || firebaseUser == null
-                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
-            searchLimitReached = true;
-            // TODO: Display the sign up popup
-            return;
-        }
-        else if (searchLimitReached || firebaseUser != null
-                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
-
-            Context context = this;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    final Toast toast = Toast.makeText(context,
-                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            });
-
-            // TODO: Return the user to the home screen
-            return;
-        }
+//        if (searchLimitReached || firebaseUser == null
+//                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
+//            searchLimitReached = true;
+//            // TODO: Display the sign up popup
+//            return;
+//        }
+//        else if (searchLimitReached || firebaseUser != null
+//                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
+//
+//            Context context = this;
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    final Toast toast = Toast.makeText(context,
+//                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
+//                    toast.show();
+//                }
+//            });
+//
+//            // TODO: Return the user to the home screen
+//            return;
+//        }
 
 
 
@@ -216,7 +216,11 @@ public class SearchActivity extends AppCompatActivity {
         lastQuery = query;
         SearchFilter lastFilter = search.getCurrentFilter();
         search = new Search(query, 100, spotifyService, lastFilter, allSearch);
-        search.execute(offset);
+        if (!search.execute(offset)) {
+            Toast toast = Toast.makeText(context,
+                    "Encountered an error while searching, try again later.", Toast.LENGTH_SHORT);
+            toast.show();
+        }
 
         user.incrementSearchCount();
         editor.putInt(getString(R.string.searchCount), user.getSearchCount());

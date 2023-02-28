@@ -81,8 +81,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Intent intent = new Intent(view.getContext(), ArtistsView.class);
+                        Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
                         intent.putExtra("currentArtist", artist);
+                        intent.putExtra("source", Source.SEARCH);
                         view.getContext().startActivity(intent);
                     }
                 });
