@@ -5,6 +5,8 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 public class HistoryViewHolder extends RecyclerView.ViewHolder {
@@ -25,7 +27,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView aqvAlbumTitle;
     TextView aqvAlbumType;
     TextView aqvAlbumYear;
-    ImageButton aqvHeartAlbum;
+    ToggleButton aqvHeartAlbum;
 
     View view;
 
@@ -66,7 +68,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 aqvAlbumTitle = itemView.findViewById(R.id.aqvTrackTitle);
                 aqvAlbumType = itemView.findViewById(R.id.aqvTrackAlbum);
                 aqvAlbumYear = itemView.findViewById(R.id.aqvTrackYear);
-                aqvHeartAlbum = itemView.findViewById(R.id.aqvHeartTrack);
+                aqvHeartAlbum = itemView.findViewById(R.id.aqvHeartToggleButton);
         }
         view  = itemView;
     }

@@ -14,6 +14,10 @@ import android.widget.Adapter;
 import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,10 +25,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import model.GoogleSignIn;
 import model.PhotoUrl;
+import model.User;
 import model.item.Album;
 import model.item.Track;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
@@ -38,9 +47,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     Album album;
     MediaPlayer mediaPlayer = new MediaPlayer();
     int old;
+    User user;
 
-    public HistoryAdapter(List<Track> trackList, List<Album> albumList, Context context, int switchOn)
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
+    GoogleSignIn googleSignIn = new GoogleSignIn();
+    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
+    public HistoryAdapter(User user, List<Track> trackList, List<Album> albumList, Context context, int switchOn)
     {
+        this.user = user;
         this.trackList = trackList;
         this.albumList = albumList;
         this.context = context;
@@ -217,16 +233,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(viewHolder.aqvHeartAlbum.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.empty_heart).getConstantState()))
+                        if(viewHolder.aqvHeartAlbum.isChecked())
                         {
-                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.filled_heart));
+                            AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
                         }
                         else
                         {
-                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.empty_heart));
+                            AlbumService.unheart(user, firebaseUser, reference, album);
                         }
-
-                        //TODO: Actually Heart the Album
                     }
                 });
         }

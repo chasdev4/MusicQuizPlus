@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -42,11 +43,13 @@ import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import utils.LogUtil;
 
 public class ArtistQuizView extends AppCompatActivity {
 
+    User user;
     Artist artist;
     TextView artistNameTV;
     TextView artistBioTV;
@@ -58,7 +61,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ImageButton wikipedia;
     ImageButton instagram;
     ImageButton share;
-    ImageButton heartLatest;
+    ToggleButton heartLatest;
     ImageView latestImage;
     TextView latestTitle;
     TextView latestType;
@@ -85,6 +88,7 @@ public class ArtistQuizView extends AppCompatActivity {
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
     HistoryAdapter adapter;
+    SpotifyService spotifyService;
     private Source source;
 
     @Override
@@ -107,13 +111,15 @@ public class ArtistQuizView extends AppCompatActivity {
         latestTitle.setSelected(true);
         latestType = findViewById(R.id.aqvTrackAlbum);
         latestYear = findViewById(R.id.aqvTrackYear);
-        heartLatest = findViewById(R.id.aqvHeartTrack);
+        heartLatest = findViewById(R.id.aqvHeartToggleButton);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
         albumsRV = findViewById(R.id.aqvAlbums);
         compilationsRV = findViewById(R.id.aqvCompilations);
         singlesRV = findViewById(R.id.aqvSingles);
         singlesTextView = findViewById(R.id.singlesTextView);
+        spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+
 
         PackageManager pm = getPackageManager();
 
@@ -122,6 +128,7 @@ public class ArtistQuizView extends AppCompatActivity {
         {
             artist = (Artist) extras.getSerializable("currentArtist");
             source = (Source) extras.getSerializable("source");
+            user = (User) extras.getSerializable("currentUser");
 
             artistNameTV.setText(artist.getName());
             artistBioTV.setText(artist.getBio());
@@ -304,17 +311,16 @@ public class ArtistQuizView extends AppCompatActivity {
         heartLatest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(heartLatest.getDrawable().getConstantState().equals(getBaseContext().getResources().getDrawable(R.drawable.empty_heart).getConstantState()))
+                if(heartLatest.isChecked())
                 {
-                    heartLatest.setImageDrawable(getBaseContext().getResources().getDrawable(R.drawable.filled_heart));
+                    AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
                 }
                 else
                 {
-                    heartLatest.setImageDrawable(getBaseContext().getResources().getDrawable(R.drawable.empty_heart));
+                    AlbumService.unheart(user, firebaseUser, reference, latest);
                 }
             }
         });
-
     }
 
     @Override
@@ -341,7 +347,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(null, artist.getSingles(), getBaseContext(), 2);
+                            adapter = new HistoryAdapter(user,null, artist.getSingles(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -363,7 +369,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(null, artist.getCompilations(), getBaseContext(), 2);
+                            adapter = new HistoryAdapter(user,null, artist.getCompilations(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -385,7 +391,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(null, artist.getAlbums(), getBaseContext(), 2);
+                            adapter = new HistoryAdapter(user,null, artist.getAlbums(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
