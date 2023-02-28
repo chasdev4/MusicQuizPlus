@@ -87,6 +87,7 @@ public class PlaylistFragment extends Fragment {
                 Adapter playlistAdapter = adapterView.getAdapter();
                 Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
                 Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
+                intent.putExtra("currentUser", user);
                 intent.putExtra("currentPlaylist", clickedOnPlaylist);
                 startActivity(intent);
             }
