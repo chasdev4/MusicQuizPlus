@@ -61,7 +61,7 @@
         android:textColor="@color/mqWhite"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/pqvHeartToggleButton"
         app:layout_constraintStart_toEndOf="@+id/pqvCoverImage"
         app:layout_constraintTop_toTopOf="parent"
 
@@ -97,7 +97,7 @@
         android:text="@string/playlist_by_spotify"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/pqvHeartToggleButton"
         app:layout_constraintStart_toEndOf="@+id/pqvPlaylistBy"
         app:layout_constraintTop_toBottomOf="@+id/pqvTitle"
 
@@ -109,12 +109,13 @@
         android:focusableInTouchMode="true"
         android:scrollHorizontally="true"/>
 
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="wrap_content"
+    <ToggleButton
+        android:id="@+id/pqvHeartToggleButton"
+        android:layout_width="40dp"
         android:layout_height="wrap_content"
         android:background="@null"
-        android:src="@drawable/empty_heart"
+        android:button="@drawable/toggle_heart"
+        android:padding="5dp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75"
