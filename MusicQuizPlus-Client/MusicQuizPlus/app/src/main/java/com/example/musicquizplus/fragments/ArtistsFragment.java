@@ -99,6 +99,7 @@ public class ArtistsFragment extends Fragment {
                 Adapter artistAdapter = adapterView.getAdapter();
                 Artist clickedOnArtist = (Artist) artistAdapter.getItem(i);
                 Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
+                intent.putExtra("currentUser", user);
                 intent.putExtra("currentArtist", clickedOnArtist);
                 startActivity(intent);
             }
