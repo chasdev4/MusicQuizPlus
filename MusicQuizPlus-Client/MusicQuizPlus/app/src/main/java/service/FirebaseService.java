@@ -1,5 +1,6 @@
 package service;
 
+import android.app.Activity;
 import android.content.Context;
 import android.widget.GridView;
 
@@ -197,6 +198,45 @@ public class FirebaseService {
             }
         });
 
+    }
+
+    public static void populateGridViewByPlaylistIDs(DatabaseReference reference, Activity activity, Context context, GridView gridView, List<String> playlistIDs)
+    {
+        List<Playlist> playlists = new ArrayList<>();
+        final PlaylistsAdapter[] playlistsAdapter = new PlaylistsAdapter[1];
+        CountDownLatch cdl = new CountDownLatch(playlistIDs.size());
+
+        for(String id : playlistIDs)
+        {
+            reference.child("playlists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    playlists.add(snapshot.getValue(Playlist.class));
+                    cdl.countDown();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+
+        try{
+            cdl.await();
+        }
+        catch(InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                playlistsAdapter[0] = new PlaylistsAdapter(context, R.layout.gridview_contents, playlists);
+                gridView.setAdapter(playlistsAdapter[0]);
+            }
+        });
     }
 
     // NOTE: Modify this method if you absolutely need to fix database children
