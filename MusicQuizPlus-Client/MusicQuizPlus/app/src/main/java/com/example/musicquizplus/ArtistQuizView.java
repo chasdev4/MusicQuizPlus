@@ -38,8 +38,11 @@ import model.item.Playlist;
 import model.item.Track;
 import model.type.AlbumType;
 import model.type.ExternalLinkType;
+import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.PlaylistService;
 import utils.LogUtil;
 
 public class ArtistQuizView extends AppCompatActivity {
@@ -82,6 +85,7 @@ public class ArtistQuizView extends AppCompatActivity {
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
     HistoryAdapter adapter;
+    private Source source;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,6 +121,8 @@ public class ArtistQuizView extends AppCompatActivity {
         if (extras != null)
         {
             artist = (Artist) extras.getSerializable("currentArtist");
+            source = (Source) extras.getSerializable("source");
+
             artistNameTV.setText(artist.getName());
             artistBioTV.setText(artist.getBio());
             Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
@@ -314,12 +320,18 @@ public class ArtistQuizView extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
+        SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         new Thread(new Runnable() {
             public void run() {
                 User user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
 
-                artist.initCollections(reference, user);
+                if (source != Source.SEARCH) {
+                    artist.initCollections(reference, user);
+                }
+                else {
+                    artist = spotifyService.artistOverview(artist.getId());
+                }
+
 
                 LogUtil log = new LogUtil("ArtistQuizView", "onStart");
                 ExecutorService executorService = Executors.newFixedThreadPool(3);
