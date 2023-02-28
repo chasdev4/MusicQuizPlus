@@ -243,7 +243,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                            adapter = new HistoryAdapter(tracksList, null, getBaseContext(), 1);
+                            adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
                             listView.setAdapter(adapter);
                             listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                         }

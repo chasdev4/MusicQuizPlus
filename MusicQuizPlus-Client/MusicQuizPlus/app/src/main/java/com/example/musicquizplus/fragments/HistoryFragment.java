@@ -256,7 +256,7 @@ public class HistoryFragment extends Fragment {
                             {
                                 userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
                             }
-                            adapter = new HistoryAdapter(list, null, getContext(), 0);
+                            adapter = new HistoryAdapter(user, list, null, getContext(), 0);
                             historyRecyclerView.setAdapter(adapter);
                             historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
