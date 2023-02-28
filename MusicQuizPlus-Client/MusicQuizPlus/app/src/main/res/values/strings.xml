@@ -54,4 +54,5 @@
     <string name="title_match">TITLE MATCH</string>
     <string name="search_initial_text">Begin Typing To Search</string>
     <string name="search_no_results_text">No results found</string>
+    <string name="brain_emoji">🧠</string>
 </resources>
