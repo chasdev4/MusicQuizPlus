@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/entireUserAvatar"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+
+    <ImageView
+        android:id="@+id/badge_milestone_background"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/badge_milestone_background"
+        android:layout_centerInParent="true"/>
+
+
+    <TextView android:layout_height="20dp"
+        android:layout_width="20dp"
+        android:layout_centerInParent="true"
+        android:text="1"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textColor="@color/mqWhite"
+        android:fontFamily="@font/titan_one"
+        android:textSize="15sp"/>
+
+</RelativeLayout>
