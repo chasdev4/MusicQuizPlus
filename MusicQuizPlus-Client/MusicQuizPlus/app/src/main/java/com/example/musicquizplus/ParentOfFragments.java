@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -59,6 +60,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private User user;
 
     private boolean ignoreMuteAction;
+    private boolean mediaPlayerInitialized;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -171,6 +173,12 @@ public class ParentOfFragments extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        mediaPlayer.stop();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         final String[] url = {null};
@@ -206,10 +214,16 @@ public class ParentOfFragments extends AppCompatActivity {
                 String finalUrl = url[0];
 
                 try {
+                    if (mediaPlayerInitialized) {
+                        mediaPlayer.reset();
+                    }
                     mediaPlayer.setDataSource(finalUrl);
                     mediaPlayer.prepare();
                     if (muteButton.isChecked()) {
                         mediaPlayer.start();
+                    }
+                    if (!mediaPlayerInitialized) {
+                        mediaPlayerInitialized = true;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
