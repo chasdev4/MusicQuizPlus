@@ -9,7 +9,6 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -17,6 +16,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.example.musicquizplus.fragments.ArtistsFragment;
+import com.example.musicquizplus.fragments.HistoryFragment;
+import com.example.musicquizplus.fragments.PlaylistFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -44,8 +46,13 @@ public class ParentOfFragments extends AppCompatActivity {
     private ToggleButton muteButton;
     private TextView userLevel;
     private ImageView userCustomAvatar;
-    private View playlistUserAvatar;
+    private ImageButton backToTop;
+    private View userAvatar;
     private Button pageTitle;
+
+    private View.OnClickListener playlistsBackToTopListener;
+    private View.OnClickListener artistsBackToTopListener;
+    private View.OnClickListener historyBackToTopListener;
 
     private DatabaseReference db;
     private FirebaseUser firebaseUser;
@@ -79,8 +86,7 @@ public class ParentOfFragments extends AppCompatActivity {
                         mediaPlayer.pause();
 
                     }
-                }
-                else {
+                } else {
                     muteButton.setChecked(!muteButton.isChecked());
                 }
             }
@@ -89,19 +95,17 @@ public class ParentOfFragments extends AppCompatActivity {
         pageTitle = findViewById(R.id.page_title);
         userLevel = findViewById(R.id.userLevel);
         userCustomAvatar = findViewById(R.id.userCustomAvatar);
-        playlistUserAvatar = findViewById(R.id.playlistUserAvatar);
+        userAvatar = findViewById(R.id.home_user_avatar);
         Activity activity = this;
         Context context = this;
-                playlistUserAvatar.setOnClickListener(new View.OnClickListener() {
+        userAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(firebaseUser == null) {
+                if (firebaseUser == null) {
 
                     SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.user_profile_signup_header));
                     signUpPopUp.createAndShow();
-                }
-                else
-                {
+                } else {
                     //pull up user profile
                 }
             }
@@ -115,12 +119,32 @@ public class ParentOfFragments extends AppCompatActivity {
         viewPager2 = findViewById(R.id.view_pager);
         viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(viewPagerAdapter);
+        backToTop = findViewById(R.id.backToTop);
+
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager2.setCurrentItem(tab.getPosition());
                 pageTitle.setText(tab.getText());
+
+                switch (tab.getPosition()) {
+                    case 0:
+                        if (playlistsBackToTopListener != null) {
+                            backToTop.setOnClickListener(playlistsBackToTopListener);
+                        }
+                        break;
+                    case 1:
+                        if (artistsBackToTopListener != null) {
+                            backToTop.setOnClickListener(artistsBackToTopListener);
+                        }
+                        break;
+                    case 2:
+                        if (historyBackToTopListener != null) {
+                            backToTop.setOnClickListener(historyBackToTopListener);
+                        }
+                        break;
+                }
             }
 
             @Override
@@ -191,32 +215,44 @@ public class ParentOfFragments extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                if (firebaseUser != null)
-                {
+                if (firebaseUser != null) {
                     new Thread(new Runnable() {
                         public void run() {
                             user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                                    if(user.getPhotoUrl() != null)
-                                    {
-                                Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
+                                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                                    if (user.getPhotoUrl() != null) {
+                                        Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
                                     }
                                 }
                             });
                         }
                     }).start();
-                }
-                else {
+                } else {
                     userLevel.setText(getString(R.string.guest));
                 }
 
             }
-
-
-
         }).start();
     }
+
+    public void setPlaylistsBackToTopListener(View.OnClickListener playlistsBackToTopListener) {
+        this.playlistsBackToTopListener = playlistsBackToTopListener;
+    }
+
+    public void setArtistsBackToTopListener(View.OnClickListener artistsBackToTopListener) {
+        this.artistsBackToTopListener = artistsBackToTopListener;
+    }
+
+    public void setHistoryBackToTopListener(View.OnClickListener historyBackToTopListener) {
+        this.historyBackToTopListener = historyBackToTopListener;
+    }
+
+    public boolean isBackToTopListenerSet() {
+        return backToTop.hasOnClickListeners();
+    }
+
+    public ImageButton getBackToTop() { return backToTop; }
 }

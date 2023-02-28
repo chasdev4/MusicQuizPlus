@@ -57,14 +57,11 @@ import service.FirebaseService;
 
 public class HistoryFragment extends Fragment {
 
-    private View popupSignUpView = null;
     private Button googleSignInBtn;
     private RecyclerView historyRecyclerView;
     private TextView userLevel;
     private View noCurrentUser;
     private TextView noUserHeader;
-//    private ImageButton backToTop;
-//    private View historyUserAvatar;
     private GoogleSignIn googleSignIn;
     private FirebaseUser firebaseUser;
     private DatabaseReference db;
@@ -72,6 +69,8 @@ public class HistoryFragment extends Fragment {
     private ImageView userCustomAvatar;
     HistoryAdapter adapter;
     List<Track> list = new ArrayList<>();
+    private ImageButton backToTop;
+    private View.OnClickListener backToTopListener;
 
 
     @Override
@@ -85,8 +84,7 @@ public class HistoryFragment extends Fragment {
         userLevel = view.findViewById(R.id.userLevel);
         noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
         noUserHeader = view.findViewById(R.id.logged_out_header);
-        ImageButton backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
-//        historyUserAvatar = view.findViewById(R.id.historyUserAvatar);
+        backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
         userCustomAvatar = view.findViewById(R.id.userCustomAvatar);
         googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
@@ -133,28 +131,6 @@ public class HistoryFragment extends Fragment {
 
             }
         });
-
-        backToTop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                historyRecyclerView.scrollToPosition(0);
-                backToTop.setVisibility(View.GONE);
-            }
-        });
-
-//        historyUserAvatar.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(firebaseUser == null) {
-//                    SignUpPopUp signUpPopUp = new SignUpPopUp(getActivity(), getContext(), getString(R.string.user_profile_signup_header));
-//                    signUpPopUp.createAndShow();
-//                }
-//                else
-//                {
-//                    //pull up user profile
-//                }
-//            }
-//        });
 
         //TODO: retreive history from firebase and populate listview
         //DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
@@ -234,8 +210,26 @@ public class HistoryFragment extends Fragment {
             }
         });
 
+        createBackToTopListener();
+        ParentOfFragments main = ((ParentOfFragments)getActivity());
+
+        main.setHistoryBackToTopListener(backToTopListener);
+        if (!main.isBackToTopListenerSet()) {
+            main.getBackToTop().setOnClickListener(backToTopListener);
+        }
+
         // Inflate the layout for this fragment
         return view;
+    }
+
+    public void createBackToTopListener() {
+        backToTopListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                historyRecyclerView.scrollToPosition(0);
+                backToTop.setVisibility(View.GONE);
+            }
+        };
     }
 
     @Override

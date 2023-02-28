@@ -39,7 +39,7 @@
 
         <include
             layout="@layout/user_avatar_layout"
-            android:id="@+id/playlistUserAvatar"
+            android:id="@+id/home_user_avatar"
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_marginStart="-24dp"
