@@ -55,4 +55,7 @@
     <string name="search_initial_text">Begin Typing To Search</string>
     <string name="search_no_results_text">No results found</string>
     <string name="brain_emoji">🧠</string>
+    <string name="badges_label">Badges</string>
+    <string name="hearted_artists_label">Hearted Artists</string>
+    <string name="example_artist">Example Artist</string>
 </resources>

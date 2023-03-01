@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/entireUserAvatar"
+    android:id="@+id/badge_performance"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -13,7 +12,7 @@
         android:id="@+id/badge_milestone_background"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:src="@drawable/trophy_gold"
+        android:src="@drawable/trophy_silver"
         android:layout_centerInParent="true"/>
 
     <TextView
@@ -28,7 +27,7 @@
         android:shadowDx="1"
         android:shadowDy="1"
         android:shadowColor="#ff5555"
-        android:visibility="visible"/>
+        android:visibility="gone"/>
 
     <ImageView
         android:id="@+id/quick_reactor_1"
@@ -36,7 +35,7 @@
         android:layout_width="13dp"
         android:layout_centerInParent="true"
         android:paddingBottom="10dp"
-        android:visibility="gone"
+        android:visibility="visible"
         android:gravity="center"
         android:src="@drawable/trophy_star"/>
 

@@ -17,6 +17,13 @@
         android:theme="@style/Theme.MusicQuizPlus.NoActionBar"
         tools:targetApi="31">
         <activity
+            android:name=".ProfileActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".ArtistQuizView"
             android:exported="false">
             <meta-data
@@ -68,6 +75,7 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

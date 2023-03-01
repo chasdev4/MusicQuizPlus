@@ -3,7 +3,6 @@ package model;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
 
@@ -14,11 +13,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
-import com.google.type.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -285,6 +282,22 @@ public class User implements Serializable {
     @Exclude
     public List<Badge> getEarnedBadges() {
         return earnedBadges;
+    }
+    @Exclude
+    public List<Badge> getBadgesAsList() {
+        List<Badge> data = new ArrayList<>();
+        for (Map.Entry<String, Badge> badge : badges.entrySet()) {
+            data.add(badge.getValue());
+        }
+        return data;
+    }
+    @Exclude
+    public List<Artist> getArtistsAsList() {
+        List<Artist> data = new ArrayList<>();
+        for (Map.Entry<String, Artist> a : artists.entrySet()) {
+            data.add(a.getValue());
+        }
+        return data;
     }
     //#endregion
 
@@ -892,4 +905,6 @@ public class User implements Serializable {
 
         return searchCount >= getSearchLimit(role);
     }
+
+
 }
