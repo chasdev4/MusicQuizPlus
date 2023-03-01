@@ -26,6 +26,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -67,6 +68,7 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView latestType;
     TextView latestYear;
     TextView latestText;
+    TextView latestMiddleDot;
     View latestRelease;
     RecyclerView albumsRV;
     RecyclerView compilationsRV;
@@ -87,7 +89,9 @@ public class ArtistQuizView extends AppCompatActivity {
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-    HistoryAdapter adapter;
+    HistoryAdapter singleAdapter;
+    HistoryAdapter albumAdapter;
+    HistoryAdapter compilationAdapter;
     SpotifyService spotifyService;
     private Source source;
 
@@ -111,6 +115,7 @@ public class ArtistQuizView extends AppCompatActivity {
         latestTitle.setSelected(true);
         latestType = findViewById(R.id.aqvTrackAlbum);
         latestYear = findViewById(R.id.aqvTrackYear);
+        latestMiddleDot = findViewById(R.id.middleDotAfterAlbum);
         heartLatest = findViewById(R.id.aqvHeartToggleButton);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
@@ -119,7 +124,8 @@ public class ArtistQuizView extends AppCompatActivity {
         singlesRV = findViewById(R.id.aqvSingles);
         singlesTextView = findViewById(R.id.singlesTextView);
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
-
+        compilationsTextView = findViewById(R.id.compilationsTextView);
+        albumsTextView = findViewById(R.id.albumsTextView);
 
         PackageManager pm = getPackageManager();
 
@@ -139,29 +145,6 @@ public class ArtistQuizView extends AppCompatActivity {
                 initializeExternalLinkButtons();
             }
 
-            if(artist.getLatest() != null)
-            {
-                reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        latest = (Album) snapshot.getValue(Album.class);
-                        Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
-                        latestTitle.setText(latest.getName());
-                        latestType.setText(latest.getType().toString());
-                        latestYear.setText(latest.getYear());
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-            }
-            else
-            {
-                latestText.setVisibility(View.GONE);
-                latestRelease.setVisibility(View.GONE);
-            }
         }
 
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -327,31 +310,72 @@ public class ArtistQuizView extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+        CountDownLatch cdl = new CountDownLatch(2);
+
         new Thread(new Runnable() {
             public void run() {
-                User user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
 
                 if (source != Source.SEARCH) {
                     artist.initCollections(reference, user);
+                    cdl.countDown();
+                    artist.initTracks(reference);
+                    cdl.countDown();
+
+                    try{
+                        cdl.await();
+                    }
+                    catch(InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
                 else {
                     artist = spotifyService.artistOverview(artist.getId());
                 }
 
+                if(artist.getLatest() != null)
+                {
+                    reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            latest = (Album) snapshot.getValue(Album.class);
+                            Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
+                            latestTitle.setText(latest.getName());
+                            latestType.setText(latest.getType().toString());
+                            latestYear.setText(latest.getYear());
+                            latestMiddleDot.setText(getString(R.string.middle_dot));
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+
+                        }
+                    });
+                }
+                else
+                {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            latestText.setVisibility(View.GONE);
+                            latestRelease.setVisibility(View.GONE);
+                        }
+                    });
+                }
 
                 LogUtil log = new LogUtil("ArtistQuizView", "onStart");
                 ExecutorService executorService = Executors.newFixedThreadPool(3);
 
-                if(artist.getSingles() != null)
+                if(artist.getSingles().size() != 0)
                 {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(user,null, artist.getSingles(), getBaseContext(), 2);
+                            singleAdapter = new HistoryAdapter(user,null, artist.getSingles(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    singlesRV.setAdapter(adapter);
+                                    singlesRV.setAdapter(singleAdapter);
                                     singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
@@ -360,20 +384,25 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
                 else
                 {
-                    singlesRV.setVisibility(View.GONE);
-                    singlesTextView.setVisibility(View.GONE);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            singlesRV.setVisibility(View.GONE);
+                            singlesTextView.setVisibility(View.GONE);
+                        }
+                    });
                 }
 
-                if(artist.getCompilations() != null)
+                if(artist.getCompilations().size() != 0)
                 {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(user,null, artist.getCompilations(), getBaseContext(), 2);
+                            compilationAdapter = new HistoryAdapter(user,null, artist.getCompilations(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    compilationsRV.setAdapter(adapter);
+                                    compilationsRV.setAdapter(compilationAdapter);
                                     compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
@@ -382,20 +411,25 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
                 else
                 {
-                    compilationsRV.setVisibility(View.GONE);
-                    compilationsTextView.setVisibility(View.GONE);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            compilationsRV.setVisibility(View.GONE);
+                            compilationsTextView.setVisibility(View.GONE);
+                        }
+                    });
                 }
 
-                if(artist.getAlbums() != null)
+                if(artist.getAlbums().size() != 0)
                 {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(user,null, artist.getAlbums(), getBaseContext(), 2);
+                            albumAdapter = new HistoryAdapter(user,null, artist.getAlbums(), getBaseContext(), 2);
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    albumsRV.setAdapter(adapter);
+                                    albumsRV.setAdapter(albumAdapter);
                                     albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
@@ -404,8 +438,13 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
                 else
                 {
-                    albumsRV.setVisibility(View.GONE);
-                    albumsTextView.setVisibility(View.GONE);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            albumsRV.setVisibility(View.GONE);
+                            albumsTextView.setVisibility(View.GONE);
+                        }
+                    });
                 }
 
                 executorService.shutdown();
