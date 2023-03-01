@@ -544,7 +544,7 @@ public class Artist implements Serializable {
 
             // If the user has the album hearted, fetch the tracks
             if (user.getAlbumIds().containsValue(albumId)) {
-                albumsList.get(albumsList.size() - 1).initCollection(db);
+                //albumsList.get(albumsList.size() - 1).initCollection(db);
             }
         }
 
