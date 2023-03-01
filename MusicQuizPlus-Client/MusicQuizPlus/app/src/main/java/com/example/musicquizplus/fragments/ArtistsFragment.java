@@ -140,17 +140,23 @@ public class ArtistsFragment extends Fragment {
                         @Override
                         public void run() {
                             gridView.setVisibility(View.VISIBLE);
+                            noCurrentArtists.setVisibility(View.VISIBLE);
+                            noCurrentArtistsText.setVisibility(View.VISIBLE);
                             noUser.setVisibility(View.GONE);
                         }
                     });
 
                     if(user.getArtistIds().size() > 0)
                     {
-                        noCurrentArtists.setVisibility(View.GONE);
-                        noCurrentArtistsText.setVisibility(View.GONE);
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                noCurrentArtists.setVisibility(View.GONE);
+                                noCurrentArtistsText.setVisibility(View.GONE);
+                            }
+                        });
                         List<String> artistIds = new ArrayList<>(user.getArtistIds().values());
-                        //FirebaseService.populateGridViewByPlaylistIDs(db, getActivity(), getContext(), gridView, playlistIDs);
-
+                        FirebaseService.populateGridViewByArtistIDs(db, getActivity(), getContext(), gridView, artistIds);
                     }
 
                 }
