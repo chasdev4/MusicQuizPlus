@@ -239,6 +239,45 @@ public class FirebaseService {
         });
     }
 
+    public static void populateGridViewByArtistIDs(DatabaseReference reference, Activity activity, Context context, GridView gridView, List<String> artistIds)
+    {
+        List<Artist> artists = new ArrayList<>();
+        final ArtistsAdapter[] artistsAdapters = new ArtistsAdapter[1];
+        CountDownLatch cdl = new CountDownLatch(artistIds.size());
+
+        for(String id : artistIds)
+        {
+            reference.child("artists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    artists.add(snapshot.getValue(Artist.class));
+                    cdl.countDown();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+
+        try{
+            cdl.await();
+        }
+        catch(InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                artistsAdapters[0] = new ArtistsAdapter(context, R.layout.gridview_contents, artists);
+                gridView.setAdapter(artistsAdapters[0]);
+            }
+        });
+    }
+
     // NOTE: Modify this method if you absolutely need to fix database children
 //    private static void removeFeaturedArtist(DatabaseReference db) {
 //        db.child("tracks").addValueEventListener(new ValueEventListener() {
