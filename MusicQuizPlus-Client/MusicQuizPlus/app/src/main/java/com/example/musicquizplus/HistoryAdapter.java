@@ -50,7 +50,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     User user;
 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-    SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
 
@@ -225,6 +224,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
             case 2:
                 //if switchOn is 2, its for artist quiz preview
                 album = albumList.get(position);
+                SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
+
 
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
                 viewHolder.aqvAlbumTitle.setText(album.getName());
