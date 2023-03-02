@@ -14,6 +14,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import com.example.musicquizplus.ParentOfFragments;
 import com.example.musicquizplus.PlaylistQuizView;
@@ -47,6 +48,7 @@ public class PlaylistFragment extends Fragment {
     private DatabaseReference reference;
     private List<String> defaultPlaylistIDs = new ArrayList<>();
     private User user;
+    private ProgressBar pgb;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,6 +60,7 @@ public class PlaylistFragment extends Fragment {
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
         reference = FirebaseDatabase.getInstance().getReference();
+        pgb = view.findViewById(R.id.playlistProgressBar);
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -127,6 +130,12 @@ public class PlaylistFragment extends Fragment {
                 {
 
                     List<String> playlistIDs = new ArrayList<>(user.getPlaylistIds().values());
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            pgb.setVisibility(View.GONE);
+                        }
+                    });
                     FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, playlistIDs);
 
                 }
@@ -156,6 +165,12 @@ public class PlaylistFragment extends Fragment {
 
                             if(defaultPlaylistIDs.size() > 0)
                             {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        pgb.setVisibility(View.GONE);
+                                    }
+                                });
                                 FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, defaultPlaylistIDs);
                             }
 
