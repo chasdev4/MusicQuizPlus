@@ -51,19 +51,13 @@ public class QuizResults extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-        GoogleSignIn googleSignIn = new GoogleSignIn();
-        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
             new Thread(new Runnable() {
                 public void run() {
                     //Testing Results Model
-                    User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    Quiz quiz = (Quiz) extras.getSerializable("quiz");
-                    Results results = quiz.end();
+                    Results results = (Results) extras.getSerializable("quizResults");
                     score = results.getScore();
                     accuracy = results.getAccuracy();
                     String scoreString = String.valueOf(score);
