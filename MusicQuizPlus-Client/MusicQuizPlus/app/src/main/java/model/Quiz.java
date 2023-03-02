@@ -6,6 +6,7 @@ import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -60,8 +61,6 @@ public class Quiz implements Serializable {
     private List<String> featuredArtistsNames;
     private List<Track> featuredArtistTracks;
     private boolean isNewQuiz;
-    private DatabaseReference db;
-    private FirebaseUser firebaseUser;
     private int poolCount;
     private boolean addedRemaining;
     private int remaining;
@@ -95,11 +94,10 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Constructors
-    public Quiz(Playlist playlist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        quizId = db.child("generated_quizzes").child(playlist.getId()).push().getKey();
+    public Quiz(Playlist playlist, User user) {
+        quizId = FirebaseDatabase.getInstance().getReference().child("generated_quizzes").child(playlist.getId()).push().getKey();
         this.playlist = playlist;
-        this.db = db;
-        this.firebaseUser = firebaseUser;
+        //this.firebaseUser = firebaseUser;
         artist = null;
         this.user = user;
         type = QuizType.PLAYLIST;
@@ -116,9 +114,8 @@ public class Quiz implements Serializable {
         init(playlist.getId());
     }
 
-    public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        this.db = db;
-        this.firebaseUser = firebaseUser;
+    public Quiz(Artist artist, User user) {
+        //this.firebaseUser = firebaseUser;
         playlist = null;
         this.artist = artist;
         this.user = user;
@@ -303,15 +300,20 @@ public class Quiz implements Serializable {
         numCorrect = 0;
         numQuestions = 10;
         difficulty = user.getDifficulty();
+        generateQuiz(topicId);
 
+        //TODO: Re-enable and debug
+        /*
         if (type == QuizType.ARTIST || !retrieveQuiz(topicId)) {
             generateQuiz(topicId);
         }
+         */
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
     private boolean retrieveQuiz(String topicId) {
         // Get a map of generated quiz ids indexed under the topicId
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
         Map<String, GeneratedQuiz> generatedQuizzesByTopic = QuizService.retrieveGeneratedQuizzes(db, topicId);
 
         // If there are no generated quizzes, return to generate one
@@ -880,6 +882,9 @@ public class Quiz implements Serializable {
     //#region Post Quiz
     // Call this method after the quiz is complete
     public Results end() {
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
@@ -893,6 +898,9 @@ public class Quiz implements Serializable {
 
     private void updateDatabase() {
         String key = null;
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
 
         // Artist Quizzes aren't saved to database
         if (isNewQuiz && type == QuizType.PLAYLIST) {
