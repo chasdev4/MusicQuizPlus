@@ -135,7 +135,9 @@ public class BadgeService {
         db.child(path + "/name").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                name[0] = snapshot.getValue().toString();
+                if (snapshot.getValue() != null) {
+                    name[0] = snapshot.getValue().toString();
+                }
                 countDownLatch.countDown();
             }
 

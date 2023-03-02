@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
     android:background="@color/mqPurple3"
+    android:layout_height="match_parent" >
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:isScrollContainer="false"
     tools:context=".ProfileActivity">
 
     <androidx.constraintlayout.widget.Guideline
@@ -21,32 +27,32 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.75" />
 
-    <LinearLayout
+    <ImageButton
+        android:id="@+id/profile_back_button"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:background="@null"
+        android:src="@drawable/left_chevron"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/guideline"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
-
         app:layout_constraintBottom_toTopOf="@id/guideline"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/profile_back_button"
         app:layout_constraintTop_toTopOf="parent">
-
-        <ImageButton
-            android:id="@+id/profile_back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="3dp"
-            android:background="@null"
-            android:src="@drawable/left_chevron"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
 
         <include
             android:id="@+id/profile_user_avatar"
             layout="@layout/user_avatar_layout"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:layout_marginLeft="-30dp"
+            android:layout_marginLeft="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -64,9 +70,9 @@
             android:textSize="50sp"
             app:autoSizeTextType="uniform" />
     </LinearLayout>
-
     <LinearLayout
         android:id="@+id/profile_area"
+        android:isScrollContainer="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
@@ -95,9 +101,10 @@
                     android:textColor="@color/mqWhite"
                     android:textSize="24dp" />
                 <TextView
+                    android:id="@+id/badge_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="123"
+                    android:text="0"
                     android:paddingLeft="10dp"
                     android:textColor="@color/mqWhite"
                     android:textSize="20sp"
@@ -110,7 +117,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/mqPurple2"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="10dp"
+                android:isScrollContainer="false"/>
 
 <!--            Hearted Artists-->
             <LinearLayout
@@ -127,16 +135,18 @@
                     android:gravity="center"
                     android:textColor="@color/mqWhite"
                     android:textSize="24dp" />
+
                 <TextView
+                    android:id="@+id/artist_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="123"
-                    android:paddingLeft="10dp"
-                    android:textColor="@color/mqWhite"
-                    android:textSize="20sp"
-                    android:fontFamily="@font/commissioner"
                     android:alpha="0.9"
-                    android:gravity="center_vertical"/>
+                    android:fontFamily="@font/commissioner"
+                    android:gravity="center_vertical"
+                    android:paddingLeft="10dp"
+                    android:text="0"
+                    android:textColor="@color/mqWhite"
+                    android:textSize="20sp" />
             </LinearLayout>
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/profile_hearted_artists_container"
@@ -161,3 +171,4 @@
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

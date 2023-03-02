@@ -35,7 +35,7 @@ public class HeartedArtistsAdapter extends RecyclerView.Adapter<HeartedArtistsVi
     public void onBindViewHolder(@NonNull HeartedArtistsViewHolder holder, int position) {
         Artist artist = artists.get(position);
         holder.setName(artist.getName());
-        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(holder.getImage());
+        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).placeholder(R.drawable.placeholder).into(holder.getImage());
     }
 
     @Override

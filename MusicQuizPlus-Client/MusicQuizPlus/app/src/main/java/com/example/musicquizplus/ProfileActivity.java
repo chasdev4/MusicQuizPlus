@@ -14,7 +14,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
+
+import java.util.concurrent.CountDownLatch;
 
 import model.User;
 import service.ItemService;
@@ -28,6 +31,8 @@ public class ProfileActivity extends AppCompatActivity {
     private LinearLayout profileArea;
     private RecyclerView badges;
     private RecyclerView artists;
+    private TextView badgeCount;
+    private TextView artistCount;
     private ImageButton backButton;
     private ImageButton backToTop;
     private BadgesAdapter badgesAdapter;
@@ -40,6 +45,8 @@ public class ProfileActivity extends AppCompatActivity {
         name = findViewById(R.id.profile_user_name);
         avatar = findViewById(R.id.userCustomAvatar);
         level = findViewById(R.id.userLevel);
+        badgeCount = findViewById(R.id.badge_count);
+        artistCount = findViewById(R.id.artist_count);
         backButton = findViewById(R.id.profile_back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +71,7 @@ public class ProfileActivity extends AppCompatActivity {
         artists = findViewById(R.id.profile_hearted_artists_container);
         badges.setVisibility(View.INVISIBLE);
         artists.setVisibility(View.INVISIBLE);
+
     }
 
     private void setupRecyclerViews() {
@@ -76,7 +84,12 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-        badges.setLayoutManager(new GridLayoutManager(this, 5));
+        badges.setLayoutManager(new GridLayoutManager(this, 5) {
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
         badges.setHasFixedSize(true);
 
         badges.setAdapter(badgesAdapter);
@@ -89,7 +102,12 @@ public class ProfileActivity extends AppCompatActivity {
                 onArtistDataChanged();
             }
         });
-        artists.setLayoutManager(new GridLayoutManager(this, 3));
+        artists.setLayoutManager(new GridLayoutManager(this, 3){
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        });
         artists.setHasFixedSize(true);
 
         artists.setAdapter(artistsAdapter);
@@ -99,8 +117,12 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void onArtistDataChanged() {
         if (artistsAdapter.getItemCount() == 0) {
-            // TODO: Hide Section
+            artists.setVisibility(View.GONE);
         }
+        else {
+            artists.setVisibility(View.VISIBLE);
+        }
+        artistCount.setText(String.valueOf(artistsAdapter.getItemCount()));
     }
 
     private void onDataChange() {
@@ -109,8 +131,12 @@ public class ProfileActivity extends AppCompatActivity {
     }
     private void onBadgeDataChange() {
         if (badgesAdapter.getItemCount() == 0) {
-            // TODO: Hide Section
+            badges.setVisibility(View.GONE);
         }
+        else {
+            badges.setVisibility(View.VISIBLE);
+        }
+        badgeCount.setText(String.valueOf(badgesAdapter.getItemCount()));
     }
 
     @Override
@@ -122,10 +148,13 @@ public class ProfileActivity extends AppCompatActivity {
             if (user == null) {
                 finish();
             }
+
             name.setText(user.getName());
             level.setText(ItemService.formatUserLevel(user.getLevel()));
             Picasso.get().load(user.getPhotoUrl()).into(avatar);
             setupRecyclerViews();
+            badges.setVisibility(View.VISIBLE);
+            artists.setVisibility(View.VISIBLE);
         }
     }
 }

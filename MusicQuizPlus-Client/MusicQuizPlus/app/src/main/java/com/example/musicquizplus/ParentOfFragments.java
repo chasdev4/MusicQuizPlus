@@ -12,6 +12,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -36,9 +37,12 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import model.Badge;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
+import model.type.BadgeType;
+import service.BadgeService;
 import service.FirebaseService;
 import service.ItemService;
 import utils.FormatUtil;
@@ -205,6 +209,23 @@ public class ParentOfFragments extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                // delete me
+//                for (BadgeType badge : BadgeType.values()) {
+//                    if (!BadgeService.hasThumbnail(badge)) {
+//
+//                        Badge b = null;
+//                    String key = db.child("users").child(firebaseUser.getUid()).child("badges").push().getKey();
+//                        b = new Badge(badge);
+//
+//                    db.child("users").child(firebaseUser.getUid()).child("badges").child(key).setValue(b);
+//                    }
+//
+//                }
+//
+//                Log.d("efs", "run: done");
+
+
+
 //                db.child("menu_music").child("0").addListenerForSingleValueEvent(new ValueEventListener() {
 //                    @Override
 //                    public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -236,6 +257,8 @@ public class ParentOfFragments extends AppCompatActivity {
                 if (firebaseUser != null) {
 
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user.initArtists(db, false);
+                    user.initBadges(db);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

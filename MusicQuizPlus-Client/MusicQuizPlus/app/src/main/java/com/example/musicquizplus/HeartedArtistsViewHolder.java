@@ -14,6 +14,8 @@ public class HeartedArtistsViewHolder extends RecyclerView.ViewHolder {
 
     public HeartedArtistsViewHolder(@NonNull View itemView) {
         super(itemView);
+        name = itemView.findViewById(R.id.artist_name);
+        image = itemView.findViewById(R.id.artist_image);
     }
 
     public void setName(String name) {

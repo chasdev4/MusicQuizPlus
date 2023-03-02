@@ -764,17 +764,19 @@ public class User implements Serializable {
     }
 
     public void initCollections(DatabaseReference db) {
-        initArtists(db);
+        initArtists(db, true);
         initPlaylists(db);
         initHistory(db);
     }
 
-    private void initArtists(DatabaseReference db) {
+    public void initArtists(DatabaseReference db, boolean initCollections) {
         LogUtil log = new LogUtil(TAG, "initArtists");
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
             artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
-            artists.get(entry.getKey()).initCollections(db, this);
+            if (initCollections) {
+                artists.get(entry.getKey()).initCollections(db, this);
+            }
         }
         log.i("Artists retrieved.");
     }
