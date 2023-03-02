@@ -20,6 +20,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.musicquizplus.ArtistsAdapter;
@@ -41,9 +42,11 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.Quiz;
@@ -61,17 +64,18 @@ public class HistoryFragment extends Fragment {
     private RecyclerView historyRecyclerView;
     private TextView userLevel;
     private View noCurrentUser;
-    private TextView noUserHeader;
+    private TextView noUserHeader, noCurrentArtistsText;
     private GoogleSignIn googleSignIn;
     private FirebaseUser firebaseUser;
-    private DatabaseReference db;
+    private DatabaseReference db = FirebaseDatabase.getInstance().getReference();
     private User user;
-    private ImageView userCustomAvatar;
-    HistoryAdapter adapter;
+    private ImageView noCurrentArtists;
+    private HistoryAdapter adapter;
     List<Track> list = new ArrayList<>();
+    List<Track> history = new ArrayList<>();
     private ImageButton backToTop;
     private View.OnClickListener backToTopListener;
-
+    private ProgressBar pgb;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,10 +89,11 @@ public class HistoryFragment extends Fragment {
         noCurrentUser = view.findViewById(R.id.historyNoCurrentUser);
         noUserHeader = view.findViewById(R.id.logged_out_header);
         backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
-        userCustomAvatar = view.findViewById(R.id.userCustomAvatar);
         googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
-        db = FirebaseDatabase.getInstance().getReference();
+        pgb = view.findViewById(R.id.historyProgressBar);
+        noCurrentArtistsText = view.findViewById(R.id.noCurrentArtistsText);
+        noCurrentArtists = view.findViewById(R.id.noCurrentArtists);
 
         if(firebaseUser == null)
         {
@@ -128,85 +133,6 @@ public class HistoryFragment extends Fragment {
                 {
                     backToTop.setVisibility(View.GONE);
                 }
-
-            }
-        });
-
-        //TODO: retreive history from firebase and populate listview
-        //DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        db.child("tracks").limitToFirst(50).addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot : snapshot.getChildren())
-                {
-                    Track track = dataSnapshot.getValue(Track.class);
-                    //list.add(track);
-                    if(track.isAlbumKnown())
-                    {
-                        //get photourl from album
-                        db.child("albums").child(track.getAlbumId()).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                Album album = (Album) dataSnapshot.getValue(Album.class);
-                                //String url = album.getPhotoUrl().get(0).getUrl();
-                                //imageUrlList.add(url);
-                                // TODO: Solve reason for crash. Null check prevents crash but motivations not understood
-                                if (album != null) {
-                                    track.setPhotoUrl(album.getPhotoUrl());
-                                    list.add(track);
-                                    if (list.size() == 50) {
-                                        populateView();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                            }
-
-                        });
-                    }
-                    else if(track.getPlaylistIds().size() > 0)
-                    {
-                        //get photourl from playlist
-                        String id = track.getPlaylistIds().entrySet().iterator().next().getValue();
-                        db.child("playlists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                Playlist playlist = (Playlist) dataSnapshot.getValue(Playlist.class);
-                                //String url = playlist.getPhotoUrl().get(0).getUrl();
-                                track.setPhotoUrl(playlist.getPhotoUrl());
-                                list.add(track);
-                                if(list.size() == 50)
-                                {
-                                    populateView();
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-                            }
-
-                        });
-                    }
-                    else
-                    {
-                        //TODO: Get bitmap and use placeholder image made by Charles
-                        //String placeholder = "https://i.pinimg.com/originals/30/7e/28/307e285cde65e9af6a931a546094379c.jpg";
-                        list.add(track);
-                        if(list.size() == 50)
-                        {
-                            populateView();
-                        }
-                    }
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
 
@@ -235,61 +161,120 @@ public class HistoryFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-
+        populateView();
     }
 
     public void populateView() {
-        if (firebaseUser != null)
-        {
+
+        if (firebaseUser != null) {
             new Thread(new Runnable() {
                 public void run() {
 
                     user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
 
-                    getActivity().runOnUiThread(new Runnable() {
+                    if (firebaseUser != null && user.getHistoryIds().size() != 0) {
 
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                pgb.setVisibility(View.VISIBLE);
+                            }
+                        });
+
+                        user.initHistory(db);
+                        if(user.getHistory().size() > 50)
+                        {
+                            history = getFiftyItems();
+                        }
+                        else
+                        {
+                            history = user.getHistory();
+                        }
+
+                        //List<Track> userTrackHistory = FirebaseService.getTracksListWithPhotoUrls(user.getHistory(), db);
+                        CountDownLatch cdl = new CountDownLatch(history.size());
+
+                        for (Track track : history) {
+                            if (track.isAlbumKnown()) {
+                                //get photourl from album
+                                db.child("albums").child(track.getAlbumId()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        Album album = (Album) dataSnapshot.getValue(Album.class);
+                                        track.setPhotoUrl(album.getPhotoUrl());
+                                        list.add(track);
+                                        cdl.countDown();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                    }
+
+                                });
+                            } else if (track.getPlaylistIds().size() > 0) {
+                                //get photourl from playlist
+                                String id = track.getPlaylistIds().entrySet().iterator().next().getValue();
+                                db.child("playlists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        Playlist playlist = (Playlist) dataSnapshot.getValue(Playlist.class);
+                                        track.setPhotoUrl(playlist.getPhotoUrl());
+                                        list.add(track);
+                                        cdl.countDown();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+                                    }
+
+                                });
+                            }
+                        }
+                        try{
+                            cdl.await();
+                        }
+                        catch(InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    else
+                    {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                noCurrentArtists.setVisibility(View.VISIBLE);
+                                noCurrentArtistsText.setVisibility(View.VISIBLE);
+                            }
+                        });
+                    }
+
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
-                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                            if(user.getPhotoUrl() != null)
-                            {
-                                userCustomAvatar.setImageBitmap(getBitmapFromURL(user.getPhotoUrl()));
-                            }
-                            adapter = new HistoryAdapter(user, list, null, getContext(), 0);
+                            pgb.setVisibility(View.GONE);
+                            adapter = new HistoryAdapter(user, history, null, getContext(), 0);
                             historyRecyclerView.setAdapter(adapter);
                             historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
                         }
                     });
+                            //List<String> historyIds = user.getHistoryIds();
+                            //FirebaseService.populateRecyclerViewByHistoryIDs(user, db, getActivity(), getContext(), historyRecyclerView, historyIds);
                 }
             }).start();
         }
     }
 
-    private static Bitmap getBitmapFromURL(String src) {
-        Bitmap image = null;
-        try {
-            URL url = new URL(src);
-            image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-        return image;
-        /*
-        try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+    private List<Track> getFiftyItems()
+    {
+        List<Track> fiftyHistoryItems = new ArrayList<>();
+        LinkedList<Track> temp = user.getHistory();
+
+        for (int j = 0; j < 50; j++) {
+            fiftyHistoryItems.add(temp.getLast());
+            temp.removeLast();
         }
 
-         */
+        return fiftyHistoryItems;
     }
 }
