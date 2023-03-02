@@ -1,8 +1,10 @@
 package model;
 
+import java.io.Serializable;
+
 import model.type.Difficulty;
 
-public class GeneratedQuiz {
+public class GeneratedQuiz implements Serializable {
     private String quizId;
     private Difficulty difficulty;
 

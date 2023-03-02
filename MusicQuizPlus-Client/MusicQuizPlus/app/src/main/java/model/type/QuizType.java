@@ -1,6 +1,8 @@
 package model.type;
 
-public enum QuizType {
+import java.io.Serializable;
+
+public enum QuizType implements Serializable {
     ARTIST,
     PLAYLIST
 }
