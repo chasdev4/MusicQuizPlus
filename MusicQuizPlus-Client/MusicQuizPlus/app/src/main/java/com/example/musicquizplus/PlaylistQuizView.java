@@ -58,6 +58,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     Handler mainHandler = new Handler();
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    GoogleSignIn googleSignIn = new GoogleSignIn();
+    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
     ImageButton backButton;
     ImageButton spotifyButton;
     ImageButton shareButton;
@@ -73,10 +75,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
-
-        GoogleSignIn googleSignIn = new GoogleSignIn();
-        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
 
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
@@ -243,14 +241,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                            adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
-                            listView.setAdapter(adapter);
-                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                        }
+                        adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
+                        listView.setAdapter(adapter);
+                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                    }
                 });
-
-                // TODO: Pass in our DatabaseReference
-               // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
 
             }
         }).start();
@@ -261,9 +256,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                finalPlaylist.getTracks().clear();
-                //intent.putExtra("currentPlaylist", finalPlaylist);
-                intent.putExtra("playlistQuiz", playlistQuiz[0]);
+                intent.putExtra("currentPlaylist", finalPlaylist);
+                intent.putExtra("currentUser", user);
                 startActivity(intent);
             }
         });
