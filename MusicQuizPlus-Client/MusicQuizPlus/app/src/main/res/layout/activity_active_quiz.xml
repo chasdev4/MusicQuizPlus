@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,76 +8,85 @@
     android:background="@color/mqPurple3"
     android:padding="20dp">
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
+        android:layout_marginTop="-50dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
+            android:id="@+id/quizImage"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:id="@+id/quizImage"
+            android:layout_centerHorizontal="true"
             android:src="@drawable/spotify_todays_hits"
-            android:layout_centerHorizontal="true"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/question"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/quizImage"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="20dp"
             android:text="@string/guess_the_album"
             android:textAlignment="center"
             android:textColor="@color/mqWhite"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/quizImage" />
 
         <LinearLayout
+            android:id="@+id/allAnswers"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/allAnswers"
             android:layout_below="@id/question"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/question">
 
             <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:id="@+id/answerA"
-                android:text="Answer A"
-                android:backgroundTint="@color/mqBlue"
-                android:layout_margin="0.5dp"/>
-
-            <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="0.5dp"
+                android:backgroundTint="@color/mqBlue"
+                android:text="Answer A" />
+
+            <Button
                 android:id="@+id/answerB"
-                android:text="Answer B"
-                android:backgroundTint="@color/mqBlue"
-                android:layout_margin="0.5dp"/>
-
-            <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="0.5dp"
+                android:backgroundTint="@color/mqBlue"
+                android:text="Answer B" />
+
+            <Button
                 android:id="@+id/answerC"
-                android:text="Answer C"
-                android:backgroundTint="@color/mqBlue"
-                android:layout_margin="0.5dp"/>
-
-            <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/answerD"
-                android:text="Answer D"
+                android:layout_margin="0.5dp"
                 android:backgroundTint="@color/mqBlue"
-                android:layout_margin="0.5dp"/>
+                android:text="Answer C" />
+
+            <Button
+                android:id="@+id/answerD"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="0.5dp"
+                android:backgroundTint="@color/mqBlue"
+                android:text="Answer D" />
 
         </LinearLayout>
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
