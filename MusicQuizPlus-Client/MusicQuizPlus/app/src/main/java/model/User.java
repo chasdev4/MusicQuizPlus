@@ -62,7 +62,6 @@ public class User implements Serializable {
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
     private List<Badge> earnedBadges;
-    private double xpToNextLevel;
     //#endregion
 
     //#region Constants
@@ -276,7 +275,23 @@ public class User implements Serializable {
 
     @Exclude
     public double getXpToNextLevel() {
-        return xpToNextLevel;
+        if (level == 99) {
+            return LEVELS.get(100);
+        }
+        for (int i = level; i < LEVELS.size() - level; i++) {
+            if (xp > LEVELS.get(level)) {
+                return LEVELS.get(level);
+            }
+        }
+        return -1;
+
+    }
+    @Exclude
+    public double getXpFromPreviousLevel() {
+        if (level <= 1) {
+            return LEVELS.get(1);
+        }
+        return LEVELS.get(level-1);
     }
 
     @Exclude

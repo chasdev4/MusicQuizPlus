@@ -1,7 +1,5 @@
 package model;
 
-import android.util.Log;
-
 import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -233,6 +231,8 @@ public class Quiz implements Serializable {
         return String.valueOf(accuracy * 100) + "%";
     }
 
+    @Exclude
+    public int getXp() {return xp;}
     @Exclude
     private boolean isIgnoreSettingsEnabled() {
         switch (type) {
@@ -880,11 +880,12 @@ public class Quiz implements Serializable {
     //#region Post Quiz
     // Call this method after the quiz is complete
     public Results end() {
+        int previousXp = user.getXp();
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
-        return new Results(user, this, badges);
+        return new Results(user, this, previousXp, badges);
     }
 
     private void calculateXp() {
@@ -931,7 +932,6 @@ public class Quiz implements Serializable {
             xp += BadgeService.getBadgeXp(badge.getType());
 
         }
-
         // Update the user's xp / level
         user.addXP(db, firebaseUser, xp);
     }

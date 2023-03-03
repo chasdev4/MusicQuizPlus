@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/mqPurple2"
+    android:layout_margin="1dp">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="80dp"/>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guidelineVert"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent=".70"/>
+
+    <RelativeLayout
+        android:id="@+id/badge"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:paddingStart="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/badge_name">
+    <include layout="@layout/badge_milestone"
+        android:id="@+id/included_badge"/>
+    </RelativeLayout>
+<!--    <ImageView-->
+<!--        android:id="@+id/image"-->
+<!--        android:src="@drawable/badge_milestone_background"-->
+<!--        android:layout_width="50dp"-->
+<!--        android:layout_height="50dp"-->
+<!--        android:layout_marginLeft="10dp"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/guideline"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <TextView
+        android:id="@+id/badge_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="-18dp"
+        android:fontFamily="@font/concert_one"
+        android:text="Badge Name"
+        android:paddingLeft="10dp"
+        android:textColor="@color/mqWhite"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toEndOf="@+id/badge"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/badge_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/commissioner"
+        android:text="Badge Description"
+        android:paddingLeft="10dp"
+        android:textColor="@color/mqWhite"
+        android:textSize="12sp"
+        android:layout_marginStart="2dp"
+        app:layout_constraintStart_toEndOf="@+id/badge"
+        app:layout_constraintTop_toBottomOf="@+id/badge_name" />
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="match_parent"
+        android:backgroundTint="@color/mqPurple2"
+        android:src="@drawable/chevron_right"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
