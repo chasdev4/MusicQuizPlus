@@ -216,13 +216,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
 
-        if(user.getPlaylistIds().containsValue(playlist.getId()))
+        if(firebaseUser != null)
         {
-            heartBtn.setChecked(true);
-        }
-        else
-        {
-            heartBtn.setChecked(false);
+            if(user.getPlaylistIds().containsValue(playlist.getId()))
+            {
+                heartBtn.setChecked(true);
+            }
+            else
+            {
+                heartBtn.setChecked(false);
+            }
         }
 
         final Quiz[] playlistQuiz = new Quiz[1];

@@ -115,13 +115,16 @@ public class PlaylistFragment extends Fragment {
 
         new Thread(new Runnable() {
             public void run() {
-                user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
-                latch.countDown();
+                if(firebaseUser != null)
+                {
+                    user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                    latch.countDown();
 
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 CountDownLatch cdl = new CountDownLatch(1);

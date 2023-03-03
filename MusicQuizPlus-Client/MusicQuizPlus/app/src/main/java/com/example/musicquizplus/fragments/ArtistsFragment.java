@@ -125,17 +125,18 @@ public class ArtistsFragment extends Fragment {
 
         new Thread(new Runnable() {
             public void run() {
-                user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                latch.countDown();
-
-                try {
-                    latch.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
 
                 if(firebaseUser != null)
                 {
+                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    latch.countDown();
+
+                    try {
+                        latch.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

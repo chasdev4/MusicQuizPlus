@@ -97,7 +97,7 @@ public class HistoryFragment extends Fragment {
 
         if(firebaseUser == null)
         {
-            userLevel.setText(getString(R.string.guest));
+            //userLevel.setText(getString(R.string.guest));
             historyRecyclerView.setVisibility(View.GONE);
             noUserHeader.setText(R.string.guestUserHistory);
             noUserHeader.setTextSize(32);

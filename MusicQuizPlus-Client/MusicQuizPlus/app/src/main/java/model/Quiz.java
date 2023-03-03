@@ -234,11 +234,15 @@ public class Quiz implements Serializable {
 
     @Exclude
     private boolean isIgnoreSettingsEnabled() {
-        switch (type) {
-            case PLAYLIST:
-                return user.getSettings().isIgnorePlaylistDifficulty();
-            case ARTIST:
-                return user.getSettings().isIgnoreArtistDifficulty();
+
+        if(user != null)
+        {
+            switch (type) {
+                case PLAYLIST:
+                    return user.getSettings().isIgnorePlaylistDifficulty();
+                case ARTIST:
+                    return user.getSettings().isIgnoreArtistDifficulty();
+            }
         }
         return false;
     }
@@ -301,7 +305,14 @@ public class Quiz implements Serializable {
         score = 0;
         numCorrect = 0;
         numQuestions = 10;
-        difficulty = user.getDifficulty();
+        if(user != null)
+        {
+            difficulty = user.getDifficulty();
+        }
+        else
+        {
+            difficulty = Difficulty.EASY;
+        }
         generateQuiz(topicId);
 
         //TODO: Re-enable and debug
@@ -425,7 +436,14 @@ public class Quiz implements Serializable {
         }
 
         // User's difficulty
-        difficulty = user.getDifficulty();
+        if(user != null)
+        {
+            difficulty = user.getDifficulty();
+        }
+        else
+        {
+            difficulty = Difficulty.EASY;
+        }
 
         // Calculate the popularity threshold and update ignoreDifficulty
         if (difficulty != Difficulty.HARD && !isIgnoreSettingsEnabled()) {
@@ -486,37 +504,40 @@ public class Quiz implements Serializable {
             List<Track> skippedTracks = new ArrayList<>();
 
             boolean noQuizHistory = false;
-            if (isPlaylistQuiz
-                    && user.getPlaylistHistory() != null
-                    && user.getPlaylistHistory().size() > 0
-                    && user.getPlaylistHistory().containsKey(topicId)
-                    && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
-                log.v("Playlist history exists.");
-                quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            }
-            else if (!isPlaylistQuiz
-                    && user.getArtistHistory() != null
-                    && user.getArtistHistory().size() > 0
-                    && user.getArtistHistory().containsKey(topicId)) {
+            if(user != null) {
+                if (isPlaylistQuiz
+                        && user.getPlaylistHistory() != null
+                        && user.getPlaylistHistory().size() > 0
+                        && user.getPlaylistHistory().containsKey(topicId)
+                        && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
+                    log.v("Playlist history exists.");
+                    quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
+                }
+                else if (!isPlaylistQuiz
+                        && user.getArtistHistory() != null
+                        && user.getArtistHistory().size() > 0
+                        && user.getArtistHistory().containsKey(topicId)) {
 
-                log.v("Artist history exists.");
+                    log.v("Artist history exists.");
 
-                for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
-                    if (album.getValue().getCount() == album.getValue().getTotal()) {
-                        Album artistAlbum = artist.getAlbum(album.getKey());
-                        for (String trackId : artistAlbum.getTrackIds()) {
-                            quizHistory.put(String.valueOf(artistAlbum.getTrackIds().indexOf(trackId)), trackId);
+                    for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
+                        if (album.getValue().getCount() == album.getValue().getTotal()) {
+                            Album artistAlbum = artist.getAlbum(album.getKey());
+                            for (String trackId : artistAlbum.getTrackIds()) {
+                                quizHistory.put(String.valueOf(artistAlbum.getTrackIds().indexOf(trackId)), trackId);
+                            }
+                        }
+                        else {
+                            quizHistory.putAll(album.getValue().getTrackIds());
                         }
                     }
-                    else {
-                        quizHistory.putAll(album.getValue().getTrackIds());
-                    }
+                }
+                else {
+                    log.v("No quiz history found.");
+                    noQuizHistory = true;
                 }
             }
-            else {
-                log.v("No quiz history found.");
-                noQuizHistory = true;
-            }
+
 
             if (!noQuizHistory && rawTracks.size() - quizHistory.size() <= numQuestions) {
                 for (Track track : rawTracks) {
@@ -547,30 +568,33 @@ public class Quiz implements Serializable {
                     rawTracks.remove(random);
                 }
             }
-            else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
-                int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
-                    int random = rnd.nextInt(rawTracks.size());
-                    Track track = rawTracks.get(random);
-                    if (track.getPopularity() >= popularityThreshold) {
-                        tracks.add(track);
-                    } else {
-                        skippedTracks.add(track);
+            else if(user != null)
+            {
+                if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        if (track.getPopularity() >= popularityThreshold) {
+                            tracks.add(track);
+                        } else {
+                            skippedTracks.add(track);
+                        }
+                        rawTracks.remove(track);
                     }
-                    rawTracks.remove(track);
                 }
-            }
-            else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
-                int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
-                    int random = rnd.nextInt(rawTracks.size());
-                    Track track = rawTracks.get(random);
-                    if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
-                        tracks.add(track);
-                    } else {
-                        skippedTracks.add(track);
+                else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
+                            tracks.add(track);
+                        } else {
+                            skippedTracks.add(track);
+                        }
+                        rawTracks.remove(track);
                     }
-                    rawTracks.remove(track);
                 }
             }
             else {
