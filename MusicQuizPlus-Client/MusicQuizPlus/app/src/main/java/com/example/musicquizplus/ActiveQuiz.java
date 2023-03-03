@@ -4,12 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -58,6 +61,9 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
     User user;
     Playlist playlist;
     Artist artist;
+    ProgressBar timerBar;
+    CountDownTimer countDownTimer;
+    String typeString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +95,9 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         answerD = findViewById(R.id.answerD);
         currentQuestionType = findViewById(R.id.question);
         quizImage = findViewById(R.id.quizImage);
+        timerBar = findViewById(R.id.progressBarTimer);
+
+        beginTimer();
 
         answerA.setOnClickListener(this);
         answerB.setOnClickListener(this);
@@ -104,10 +113,10 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         type = currentQuestion.getType();
         answers = currentQuestion.getAnswers();
         audioURL = currentQuestion.getPreviewUrl();
-
+        typeString = getTypeAsDisplayableString();
         mediaPlayer = playAudio();
 
-        currentQuestionType.setText(type.toString());
+        currentQuestionType.setText(typeString);
         answerA.setText(answers.get(0));
         answerB.setText(answers.get(1));
         answerC.setText(answers.get(2));
@@ -119,8 +128,16 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
 
         pauseAudio(mediaPlayer);
 
-        Button btnClicked = (Button) view;
-        index = findIndex(btnClicked);
+        if(view == null)
+        {
+            //came from timer ending
+            index = 5;
+        }
+        else
+        {
+            Button btnClicked = (Button) view;
+            index = findIndex(btnClicked);
+        }
 
         currentQuestion = quiz.nextQuestion(index);
 
@@ -135,16 +152,65 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         {
             type = currentQuestion.getType();
             answers = currentQuestion.getAnswers();
-
+            typeString = getTypeAsDisplayableString();
             audioURL = currentQuestion.getPreviewUrl();
             mediaPlayer = playAudio();
 
-            currentQuestionType.setText(type.toString());
+            currentQuestionType.setText(typeString);
             answerA.setText(answers.get(0));
             answerB.setText(answers.get(1));
             answerC.setText(answers.get(2));
             answerD.setText(answers.get(3));
+            beginTimer();
         }
+    }
+
+    private String getTypeAsDisplayableString()
+    {
+        String displayableString = null;
+
+        if(type == QuestionType.GUESS_ALBUM)
+        {
+            displayableString = "Guess the Album";
+        }
+        else if(type == QuestionType.GUESS_ARTIST)
+        {
+            displayableString = "Guess the Artist";
+        }
+        else if(type == QuestionType.GUESS_TRACK)
+        {
+            displayableString = "Guess the Track";
+        }
+        else if(type == QuestionType.GUESS_YEAR)
+        {
+            displayableString = "Guess the Year";
+        }
+
+        return displayableString;
+    }
+
+    private void beginTimer()
+    {
+        timerBar.setProgress(30);
+
+        if(countDownTimer != null)
+        {
+            countDownTimer.cancel();
+        }
+
+        countDownTimer=new CountDownTimer(30000,500) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                timerBar.setProgress((int)millisUntilFinished/1000);
+            }
+
+            @Override
+            public void onFinish() {
+                onClick(null);
+            }
+        };
+        countDownTimer.start();
     }
 
     private MediaPlayer playAudio()
