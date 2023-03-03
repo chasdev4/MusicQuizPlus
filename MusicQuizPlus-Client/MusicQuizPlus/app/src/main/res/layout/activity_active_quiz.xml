@@ -8,6 +8,19 @@
     android:background="@color/mqPurple3"
     android:padding="20dp">
 
+    <ProgressBar
+        android:id="@+id/progressBarTimer"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:elevation="8dp"
+        android:progress="30"
+        android:max="30"
+        android:progressDrawable="@drawable/custom_progressbar_timer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:layout_width="450dp"
         android:layout_height="450dp"
@@ -49,9 +62,61 @@
             android:textColor="@color/mqWhite"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:background="@color/mqRed"
+            android:paddingHorizontal="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/quizImage" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginEnd="-15dp"
+            app:layout_constraintBottom_toBottomOf="@+id/quizImage"
+            app:layout_constraintEnd_toStartOf="@+id/question"
+            app:layout_constraintTop_toTopOf="@+id/question">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/yellow_star"
+                android:rotation="15"/>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/yellow_star"
+                android:layout_marginStart="5dp"
+                android:rotation="-15"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="-15dp"
+            app:layout_constraintBottom_toBottomOf="@+id/quizImage"
+            app:layout_constraintStart_toEndOf="@+id/question"
+            app:layout_constraintTop_toTopOf="@+id/question">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="5dp"
+
+                android:src="@drawable/yellow_star"
+                android:rotation="15"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/yellow_star"
+                android:rotation="-15"/>
+
+        </LinearLayout>
+
 
         <LinearLayout
             android:id="@+id/allAnswers"
