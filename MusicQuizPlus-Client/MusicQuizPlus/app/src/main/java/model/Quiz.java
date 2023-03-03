@@ -206,6 +206,8 @@ public class Quiz implements Serializable {
     public void setNumCorrect(int correct) { numCorrect = correct; }
     public void setQuickReactions(int num) { quickReactions = num; }
     */
+    @Exclude
+    public double getCurrentMultiplier() { return currentMultiplier; }
 
     @Exclude
     public Playlist getPlaylist() { return playlist; }
