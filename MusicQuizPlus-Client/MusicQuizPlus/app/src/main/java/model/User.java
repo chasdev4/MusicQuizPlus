@@ -219,6 +219,9 @@ public class User implements Serializable {
     }
 
     @Exclude
+    public Map<Integer, Integer> getLevels() { return LEVELS; }
+
+    @Exclude
     public int getSearchCount() { return searchCount; }
 
     @Exclude

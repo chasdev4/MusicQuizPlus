@@ -881,11 +881,13 @@ public class Quiz implements Serializable {
     // Call this method after the quiz is complete
     public Results end() {
         int previousXp = user.getXp();
+        int previousLevel = user.getLevel();
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
-        return new Results(user, this, previousXp, badges);
+//        return new Results(user, this, previousXp, previousLevel, badges);
+        return null;
     }
 
     private void calculateXp() {
