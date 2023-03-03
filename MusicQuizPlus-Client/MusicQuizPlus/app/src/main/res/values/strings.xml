@@ -55,4 +55,6 @@
     <string name="search_initial_text">Begin Typing To Search</string>
     <string name="search_no_results_text">No results found</string>
     <string name="nothing_to_show_here">Nothing to show here...</string>
+    <string name="score_0">Score: 0</string>
+    <string name="mulitplier_1_0x">Mulitplier: 1.0x</string>
 </resources>
