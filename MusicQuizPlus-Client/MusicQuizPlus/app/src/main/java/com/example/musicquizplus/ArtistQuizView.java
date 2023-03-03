@@ -191,6 +191,10 @@ public class ArtistQuizView extends AppCompatActivity {
                     isFacebookInstalled = false;
                 }
 
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse(facebookURL));
+                startActivity(browserIntent);
+/*
                 if(isFacebookInstalled)
                 {
                     //TODO:Test opening page in facebook app
@@ -203,6 +207,8 @@ public class ArtistQuizView extends AppCompatActivity {
                     browserIntent.setData(Uri.parse(facebookURL));
                     startActivity(browserIntent);
                 }
+
+ */
             }
         });
 
@@ -216,6 +222,10 @@ public class ArtistQuizView extends AppCompatActivity {
                     isTwitterInstalled = false;
                 }
 
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse(twitterURL));
+                startActivity(browserIntent);
+/*
                 if(isTwitterInstalled)
                 {
                     //TODO:Figure out how to open page in twitter app and test
@@ -226,6 +236,8 @@ public class ArtistQuizView extends AppCompatActivity {
                     browserIntent.setData(Uri.parse(twitterURL));
                     startActivity(browserIntent);
                 }
+
+ */
             }
         });
 
@@ -239,6 +251,10 @@ public class ArtistQuizView extends AppCompatActivity {
                     isWikipediaInstalled = false;
                 }
 
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse(wikipediaURL));
+                startActivity(browserIntent);
+/*
                 if(isWikipediaInstalled)
                 {
                     //TODO:Figure out how to open page in wiki app and test
@@ -249,6 +265,8 @@ public class ArtistQuizView extends AppCompatActivity {
                     browserIntent.setData(Uri.parse(wikipediaURL));
                     startActivity(browserIntent);
                 }
+
+ */
             }
         });
 
@@ -262,6 +280,10 @@ public class ArtistQuizView extends AppCompatActivity {
                     isInstagramInstalled = false;
                 }
 
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse(instagramURL));
+                startActivity(browserIntent);
+/*
                 if(isInstagramInstalled)
                 {
                     //TODO:Figure out how to open page in instagram app and test
@@ -272,6 +294,8 @@ public class ArtistQuizView extends AppCompatActivity {
                     browserIntent.setData(Uri.parse(instagramURL));
                     startActivity(browserIntent);
                 }
+
+ */
             }
         });
 
