@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import model.ExternalLink;
 import model.GoogleSignIn;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
@@ -318,13 +319,21 @@ public class ArtistQuizView extends AppCompatActivity {
         heartLatest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(heartLatest.isChecked())
+                if(user!=null)
                 {
-                    AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
+                    if(heartLatest.isChecked())
+                    {
+                        AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
+                    }
+                    else
+                    {
+                        AlbumService.unheart(user, firebaseUser, reference, latest);
+                    }
                 }
                 else
                 {
-                    AlbumService.unheart(user, firebaseUser, reference, latest);
+                    SignUpPopUp signUpPopUp = new SignUpPopUp(getParent(), getBaseContext(), "Get Up And Dance! You Can Save This Album By Joining");
+                    signUpPopUp.createAndShow();
                 }
             }
         });

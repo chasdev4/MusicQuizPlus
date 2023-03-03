@@ -1,5 +1,6 @@
 package com.example.musicquizplus;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -28,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 
 import model.GoogleSignIn;
 import model.PhotoUrl;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Track;
@@ -226,7 +228,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 album = albumList.get(position);
                 SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
 
-
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
                 viewHolder.aqvAlbumTitle.setText(album.getName());
                 viewHolder.aqvAlbumType.setText(album.getType().toString());
@@ -234,13 +235,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(viewHolder.aqvHeartAlbum.isChecked())
+                        if(user!=null)
                         {
-                            AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                            if(viewHolder.aqvHeartAlbum.isChecked())
+                            {
+                                AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                            }
+                            else
+                            {
+                                AlbumService.unheart(user, firebaseUser, reference, album);
+                            }
                         }
                         else
                         {
-                            AlbumService.unheart(user, firebaseUser, reference, album);
+                            SignUpPopUp signUpPopUp = new SignUpPopUp(new Activity(), context, "Get Up And Dance! You Can Save This Album By Joining");
+                            signUpPopUp.createAndShow();
                         }
                     }
                 });

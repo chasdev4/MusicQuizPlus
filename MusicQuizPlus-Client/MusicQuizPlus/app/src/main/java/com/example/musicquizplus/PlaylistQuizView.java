@@ -39,6 +39,7 @@ import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.Quiz;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
@@ -102,13 +103,21 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         heartBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(heartBtn.isChecked())
+                if(user!=null)
                 {
-                    PlaylistService.heart(user, firebaseUser, reference, playlist, spotifyService);
+                    if(heartBtn.isChecked())
+                    {
+                        PlaylistService.heart(user, firebaseUser, reference, playlist, spotifyService);
+                    }
+                    else
+                    {
+                        PlaylistService.unheart(user, firebaseUser, reference, playlist);
+                    }
                 }
                 else
                 {
-                    PlaylistService.unheart(user, firebaseUser, reference, playlist);
+                    SignUpPopUp signUpPopUp = new SignUpPopUp(getParent(), getBaseContext(), "Pump Up The Jam! You Can Save This Playlist By Joining");
+                    signUpPopUp.createAndShow();
                 }
             }
         });
@@ -227,9 +236,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 heartBtn.setChecked(false);
             }
         }
-
-        final Quiz[] playlistQuiz = new Quiz[1];
-        // TODO: Get the user from the root of the app
 
         new Thread(new Runnable() {
             public void run() {
