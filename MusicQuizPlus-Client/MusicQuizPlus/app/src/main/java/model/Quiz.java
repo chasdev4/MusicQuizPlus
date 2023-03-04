@@ -1,5 +1,7 @@
 package model;
 
+import android.util.Log;
+
 import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -58,8 +60,6 @@ public class Quiz implements Serializable {
     private List<String> featuredArtistsNames;
     private List<Track> featuredArtistTracks;
     private boolean isNewQuiz;
-    private DatabaseReference db;
-    private FirebaseUser firebaseUser;
     private int poolCount;
     private boolean addedRemaining;
     private int remaining;
@@ -93,11 +93,10 @@ public class Quiz implements Serializable {
     //#endregion
 
     //#region Constructors
-    public Quiz(Playlist playlist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        quizId = db.child("generated_quizzes").child(playlist.getId()).push().getKey();
+    public Quiz(Playlist playlist, User user) {
+        quizId = FirebaseDatabase.getInstance().getReference().child("generated_quizzes").child(playlist.getId()).push().getKey();
         this.playlist = playlist;
-        this.db = db;
-        this.firebaseUser = firebaseUser;
+        //this.firebaseUser = firebaseUser;
         artist = null;
         this.user = user;
         type = QuizType.PLAYLIST;
@@ -114,9 +113,8 @@ public class Quiz implements Serializable {
         init(playlist.getId());
     }
 
-    public Quiz(Artist artist, User user, DatabaseReference db, FirebaseUser firebaseUser) {
-        this.db = db;
-        this.firebaseUser = firebaseUser;
+    public Quiz(Artist artist, User user) {
+        //this.firebaseUser = firebaseUser;
         playlist = null;
         this.artist = artist;
         this.user = user;
@@ -207,6 +205,8 @@ public class Quiz implements Serializable {
     public void setNumCorrect(int correct) { numCorrect = correct; }
     public void setQuickReactions(int num) { quickReactions = num; }
     */
+    @Exclude
+    public double getCurrentMultiplier() { return currentMultiplier; }
 
     @Exclude
     public Playlist getPlaylist() { return playlist; }
@@ -235,11 +235,15 @@ public class Quiz implements Serializable {
     public int getXp() {return xp;}
     @Exclude
     private boolean isIgnoreSettingsEnabled() {
-        switch (type) {
-            case PLAYLIST:
-                return user.getSettings().isIgnorePlaylistDifficulty();
-            case ARTIST:
-                return user.getSettings().isIgnoreArtistDifficulty();
+
+        if(user != null)
+        {
+            switch (type) {
+                case PLAYLIST:
+                    return user.getSettings().isIgnorePlaylistDifficulty();
+                case ARTIST:
+                    return user.getSettings().isIgnoreArtistDifficulty();
+            }
         }
         return false;
     }
@@ -302,16 +306,28 @@ public class Quiz implements Serializable {
         score = 0;
         numCorrect = 0;
         numQuestions = 10;
-        difficulty = user.getDifficulty();
+        if(user != null)
+        {
+            difficulty = user.getDifficulty();
+        }
+        else
+        {
+            difficulty = Difficulty.EASY;
+        }
+        generateQuiz(topicId);
 
+        //TODO: Re-enable and debug
+        /*
         if (type == QuizType.ARTIST || !retrieveQuiz(topicId)) {
             generateQuiz(topicId);
         }
+         */
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
     private boolean retrieveQuiz(String topicId) {
         // Get a map of generated quiz ids indexed under the topicId
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
         Map<String, GeneratedQuiz> generatedQuizzesByTopic = QuizService.retrieveGeneratedQuizzes(db, topicId);
 
         // If there are no generated quizzes, return to generate one
@@ -421,7 +437,14 @@ public class Quiz implements Serializable {
         }
 
         // User's difficulty
-        difficulty = user.getDifficulty();
+        if(user != null)
+        {
+            difficulty = user.getDifficulty();
+        }
+        else
+        {
+            difficulty = Difficulty.EASY;
+        }
 
         // Calculate the popularity threshold and update ignoreDifficulty
         if (difficulty != Difficulty.HARD && !isIgnoreSettingsEnabled()) {
@@ -482,37 +505,40 @@ public class Quiz implements Serializable {
             List<Track> skippedTracks = new ArrayList<>();
 
             boolean noQuizHistory = false;
-            if (isPlaylistQuiz
-                    && user.getPlaylistHistory() != null
-                    && user.getPlaylistHistory().size() > 0
-                    && user.getPlaylistHistory().containsKey(topicId)
-                    && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
-                log.v("Playlist history exists.");
-                quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
-            }
-            else if (!isPlaylistQuiz
-                    && user.getArtistHistory() != null
-                    && user.getArtistHistory().size() > 0
-                    && user.getArtistHistory().containsKey(topicId)) {
+            if(user != null) {
+                if (isPlaylistQuiz
+                        && user.getPlaylistHistory() != null
+                        && user.getPlaylistHistory().size() > 0
+                        && user.getPlaylistHistory().containsKey(topicId)
+                        && user.getPlaylistHistory().get(topicId).getCount() < user.getPlaylistHistory().get(topicId).getTotal()) {
+                    log.v("Playlist history exists.");
+                    quizHistory = user.getPlaylistHistory().get(topicId).getTrackIds();
+                }
+                else if (!isPlaylistQuiz
+                        && user.getArtistHistory() != null
+                        && user.getArtistHistory().size() > 0
+                        && user.getArtistHistory().containsKey(topicId)) {
 
-                log.v("Artist history exists.");
+                    log.v("Artist history exists.");
 
-                for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
-                    if (album.getValue().getCount() == album.getValue().getTotal()) {
-                        Album artistAlbum = artist.getAlbum(album.getKey());
-                        for (String trackId : artistAlbum.getTrackIds()) {
-                            quizHistory.put(String.valueOf(artistAlbum.getTrackIds().indexOf(trackId)), trackId);
+                    for (Map.Entry<String, TopicHistory> album : user.getArtistHistory().get(artist.getId()).getAlbums().entrySet()) {
+                        if (album.getValue().getCount() == album.getValue().getTotal()) {
+                            Album artistAlbum = artist.getAlbum(album.getKey());
+                            for (String trackId : artistAlbum.getTrackIds()) {
+                                quizHistory.put(String.valueOf(artistAlbum.getTrackIds().indexOf(trackId)), trackId);
+                            }
+                        }
+                        else {
+                            quizHistory.putAll(album.getValue().getTrackIds());
                         }
                     }
-                    else {
-                        quizHistory.putAll(album.getValue().getTrackIds());
-                    }
+                }
+                else {
+                    log.v("No quiz history found.");
+                    noQuizHistory = true;
                 }
             }
-            else {
-                log.v("No quiz history found.");
-                noQuizHistory = true;
-            }
+
 
             if (!noQuizHistory && rawTracks.size() - quizHistory.size() <= numQuestions) {
                 for (Track track : rawTracks) {
@@ -543,30 +569,33 @@ public class Quiz implements Serializable {
                     rawTracks.remove(random);
                 }
             }
-            else if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
-                int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
-                    int random = rnd.nextInt(rawTracks.size());
-                    Track track = rawTracks.get(random);
-                    if (track.getPopularity() >= popularityThreshold) {
-                        tracks.add(track);
-                    } else {
-                        skippedTracks.add(track);
+            else if(user != null)
+            {
+                if (user.getDifficulty() == Difficulty.EASY && !isIgnoreSettingsEnabled()) {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        if (track.getPopularity() >= popularityThreshold) {
+                            tracks.add(track);
+                        } else {
+                            skippedTracks.add(track);
+                        }
+                        rawTracks.remove(track);
                     }
-                    rawTracks.remove(track);
                 }
-            }
-            else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
-                int size = tracks.size();
-                for (int i = 0; i < numQuestions + BUFFER - size; i++) {
-                    int random = rnd.nextInt(rawTracks.size());
-                    Track track = rawTracks.get(random);
-                    if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
-                        tracks.add(track);
-                    } else {
-                        skippedTracks.add(track);
+                else if (user.getDifficulty() == Difficulty.MEDIUM && !isIgnoreSettingsEnabled()) {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        if (track.getPopularity() >= popularityThreshold && rnd.nextInt(2) == 1) {
+                            tracks.add(track);
+                        } else {
+                            skippedTracks.add(track);
+                        }
+                        rawTracks.remove(track);
                     }
-                    rawTracks.remove(track);
                 }
             }
             else {
@@ -880,6 +909,9 @@ public class Quiz implements Serializable {
     //#region Post Quiz
     // Call this method after the quiz is complete
     public Results end() {
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
         int previousXp = user.getXp();
         int previousLevel = user.getLevel();
         calculateXp();
@@ -896,6 +928,9 @@ public class Quiz implements Serializable {
 
     private void updateDatabase() {
         String key = null;
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
 
         // Artist Quizzes aren't saved to database
         if (isNewQuiz && type == QuizType.PLAYLIST) {

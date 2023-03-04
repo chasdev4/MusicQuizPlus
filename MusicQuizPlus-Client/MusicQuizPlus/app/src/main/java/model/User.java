@@ -756,6 +756,10 @@ public class User implements Serializable {
         }
 
         String key = generatedQuizHistoryRef.child(topicId).push().getKey();
+        if(generatedQuizHistory.get(topicId) == null)
+        {
+            generatedQuizHistory.put(topicId, new HashMap<>());
+        }
         generatedQuizHistory.get(topicId).put(key, quizId);
         generatedQuizHistoryRef.child(topicId).child(key).setValue(quizId);
     }
@@ -808,7 +812,7 @@ public class User implements Serializable {
         log.i("Playlists retrieved.");
     }
 
-    private void initHistory(DatabaseReference db) {
+    public void initHistory(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         history = new LinkedList<>();
         for (String trackId : historyIds) {

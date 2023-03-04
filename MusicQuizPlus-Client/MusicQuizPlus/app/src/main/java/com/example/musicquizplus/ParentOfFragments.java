@@ -236,7 +236,12 @@ public class ParentOfFragments extends AppCompatActivity {
                         }
                     });
                 } else {
-                    userLevel.setText(getString(R.string.guest));
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            userLevel.setText(getString(R.string.guest));
+                        }
+                    });
                 }
 
             }

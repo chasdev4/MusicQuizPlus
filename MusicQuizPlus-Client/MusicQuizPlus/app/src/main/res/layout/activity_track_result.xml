@@ -137,11 +137,11 @@
         android:id="@+id/track_result_no_results_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nothing to show here..."
+        android:text="@string/nothing_to_show_here"
         android:textColor="@color/mqWhite"
         android:alpha="0.4"
         android:fontFamily="@font/commissioner"
-        android:textSize="16dp"
+        android:textSize="16sp"
         android:gravity="center"
 
         app:layout_constraintTop_toBottomOf="@id/track_result_no_results"

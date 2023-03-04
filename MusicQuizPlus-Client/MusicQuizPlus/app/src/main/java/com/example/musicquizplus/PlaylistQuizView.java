@@ -24,6 +24,8 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
+import com.example.musicquizplus.fragments.PlaylistFragment;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -34,9 +36,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.Quiz;
+import model.User;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
@@ -57,6 +62,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     Handler mainHandler = new Handler();
     ImageButton backToTop;
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    GoogleSignIn googleSignIn = new GoogleSignIn();
+    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
     ImageButton backButton;
     ImageButton spotifyButton;
     ImageButton shareButton;
@@ -71,6 +78,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
+
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
         title.setSelected(true);
@@ -84,7 +92,17 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
 
+        spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+
         PackageManager pm = getPackageManager();
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            user = (User) extras.getSerializable("currentUser");
+            playlist = (Playlist) extras.getSerializable("currentPlaylist");
+        }
+
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -102,6 +120,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             }
         });
+
 
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,9 +185,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         super.onStart();
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {
+        if (extras != null)
+        {
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
-            user = (User) extras.getSerializable("user");
             source = (Source) extras.getSerializable("source");
 
             heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
@@ -204,9 +223,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
 
-        final Quiz[] playlistQuiz = new Quiz[1];
-        // TODO: Get the user from the root of the app
-
         new Thread(new Runnable() {
             public void run() {
                 if (source != Source.SEARCH) {
@@ -215,20 +231,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
                 }
                 List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
-//                InputStream inputStream = null;
-//                try {
-//                    inputStream = new URL(playlist.getPhotoUrl().get(0).getUrl()).openStream();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//                Bitmap bitmap = null;
-//                if (inputStream != null) {
-//                    bitmap = BitmapFactory.decodeStream(inputStream);
-//                }
-//                if (bitmap != null) {
-//                    List<Bitmap> bitmapList = new ArrayList<>();
-//                    bitmapList.add(bitmap);
-//                }
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -237,9 +240,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                         listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                     }
                 });
-
-                // TODO: Pass in our DatabaseReference
-                // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
 
             }
         }).start();
@@ -250,9 +250,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                finalPlaylist.getTracks().clear();
-                //intent.putExtra("currentPlaylist", finalPlaylist);
-                intent.putExtra("playlistQuiz", playlistQuiz[0]);
+                intent.putExtra("currentPlaylist", finalPlaylist);
+                intent.putExtra("currentUser", user);
                 startActivity(intent);
             }
         });

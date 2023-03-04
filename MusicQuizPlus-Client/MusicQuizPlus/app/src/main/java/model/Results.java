@@ -1,8 +1,11 @@
 package model;
 
+import android.content.Context;
+
+import java.io.Serializable;
 import java.util.List;
 
-public class Results {
+public class Results implements Serializable {
 
     private User user;
     private Quiz quiz;

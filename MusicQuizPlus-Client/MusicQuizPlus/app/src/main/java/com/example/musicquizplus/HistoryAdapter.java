@@ -1,5 +1,6 @@
 package com.example.musicquizplus;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,6 +15,10 @@ import android.widget.Adapter;
 import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,10 +26,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import model.GoogleSignIn;
 import model.PhotoUrl;
+import model.SignUpPopUp;
+import model.User;
 import model.item.Album;
 import model.item.Track;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
@@ -38,9 +49,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     Album album;
     MediaPlayer mediaPlayer = new MediaPlayer();
     int old;
+    User user;
 
-    public HistoryAdapter(List<Track> trackList, List<Album> albumList, Context context, int switchOn)
+    DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    GoogleSignIn googleSignIn = new GoogleSignIn();
+    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+
+    public HistoryAdapter(User user, List<Track> trackList, List<Album> albumList, Context context, int switchOn)
     {
+        this.user = user;
         this.trackList = trackList;
         this.albumList = albumList;
         this.context = context;
@@ -209,6 +226,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
             case 2:
                 //if switchOn is 2, its for artist quiz preview
                 album = albumList.get(position);
+                SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
 
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
                 viewHolder.aqvAlbumTitle.setText(album.getName());
@@ -217,16 +235,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(viewHolder.aqvHeartAlbum.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.empty_heart).getConstantState()))
+                        if(user!=null)
                         {
-                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.filled_heart));
+                            if(viewHolder.aqvHeartAlbum.isChecked())
+                            {
+                                AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                            }
+                            else
+                            {
+                                AlbumService.unheart(user, firebaseUser, reference, album);
+                            }
                         }
                         else
                         {
-                            viewHolder.aqvHeartAlbum.setImageDrawable(context.getResources().getDrawable(R.drawable.empty_heart));
+                            SignUpPopUp signUpPopUp = new SignUpPopUp(new Activity(), context, "Get Up And Dance! You Can Save This Album By Joining");
+                            signUpPopUp.createAndShow();
                         }
-
-                        //TODO: Actually Heart the Album
                     }
                 });
         }

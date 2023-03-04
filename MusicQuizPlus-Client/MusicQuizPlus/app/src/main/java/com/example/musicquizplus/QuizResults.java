@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 
 import model.Badge;
 import model.GoogleSignIn;
+import model.Quiz;
 import model.Results;
 import model.User;
 import model.Xp;
@@ -137,6 +138,23 @@ public class QuizResults extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 //
+        /*
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            new Thread(new Runnable() {
+                public void run() {
+                    //Testing Results Model
+                    Results results = (Results) extras.getSerializable("quizResults");
+                    score = results.getScore();
+                    accuracy = results.getAccuracy();
+                    String scoreString = String.valueOf(score);
+                    userScore.setText(scoreString);
+                    userAccuracy.setText(accuracy);
+                }
+            }).start();
+        }
+         */
 
         // TODO: Get the user from the results or an intent
 
@@ -211,5 +229,4 @@ public class QuizResults extends AppCompatActivity {
             badges.setVisibility(View.VISIBLE);
         }
     }
-
 }
