@@ -89,6 +89,7 @@ public class ResultsBadgesAdapter extends RecyclerView.Adapter<ResultsBadgeViewH
         Badge badge = badges.get(position);
         holder.setBadgeName(BadgeService.getBadgeText(badge.getType(), badge.getName(), badge.getNumber()));
         holder.setBadgeDescription(BadgeService.getBadgeDescription(badge.getType(), badge.getName(), badge.getNumber()));
+        holder.setBonusXp(String.format("+%d XP", BadgeService.getBadgeXp(badge.getType())));
         switch (badge.getType()) {
             case ARTIST_QUIZ_MILESTONE_1:
             case PLAYLIST_QUIZ_MILESTONE_1:

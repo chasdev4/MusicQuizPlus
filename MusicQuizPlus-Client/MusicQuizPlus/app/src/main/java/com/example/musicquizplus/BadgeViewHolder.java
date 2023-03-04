@@ -40,4 +40,6 @@ public class BadgeViewHolder extends RecyclerView.ViewHolder {
     public View getItemView() {
         return itemView;
     }
+
+
 }

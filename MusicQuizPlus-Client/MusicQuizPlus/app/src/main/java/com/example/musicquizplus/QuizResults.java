@@ -147,8 +147,8 @@ public class QuizResults extends AppCompatActivity {
         Picasso.get().load("https://lh3.googleusercontent.com/a/AEdFTp4zKQcEBLE0NQ9_exBatpU9TVwsnPygjk3StY9JiA=s96-c").placeholder(R.drawable.default_avatar).into(avatar);
 
         int scoreVal = 1200;
-        int xp = 5000;
-        int levelVal = 3;
+        int xp = 1600;
+        int levelVal = 1;
         int previousXp = 0;
         int previousLevel = 1;
         String accuracyString = "8/10";

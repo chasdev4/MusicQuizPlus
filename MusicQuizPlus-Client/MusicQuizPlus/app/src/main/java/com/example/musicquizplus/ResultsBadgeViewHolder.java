@@ -18,6 +18,8 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
     private ImageView tint;
     private TextView badgeName;
     private TextView badgeDescription;
+    private TextView bonusXp;
+
 
     public ResultsBadgeViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -28,6 +30,7 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
         badge = itemView.findViewById(R.id.included_badge);
         badgeName = itemView.findViewById(R.id.badge_name);
         badgeDescription = itemView.findViewById(R.id.badge_description);
+        bonusXp = itemView.findViewById(R.id.badge_bonus_xp);
     }
 
     public void setText(String text) {
@@ -58,5 +61,9 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
 
     public void setBadgeDescription(String badgeDescription) {
         this.badgeDescription.setText(badgeDescription);
+    }
+
+    public void setBonusXp(String bonusXp) {
+        this.bonusXp.setText(bonusXp);
     }
 }

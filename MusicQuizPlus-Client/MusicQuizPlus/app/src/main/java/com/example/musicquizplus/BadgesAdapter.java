@@ -26,6 +26,7 @@ import model.item.Playlist;
 import model.type.BadgeType;
 import model.type.SearchFilter;
 import service.BadgeService;
+import utils.FormatUtil;
 
 public class BadgesAdapter extends RecyclerView.Adapter<BadgeViewHolder> {
 
