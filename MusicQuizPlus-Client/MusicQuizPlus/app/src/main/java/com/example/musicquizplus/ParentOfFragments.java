@@ -58,6 +58,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private TextView userLevel;
     private ImageView userCustomAvatar;
     private ImageButton backToTop;
+    private ImageButton searchButton;
     private View userAvatar;
     private Button pageTitle;
     private ImageButton helpButton;
@@ -149,6 +150,15 @@ public class ParentOfFragments extends AppCompatActivity {
         viewPager2.setAdapter(viewPagerAdapter);
         backToTop = findViewById(R.id.backToTop);
 
+        searchButton = findViewById(R.id.mainSearchButton);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SearchActivity.class);
+                intent.putExtra("user", user);
+                view.getContext().startActivity(intent);
+            }
+        });
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -252,4 +262,6 @@ public class ParentOfFragments extends AppCompatActivity {
     public ImageButton getBackToTop() {
         return backToTop;
     }
+
+    public User getUser() { return user; }
 }

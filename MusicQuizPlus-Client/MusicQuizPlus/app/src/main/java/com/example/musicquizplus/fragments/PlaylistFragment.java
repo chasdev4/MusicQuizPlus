@@ -1,5 +1,6 @@
 package com.example.musicquizplus.fragments;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -73,6 +74,7 @@ public class PlaylistFragment extends Fragment {
             }
         });
 
+
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -81,6 +83,7 @@ public class PlaylistFragment extends Fragment {
                 Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
                 Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
                 intent.putExtra("currentPlaylist", clickedOnPlaylist);
+                intent.putExtra("user", ((ParentOfFragments) getActivity()).getUser());
                 startActivity(intent);
             }
         });

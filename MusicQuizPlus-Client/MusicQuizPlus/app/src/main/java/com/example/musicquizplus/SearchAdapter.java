@@ -158,6 +158,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                     public void onClick(View view) {
                         Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
                         intent.putExtra("currentPlaylist", playlist);
+                        intent.putExtra("user", user);
                         intent.putExtra("source", Source.SEARCH);
                         view.getContext().startActivity(intent);
                     }
