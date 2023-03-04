@@ -6,6 +6,7 @@ import com.google.firebase.database.Exclude;
 
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -911,9 +912,15 @@ public class Quiz implements Serializable {
     public Results end() {
         GoogleSignIn googleSignIn = new GoogleSignIn();
         FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        int previousLevel = 1;
+        int previousXp = 0;
 
-        int previousXp = user.getXp();
-        int previousLevel = user.getLevel();
+        if(user != null)
+        {
+            previousXp = user.getXp();
+            previousLevel = user.getLevel();
+        }
+
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
