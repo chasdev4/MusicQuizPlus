@@ -190,7 +190,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
             source = (Source) extras.getSerializable("source");
 
-            heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
+            if(user != null)
+            {
+                heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
+            }
+
             heartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -200,11 +204,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            if (heartButton.isChecked()) {
-                                SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
-                                PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService);
-                            } else {
-                                PlaylistService.unheart(user, firebaseUser, db, playlist);
+                            if(user != null)
+                            {
+                                if (heartButton.isChecked()) {
+                                    SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
+                                    PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService);
+                                } else {
+                                    PlaylistService.unheart(user, firebaseUser, db, playlist);
+                                }
                             }
                         }
                     }).start();
@@ -235,7 +242,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        adapter = new HistoryAdapter(tracksList, null, getBaseContext(), 1);
+                        adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
                         listView.setAdapter(adapter);
                         listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                     }
