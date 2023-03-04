@@ -366,9 +366,11 @@ public class SearchActivity extends AppCompatActivity {
         if (extras != null) {
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
             user = (User) extras.getSerializable("user");
-            user.setSearchCount(sharedPref.getInt(getString(R.string.searchCount), 0));
-            searchAdapter.setUser(user);
-
+            if(user != null)
+            {
+                user.setSearchCount(sharedPref.getInt(getString(R.string.searchCount), 0));
+                searchAdapter.setUser(user);
+            }
         }
 
         Activity activity = this;
