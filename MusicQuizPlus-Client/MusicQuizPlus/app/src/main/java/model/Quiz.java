@@ -537,6 +537,7 @@ public class Quiz implements Serializable {
                 else {
                     log.v("No quiz history found.");
                     noQuizHistory = true;
+                    tracks = rawTracks;
                 }
             }
 
@@ -917,16 +918,16 @@ public class Quiz implements Serializable {
 
         if(user != null)
         {
-            previousXp = user.getXp();
-            previousLevel = user.getLevel();
+            user = new User();
         }
+        previousXp = user.getXp();
+        previousLevel = user.getLevel();
 
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
-//        return new Results(user, this, previousXp, previousLevel, badges);
-        return null;
+        return new Results(user, this, previousXp, previousLevel, badges);
     }
 
     private void calculateXp() {

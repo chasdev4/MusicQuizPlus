@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.util.Map;
 
-public class Xp {
+public class Xp implements Serializable {
     private int previousLevel;
     private int currentLevel;
     private int maxLevel;

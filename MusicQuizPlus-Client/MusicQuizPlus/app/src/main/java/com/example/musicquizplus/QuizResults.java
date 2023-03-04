@@ -158,46 +158,20 @@ public class QuizResults extends AppCompatActivity {
 
         // TODO: Get the user from the results or an intent
 
-                Bundle extras = getIntent().getExtras();
+        Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            user = (User) extras.getSerializable("user");
+            results = (Results) extras.getSerializable("quizResults");
+            user = results.getUser();
 }
-        Picasso.get().load("https://lh3.googleusercontent.com/a/AEdFTp4zKQcEBLE0NQ9_exBatpU9TVwsnPygjk3StY9JiA=s96-c").placeholder(R.drawable.default_avatar).into(avatar);
+        Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
 
-        int scoreVal = 1200;
-        int xp = 1600;
-        int levelVal = 1;
-        int previousXp = 0;
-        int previousLevel = 1;
-        String accuracyString = "8/10";
-
-        results = new Results(scoreVal, xp, levelVal, previousXp, previousLevel, accuracyString, user.getBadgesAsList());
         score.setText(FormatUtil.formatNumberWithComma(results.getScore()));
         accuracy.setText(results.getAccuracy());
 
         level.setText("Lvl. 1");
 
-        earnedXp.setText("+" + FormatUtil.formatNumberWithComma(xp) + " XP");
+        earnedXp.setText("+" + FormatUtil.formatNumberWithComma(results.getXp()) + " XP");
         setupBadges();
-
-//        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
-//        GoogleSignIn googleSignIn = new GoogleSignIn();
-//        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-
-
-        //Testing Results Model
-//                    User user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-
-//                    Quiz quiz = (Quiz) extras.getSerializable("quiz");
-
-
-//                    Quiz quiz = new Quiz(user.getArtist("spotify:artist:0cQbJU1aAzvbEmTuljWLlF"), user, db, firebaseUser);
-//                    Question question = quiz.getFirstQuestion();
-//                    quiz.start();
-//                    Random rnd = new Random();
-//                    while (quiz.nextQuestion(rnd.nextInt(2) % 2 == 0 ? question.getAnswerIndex() : 1) != null) {
-//
-//                    }
 
     }
 
