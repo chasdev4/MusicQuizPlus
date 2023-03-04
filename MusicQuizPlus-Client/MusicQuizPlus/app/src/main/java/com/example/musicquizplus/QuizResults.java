@@ -156,19 +156,20 @@ public class QuizResults extends AppCompatActivity {
         }
          */
 
-        // TODO: Get the user from the results or an intent
+        GoogleSignIn googleSignIn = new GoogleSignIn();
+        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             results = (Results) extras.getSerializable("quizResults");
             user = results.getUser();
 }
-        Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
+        Picasso.get().load(firebaseUser.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
 
         score.setText(FormatUtil.formatNumberWithComma(results.getScore()));
         accuracy.setText(results.getAccuracy());
 
-        level.setText("Lvl. 1");
+        level.setText("Lvl. " + String.valueOf(user.getLevel()));
 
         earnedXp.setText("+" + FormatUtil.formatNumberWithComma(results.getXp()) + " XP");
         setupBadges();

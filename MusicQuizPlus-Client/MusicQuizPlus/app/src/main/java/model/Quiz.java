@@ -599,6 +599,15 @@ public class Quiz implements Serializable {
                         rawTracks.remove(track);
                     }
                 }
+                else {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        tracks.add(track);
+                        rawTracks.remove(track);
+                    }
+                }
             }
             else {
                 int size = tracks.size();
