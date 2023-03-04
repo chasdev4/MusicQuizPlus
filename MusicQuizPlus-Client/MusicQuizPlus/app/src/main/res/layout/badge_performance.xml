@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true">
+
+
+    <ImageView
+        android:id="@+id/badge_tint"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/trophy_silver"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:id="@+id/perfect_accuracy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/brain_emoji"
+        android:textSize="20sp"
+        android:paddingBottom="10dp"
+        android:shadowRadius=".001"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowColor="#ff5555"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/quick_reactor_1"
+        android:layout_height="20dp"
+        android:layout_width="13dp"
+        android:layout_centerInParent="true"
+        android:paddingBottom="10dp"
+        android:visibility="visible"
+        android:gravity="center"
+        android:src="@drawable/trophy_star"/>
+
+    <RelativeLayout
+        android:id="@+id/quick_reactor_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:paddingBottom="10dp">
+
+    <include layout="@layout/badge_performance_three_stars"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/quick_reactor_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:paddingBottom="10dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <include layout="@layout/badge_performance_three_stars"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="-3dp"
+                android:orientation="horizontal">
+                <ImageView android:layout_height="12dp"
+                    android:layout_width="12dp"
+                    android:src="@drawable/trophy_star"/>
+                <ImageView android:layout_height="12dp"
+                    android:layout_width="12dp"
+                    android:layout_marginLeft="-3dp"
+                    android:src="@drawable/trophy_star"/>
+            </LinearLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

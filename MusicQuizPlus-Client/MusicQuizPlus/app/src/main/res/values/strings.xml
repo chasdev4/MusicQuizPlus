@@ -27,6 +27,7 @@
     <string name="share">Share</string>
     <string name="view">View</string>
     <string name="user_profile_signup_header">Become A Music Wiz on MusicQuiz+</string>
+    <string name="join_message_search_guest">Join MusicQuiz+ And Diversify Your Taste</string>
     <string name="playlist_by_spotify">Spotify</string>
     <string name="playlist_by">Playlist by </string>
     <string name="start_quiz">Start Quiz</string>
@@ -54,4 +55,14 @@
     <string name="title_match">TITLE MATCH</string>
     <string name="search_initial_text">Begin Typing To Search</string>
     <string name="search_no_results_text">No results found</string>
+    <string name="brain_emoji">🧠</string>
+    <string name="badges_label">Badges</string>
+    <string name="hearted_artists_label">Hearted Artists</string>
+    <string name="example_artist">Example Artist</string>
+    <string name="_0">0</string>
+    <string name="_0_10">0/10</string>
+    <string name="_0_xp">+0 XP</string>
+    <string name="score_label">Score</string>
+    <string name="accuracy_label">Accuracy</string>
+    <string name="you_earned">You earned</string>
 </resources>

@@ -61,7 +61,7 @@
         android:textColor="@color/mqWhite"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/playlist_heart"
         app:layout_constraintStart_toEndOf="@+id/pqvCoverImage"
         app:layout_constraintTop_toTopOf="parent"
 
@@ -97,10 +97,9 @@
         android:text="@string/playlist_by_spotify"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/imageButton"
+        app:layout_constraintEnd_toStartOf="@+id/playlist_heart"
         app:layout_constraintStart_toEndOf="@+id/pqvPlaylistBy"
         app:layout_constraintTop_toBottomOf="@+id/pqvTitle"
-
         android:ellipsize="marquee"
         android:singleLine="true"
         android:marqueeRepeatLimit="marquee_forever"
@@ -109,12 +108,14 @@
         android:focusableInTouchMode="true"
         android:scrollHorizontally="true"/>
 
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="wrap_content"
+    <ToggleButton
+        android:id="@+id/playlist_heart"
+        android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:background="@null"
-        android:src="@drawable/empty_heart"
+        android:button="@drawable/toggle_heart"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:textColor="@android:color/transparent"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75"

@@ -1,118 +1,245 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".QuizResults"
     android:background="@color/mqPurple3"
-    android:padding="20dp">
+    tools:context=".QuizResults">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".50" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent=".85" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:scaleX="1.3"
+        android:scaleY="1.3"
+        android:src="@drawable/star_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/mqPurple2" />
 
     <TextView
+        android:id="@+id/quiz_results_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/quizResultsHeader"
-        android:textSize="40sp"
+        android:fontFamily="@font/concert_one"
         android:text="@string/quiz_results"
         android:textAlignment="center"
+        android:paddingBottom="10dp"
+        android:paddingTop="20dp"
         android:textColor="@color/mqWhite"
-        android:layout_margin="10dp"
-        android:textStyle="bold"/>
+        android:textSize="35sp"
+        app:layout_constraintBottom_toTopOf="@id/results_info"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/results_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/scoreTitle"
-        android:text="@string/score"
-        android:textSize="40sp"
-        android:textColor="@color/mqWhite"
-        android:layout_below="@id/quizResultsHeader"
-        android:textAlignment="center"
-        android:layout_margin="10dp"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/userScore"
-        android:layout_below="@id/scoreTitle"
-        android:textSize="48sp"
-        android:textAlignment="center"
-        android:textColor="@color/mqBlue"
-        android:layout_margin="10dp"
-        android:textStyle="bold"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/accuracyTitle"
-        android:layout_below="@id/userScore"
-        android:textStyle="bold"
-        android:textColor="@color/mqWhite"
-        android:textAlignment="center"
-        android:textSize="40sp"
-        android:text="@string/accuracy"
-        android:layout_margin="10dp"/>
-
-    <TextView
-        android:id="@+id/userAccuracy"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/accuracyTitle"
-        android:layout_margin="10dp"
-        android:textAlignment="center"
-        android:textColor="@color/mqBlue"
-        android:textSize="48sp"
-        android:textStyle="bold" />
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/resultsOfQuiz"
-        android:layout_centerInParent="true">
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/xp_section"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quiz_results_header"
+        android:baselineAligned="false">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="gone">
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="@id/guideline1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/quiz_results_header">
 
             <TextView
+                android:id="@+id/score_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/numOfCorrectAnswers"
-                android:text="8"
+                android:fontFamily="@font/titan_one"
+                android:paddingBottom="2dp"
+                android:text="@string/score_label"
                 android:textColor="@color/mqWhite"
-                android:textSize="42sp"/>
+                android:textSize="20sp" />
 
             <TextView
+                android:id="@+id/results_score"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=" out of "
+                android:fontFamily="@font/concert_one"
+                android:text="@string/_0"
                 android:textColor="@color/mqWhite"
-                android:textSize="42sp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/numOfTotalQuestions"
-                android:text="10"
-                android:textColor="@color/mqWhite"
-                android:textSize="42sp"/>
+                android:textSize="30sp" />
 
         </LinearLayout>
 
-    </RelativeLayout>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="@id/guideline1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/quiz_results_header">
 
-    <Button
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/titan_one"
+                android:paddingBottom="2dp"
+                android:text="@string/accuracy_label"
+                android:textColor="@color/mqWhite"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/results_accuracy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/concert_one"
+                android:text="@string/_0_10"
+                android:textColor="@color/mqWhite"
+                android:textSize="30sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/xp_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/continueFromResults"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="10dp"
-        android:textColor="@color/mqWhite"
-        android:text="@string/continueText"
-        android:textSize="24sp"
-        android:padding="8dp"/>
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/results_info"
+        app:layout_constraintBottom_toTopOf="@id/guideline1">
+        <include layout="@layout/user_avatar_layout" />
 
-</RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="30dp"
+                android:orientation="vertical">
+                <TextView
+                    android:id="@+id/earned_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/you_earned"
+                    android:fontFamily="@font/titan_one"
+                    android:textColor="@color/mqWhite"
+                    android:textSize="22sp"/>
+                <TextView
+                    android:id="@+id/results_earned_xp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/_0_xp"
+                    android:fontFamily="@font/contrail_one"
+                    android:textColor="@color/mqWhite"
+                    android:textSize="40sp"/>
+            </LinearLayout>
+            <ProgressBar
+                android:id="@+id/xp_progress_bar"
+                style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+                android:progressDrawable="@drawable/xp_bar"
+                android:indeterminate="false"
+                android:layout_width="match_parent"
+                android:paddingEnd="10dp"
+                android:layout_height="10dp"
+                android:layout_weight="1"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/results_xp_left"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="760 XP"
+                    android:textColor="@color/mqWhite"
+                    android:fontFamily="@font/contrail_one"/>
+                <TextView
+                    android:id="@+id/results_xp_right"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="1,000 XP"
+                    android:gravity="right"
+                    android:paddingEnd="10dp"
+                    android:textColor="@color/mqWhite"
+                    android:fontFamily="@font/contrail_one"/>
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/badges_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/badges_label"
+        android:paddingTop="20dp"
+        android:paddingBottom="10dp"
+        android:textSize="24sp"
+        android:textColor="@color/mqWhite"
+        android:fontFamily="@font/titan_one"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/results_badges_container"
+        app:layout_constraintTop_toBottomOf="@id/guideline1"/>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/results_badges_container"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginHorizontal="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/guideline2"
+        app:layout_constraintTop_toBottomOf="@id/badges_label"/>
+    <Button
+        android:id="@+id/results_continue_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:backgroundTint="@color/mqRed"
+        android:text="@string/continueText"
+        android:textAllCaps="false"
+        android:paddingVertical="15dp"
+        android:fontFamily="@font/commissioner"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

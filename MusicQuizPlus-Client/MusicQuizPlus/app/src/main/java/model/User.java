@@ -3,7 +3,6 @@ package model;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
 
@@ -14,11 +13,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.ServerValue;
-import com.google.type.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,7 +62,6 @@ public class User implements Serializable {
     private Map<String, Artist> artists;
     private LinkedList<Track> history;
     private List<Badge> earnedBadges;
-    private double xpToNextLevel;
     //#endregion
 
     //#region Constants
@@ -223,6 +219,9 @@ public class User implements Serializable {
     }
 
     @Exclude
+    public Map<Integer, Integer> getLevels() { return LEVELS; }
+
+    @Exclude
     public int getSearchCount() { return searchCount; }
 
     @Exclude
@@ -279,12 +278,44 @@ public class User implements Serializable {
 
     @Exclude
     public double getXpToNextLevel() {
-        return xpToNextLevel;
+        if (level == 99) {
+            return LEVELS.get(100);
+        }
+        for (int i = level; i < LEVELS.size() - level; i++) {
+            if (xp > LEVELS.get(level)) {
+                return LEVELS.get(level);
+            }
+        }
+        return -1;
+
+    }
+    @Exclude
+    public double getXpFromPreviousLevel() {
+        if (level <= 1) {
+            return LEVELS.get(1);
+        }
+        return LEVELS.get(level-1);
     }
 
     @Exclude
     public List<Badge> getEarnedBadges() {
         return earnedBadges;
+    }
+    @Exclude
+    public List<Badge> getBadgesAsList() {
+        List<Badge> data = new ArrayList<>();
+        for (Map.Entry<String, Badge> badge : badges.entrySet()) {
+            data.add(badge.getValue());
+        }
+        return data;
+    }
+    @Exclude
+    public List<Artist> getArtistsAsList() {
+        List<Artist> data = new ArrayList<>();
+        for (Map.Entry<String, Artist> a : artists.entrySet()) {
+            data.add(a.getValue());
+        }
+        return data;
     }
     //#endregion
 
@@ -751,17 +782,19 @@ public class User implements Serializable {
     }
 
     public void initCollections(DatabaseReference db) {
-        initArtists(db);
+        initArtists(db, true);
         initPlaylists(db);
         initHistory(db);
     }
 
-    private void initArtists(DatabaseReference db) {
+    public void initArtists(DatabaseReference db, boolean initCollections) {
         LogUtil log = new LogUtil(TAG, "initArtists");
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
             artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
-            artists.get(entry.getKey()).initCollections(db, this);
+            if (initCollections) {
+                artists.get(entry.getKey()).initCollections(db, this);
+            }
         }
         log.i("Artists retrieved.");
     }
@@ -892,4 +925,6 @@ public class User implements Serializable {
 
         return searchCount >= getSearchLimit(role);
     }
+
+
 }

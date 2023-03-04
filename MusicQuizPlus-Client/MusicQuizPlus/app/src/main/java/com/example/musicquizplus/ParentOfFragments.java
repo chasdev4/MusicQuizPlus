@@ -1,14 +1,18 @@
 package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RawRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -26,16 +30,23 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
+import model.Badge;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
+import model.type.BadgeType;
+import service.BadgeService;
 import service.FirebaseService;
+import service.ItemService;
+import utils.FormatUtil;
+import utils.LogUtil;
 
 public class ParentOfFragments extends AppCompatActivity {
 
@@ -47,8 +58,10 @@ public class ParentOfFragments extends AppCompatActivity {
     private TextView userLevel;
     private ImageView userCustomAvatar;
     private ImageButton backToTop;
+    private ImageButton searchButton;
     private View userAvatar;
     private Button pageTitle;
+    private ImageButton helpButton;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -59,17 +72,22 @@ public class ParentOfFragments extends AppCompatActivity {
     private User user;
 
     private boolean ignoreMuteAction;
+    private boolean mediaPlayerInitialized;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_of_fragments);
         ignoreMuteAction = true;
-        mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+
+        Context context = this;
+        helpButton = findViewById(R.id.embeddedHelp);
+        helpButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-                ignoreMuteAction = false;
+            public void onClick(View view) {
+                Intent intent = new Intent(context, QuizResults.class);
+                intent.putExtra("user", user);
+                context.startActivity(intent);
             }
         });
 
@@ -79,10 +97,8 @@ public class ParentOfFragments extends AppCompatActivity {
             public void onClick(View view) {
                 if (!ignoreMuteAction) {
                     if (muteButton.isChecked()) {
-//                    mediaPlayer.setVolume(100,100);
                         mediaPlayer.start();
                     } else {
-//                    mediaPlayer.setVolume(0, 0);
                         mediaPlayer.pause();
 
                     }
@@ -92,12 +108,23 @@ public class ParentOfFragments extends AppCompatActivity {
             }
         });
 
+        mediaPlayer = MediaPlayer.create(ParentOfFragments.this, R.raw.music);
+        mediaPlayer.setLooping(true);
+        if (muteButton.isChecked()) {
+            mediaPlayer.start();
+        }
+        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                ignoreMuteAction = false;
+            }
+        });
+
         pageTitle = findViewById(R.id.page_title);
         userLevel = findViewById(R.id.userLevel);
         userCustomAvatar = findViewById(R.id.userCustomAvatar);
         userAvatar = findViewById(R.id.home_user_avatar);
         Activity activity = this;
-        Context context = this;
         userAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -106,7 +133,9 @@ public class ParentOfFragments extends AppCompatActivity {
                     SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.user_profile_signup_header));
                     signUpPopUp.createAndShow();
                 } else {
-                    //pull up user profile
+                    Intent intent = new Intent(context, ProfileActivity.class);
+                    intent.putExtra("user", user);
+                    startActivity(intent);
                 }
             }
         });
@@ -121,6 +150,15 @@ public class ParentOfFragments extends AppCompatActivity {
         viewPager2.setAdapter(viewPagerAdapter);
         backToTop = findViewById(R.id.backToTop);
 
+        searchButton = findViewById(R.id.mainSearchButton);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(view.getContext(), SearchActivity.class);
+                intent.putExtra("user", user);
+                view.getContext().startActivity(intent);
+            }
+        });
 
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -171,65 +209,32 @@ public class ParentOfFragments extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        mediaPlayer.stop();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
-        final String[] url = {null};
-        final DataSnapshot[] dataSnapshot = {null};
-        CountDownLatch cdl = new CountDownLatch(1);
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                db.child("menu_music").child("0").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        dataSnapshot[0] = snapshot;
-                        cdl.countDown();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
-
-                try {
-                    cdl.await();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                url[0] = dataSnapshot[0].getValue(String.class);
-
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-                String finalUrl = url[0];
-
-                try {
-                    mediaPlayer.setDataSource(finalUrl);
-                    mediaPlayer.prepare();
-                    if (muteButton.isChecked()) {
-                        mediaPlayer.start();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
                 if (firebaseUser != null) {
-                    new Thread(new Runnable() {
+
+                    user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user.initArtists(db, false);
+                    user.initBadges(db);
+                    runOnUiThread(new Runnable() {
+                        @Override
                         public void run() {
-                            user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
-                                    if (user.getPhotoUrl() != null) {
-                                        Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
-                                    }
-                                }
-                            });
+                            userLevel.setText(String.format(Locale.ENGLISH, "%s %d", getString(R.string.lvl), user.getLevel()));
+                            if (user.getPhotoUrl() != null) {
+                                Picasso.get().load(user.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
+                            }
                         }
-                    }).start();
+                    });
                 } else {
                     userLevel.setText(getString(R.string.guest));
                 }
@@ -254,5 +259,9 @@ public class ParentOfFragments extends AppCompatActivity {
         return backToTop.hasOnClickListeners();
     }
 
-    public ImageButton getBackToTop() { return backToTop; }
+    public ImageButton getBackToTop() {
+        return backToTop;
+    }
+
+    public User getUser() { return user; }
 }

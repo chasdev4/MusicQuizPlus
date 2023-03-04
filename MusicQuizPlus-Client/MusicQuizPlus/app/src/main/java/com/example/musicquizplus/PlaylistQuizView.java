@@ -21,7 +21,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -33,11 +35,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import model.GoogleSignIn;
 import model.Quiz;
+import model.User;
 import model.item.Playlist;
 import model.item.Track;
 import model.type.Source;
 import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
@@ -58,6 +63,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     boolean isSpotifyInstalled;
     private Source source;
     private SpotifyService spotifyService;
+    private ToggleButton heartButton;
+    private User user;
 
 
     @Override
@@ -75,6 +82,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         backButton = findViewById(R.id.pqvBackButton);
         spotifyButton = findViewById(R.id.pqvSpotifyButton);
         shareButton = findViewById(R.id.pqvShareButton);
+        heartButton = findViewById(R.id.playlist_heart);
+
         PackageManager pm = getPackageManager();
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -85,12 +94,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 LinearLayoutManager llm = (LinearLayoutManager) listView.getLayoutManager();
                 int scroll = llm.findFirstVisibleItemPosition();
 
-                if(scroll > 0)
-                {
+                if (scroll > 0) {
                     backToTop.setVisibility(View.VISIBLE);
-                }
-                else
-                {
+                } else {
                     backToTop.setVisibility(View.GONE);
                 }
 
@@ -121,17 +127,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     isSpotifyInstalled = true;
                 } catch (PackageManager.NameNotFoundException e) {
                     isSpotifyInstalled = false;
-    }
+                }
 
-                if(isSpotifyInstalled)
-                {
+                if (isSpotifyInstalled) {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(playlist.getId()));
                     intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + getBaseContext().getPackageName()));
                     startActivity(intent);
-                }
-                else
-                {
+                } else {
                     String url = getPlaylistIdAsUrl(playlist.getId());
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW);
                     browserIntent.setData(Uri.parse(url));
@@ -141,7 +144,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         });
 
         shareButton.setOnClickListener(new View.OnClickListener() {
-    @Override
+            @Override
             public void onClick(View view) {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
@@ -163,15 +166,34 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         super.onStart();
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null)
-        {
+        if (extras != null) {
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
+            user = (User) extras.getSerializable("user");
             source = (Source) extras.getSerializable("source");
 
-            Log.d("TAG", "onStart: ");
+            heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
+            heartButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    GoogleSignIn googleSignIn = new GoogleSignIn();
+                    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+                    DatabaseReference db = FirebaseDatabase.getInstance().getReference();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (heartButton.isChecked()) {
+                                SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
+                                PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService);
+                            } else {
+                                PlaylistService.unheart(user, firebaseUser, db, playlist);
+                            }
+                        }
+                    }).start();
 
-            if(playlist.getName().length() >= 19)
-            {
+                }
+            });
+
+            if (playlist.getName().length() >= 19) {
                 title.setTextSize(16);
             }
 
@@ -189,8 +211,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             public void run() {
                 if (source != Source.SEARCH) {
                     playlist.initCollection(reference);
-                }
-                else {
+                } else {
                     PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
                 }
                 List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
@@ -212,13 +233,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     @Override
                     public void run() {
                         adapter = new HistoryAdapter(tracksList, null, getBaseContext(), 1);
-                            listView.setAdapter(adapter);
-                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                        }
+                        listView.setAdapter(adapter);
+                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                    }
                 });
 
                 // TODO: Pass in our DatabaseReference
-               // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
+                // playlistQuiz[0] = new Quiz(playlist, user, db, firebaseUser);
 
             }
         }).start();
@@ -238,8 +259,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
     }
 
-    public String getPlaylistIdAsUrl(String playlistID)
-    {
+    public String getPlaylistIdAsUrl(String playlistID) {
         String id = playlistID.substring(17);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
     }

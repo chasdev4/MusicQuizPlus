@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -29,6 +30,7 @@ import java.util.List;
 import model.GoogleSignIn;
 import model.Search;
 import model.SearchResult;
+import model.SignUpPopUp;
 import model.TrackResult;
 import model.User;
 import model.item.Track;
@@ -47,6 +49,7 @@ public class SearchActivity extends AppCompatActivity {
     private ImageView emptySearchImage;
     private TextView emptySearchText;
     private ProgressBar progressBar;
+    private ImageButton homeButton;
 
     private Search search;
     private FirebaseUser firebaseUser;
@@ -66,6 +69,9 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         context = this;
+
+        homeButton = findViewById(R.id.home_button);
+
 
         searchStarted = false;
         doingSearch = false;
@@ -163,28 +169,36 @@ public class SearchActivity extends AppCompatActivity {
     private <T> void doSearch(String query) {
         SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-//        if (searchLimitReached || firebaseUser == null
-//                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
-//            searchLimitReached = true;
-//            // TODO: Display the sign up popup
-//            return;
-//        }
-//        else if (searchLimitReached || firebaseUser != null
-//                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
-//
-//            Context context = this;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    final Toast toast = Toast.makeText(context,
-//                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
-//                    toast.show();
-//                }
-//            });
-//
-//            // TODO: Return the user to the home screen
-//            return;
-//        }
+        if (searchLimitReached || firebaseUser == null
+                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
+            searchLimitReached = true;
+            Context context = this;
+            Activity activity = this;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.join_message_search_guest));
+                    signUpPopUp.createAndShow();
+                }
+            });
+
+            return;
+        }
+        else if (searchLimitReached || firebaseUser != null
+                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
+
+            Context context = this;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final Toast toast = Toast.makeText(context,
+                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+
+            finish();
+        }
 
 
 
@@ -348,18 +362,24 @@ public class SearchActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
 
-        if (firebaseUser != null)
-        {
-            Activity activity = this;
-            new Thread(new Runnable() {
-                public void run() {
-                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                    SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
-                    user.setSearchCount(sharedPref.getInt(activity.getString(R.string.searchCount), 0));
-                    searchAdapter.setUser(user);
-                }
-            }).start();
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+            user = (User) extras.getSerializable("user");
+            user.setSearchCount(sharedPref.getInt(getString(R.string.searchCount), 0));
+            searchAdapter.setUser(user);
+
         }
+
+        Activity activity = this;
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                Intent intent = new Intent(view.getContext(), SearchActivity.class);
+//                view.getContext().startActivity(intent);
+                activity.finish();
+            }
+        });
     }
 
     public TrackResult getTrackResult(Track track) {

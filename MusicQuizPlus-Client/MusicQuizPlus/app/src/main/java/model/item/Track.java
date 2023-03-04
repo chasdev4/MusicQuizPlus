@@ -82,10 +82,11 @@ public class Track implements Serializable {
     public Track(String id, String albumId) {
         this.id = id;
         this.albumId = albumId;
+        playlistIds = new HashMap<>();
     }
 
     public Track() {
-
+        playlistIds = new HashMap<>();
     }
 
     //#region Accessors

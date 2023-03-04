@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 //                        countDownLatch = new CountDownLatch(1);
 //                        artist.initTracks(db);
 //                        countDownLatch.countDown();
-//                        try {
+//                        try {f
 //                            countDownLatch.await();
 //                        } catch (InterruptedException e) {
 //                            e.printStackTrace();
