@@ -13,13 +13,6 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="80dp"/>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/guidelineVert"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".70"/>
-
     <RelativeLayout
         android:id="@+id/badge"
         android:layout_width="wrap_content"
@@ -29,7 +22,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/badge_name">
-    <include layout="@layout/badge_milestone"
+    <include layout="@layout/badge"
         android:id="@+id/included_badge"/>
     </RelativeLayout>
 <!--    <ImageView-->
@@ -69,15 +62,5 @@
         android:layout_marginStart="2dp"
         app:layout_constraintStart_toEndOf="@+id/badge"
         app:layout_constraintTop_toBottomOf="@+id/badge_name" />
-
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:backgroundTint="@color/mqPurple2"
-        android:src="@drawable/chevron_right"
-        android:padding="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,6 +8,15 @@
     android:clickable="true"
     android:focusable="true">
     <include layout="@layout/badge_performance"
-        android:id="@+id/included_badge"
+        android:id="@+id/included_badge_performance"
+        android:visibility="gone"/>
+    <include layout="@layout/badge_milestone"
+        android:id="@+id/included_badge_milestone"
+        android:visibility="gone"/>
+    <include layout="@layout/badge_collection_knowledge"
+        android:id="@+id/included_badge_collection_knowledge"
+        android:visibility="gone"/>
+    <include layout="@layout/badge_artist_knowledge"
+        android:id="@+id/included_badge_artist_knowledge"
         android:visibility="gone"/>
 </RelativeLayout>

@@ -1,19 +1,26 @@
 package com.example.musicquizplus;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.lang.annotation.Repeatable;
@@ -21,13 +28,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.CountDownLatch;
 
 import model.Badge;
+import model.GoogleSignIn;
 import model.Results;
 import model.User;
 import model.Xp;
 import model.type.BadgeType;
 import service.BadgeService;
+import service.FirebaseService;
 import utils.FormatUtil;
 
 public class QuizResults extends AppCompatActivity {
@@ -45,6 +55,7 @@ public class QuizResults extends AppCompatActivity {
     private RecyclerView badges;
     private Results results;
     private ValueAnimator valueAnimator;
+    private ResultsBadgesAdapter badgesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +72,7 @@ public class QuizResults extends AppCompatActivity {
         avatar = findViewById(R.id.userCustomAvatar);
         xpBar = findViewById(R.id.xp_progress_bar);
         level = findViewById(R.id.userLevel);
+        badges = findViewById(R.id.results_badges_container);
 
         continueButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,23 +136,15 @@ public class QuizResults extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+//
 
         // TODO: Get the user from the results or an intent
 
-        //        Bundle extras = getIntent().getExtras();
-//        if (extras != null) {
-//}
+                Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            user = (User) extras.getSerializable("user");
+}
         Picasso.get().load("https://lh3.googleusercontent.com/a/AEdFTp4zKQcEBLE0NQ9_exBatpU9TVwsnPygjk3StY9JiA=s96-c").placeholder(R.drawable.default_avatar).into(avatar);
-
-
-        BadgeType[] userBadges = BadgeType.values();
-        List<Badge> badgesList = new ArrayList<>();
-        for (int i = 0; i < 3; ) {
-            if (!BadgeService.hasThumbnail(userBadges[i])) {
-                badgesList.add(new Badge(userBadges[i]));
-                i++;
-            }
-        }
 
         int scoreVal = 1200;
         int xp = 5000;
@@ -149,14 +153,14 @@ public class QuizResults extends AppCompatActivity {
         int previousLevel = 1;
         String accuracyString = "8/10";
 
-        results = new Results(scoreVal, xp, levelVal, previousXp, previousLevel, accuracyString, badgesList);
+        results = new Results(scoreVal, xp, levelVal, previousXp, previousLevel, accuracyString, user.getBadgesAsList());
         score.setText(FormatUtil.formatNumberWithComma(results.getScore()));
         accuracy.setText(results.getAccuracy());
 
         level.setText("Lvl. 1");
 
         earnedXp.setText("+" + FormatUtil.formatNumberWithComma(xp) + " XP");
-
+        setupBadges();
 
 //        DatabaseReference db = FirebaseDatabase.getInstance().getReference();
 //        GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -178,4 +182,34 @@ public class QuizResults extends AppCompatActivity {
 //                    }
 
     }
+
+    private void setupBadges() {
+        badgesAdapter = new ResultsBadgesAdapter(((Context)this), results.getBadges());
+        badgesAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                onDataChange();
+            }
+        });
+
+        badges.setLayoutManager(new LinearLayoutManager(this));
+        badges.setHasFixedSize(true);
+
+        badges.setAdapter(badgesAdapter);
+
+        onDataChange();
+    }
+
+
+
+    private void onDataChange() {
+        if (badgesAdapter.getItemCount() == 0) {
+            badges.setVisibility(View.GONE);
+        }
+        else {
+            badges.setVisibility(View.VISIBLE);
+        }
+    }
+
 }

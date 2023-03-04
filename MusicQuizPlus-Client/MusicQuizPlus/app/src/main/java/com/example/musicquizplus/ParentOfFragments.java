@@ -60,6 +60,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private ImageButton backToTop;
     private View userAvatar;
     private Button pageTitle;
+    private ImageButton helpButton;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -78,8 +79,16 @@ public class ParentOfFragments extends AppCompatActivity {
         setContentView(R.layout.activity_parent_of_fragments);
         ignoreMuteAction = true;
 
-
-
+        Context context = this;
+        helpButton = findViewById(R.id.embeddedHelp);
+        helpButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, QuizResults.class);
+                intent.putExtra("user", user);
+                context.startActivity(intent);
+            }
+        });
 
         muteButton = findViewById(R.id.embeddedVolume);
         muteButton.setOnClickListener(new View.OnClickListener() {
@@ -115,7 +124,6 @@ public class ParentOfFragments extends AppCompatActivity {
         userCustomAvatar = findViewById(R.id.userCustomAvatar);
         userAvatar = findViewById(R.id.home_user_avatar);
         Activity activity = this;
-        Context context = this;
         userAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -200,63 +208,12 @@ public class ParentOfFragments extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
-
-
-        final String[] url = {null};
-        final DataSnapshot[] dataSnapshot = {null};
-        CountDownLatch cdl = new CountDownLatch(1);
-        Context context = this;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // delete me
-//                for (BadgeType badge : BadgeType.values()) {
-//                    if (!BadgeService.hasThumbnail(badge)) {
-//
-//                        Badge b = null;
-//                    String key = db.child("users").child(firebaseUser.getUid()).child("badges").push().getKey();
-//                        b = new Badge(badge);
-//
-//                    db.child("users").child(firebaseUser.getUid()).child("badges").child(key).setValue(b);
-//                    }
-//
-//                }
-//
-//                Log.d("efs", "run: done");
-
-
-
-//                db.child("menu_music").child("0").addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        dataSnapshot[0] = snapshot;
-//                        cdl.countDown();
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//
-//                    }
-//                });
-//
-//
-//                try {
-//                    cdl.await();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                url[0] = dataSnapshot[0].getValue(String.class);
-//                log.d(url[0] + " retrieved");
-
-
-//                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-                String finalUrl = url[0];
-
                 if (firebaseUser != null) {
 
-                    user = (User) FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     user.initArtists(db, false);
                     user.initBadges(db);
                     runOnUiThread(new Runnable() {
