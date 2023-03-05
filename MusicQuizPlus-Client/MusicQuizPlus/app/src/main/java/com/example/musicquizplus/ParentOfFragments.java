@@ -224,6 +224,7 @@ public class ParentOfFragments extends AppCompatActivity {
                 if (firebaseUser != null) {
 
                     user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
                     user.initArtists(db, false);
                     user.initBadges(db);
                     runOnUiThread(new Runnable() {

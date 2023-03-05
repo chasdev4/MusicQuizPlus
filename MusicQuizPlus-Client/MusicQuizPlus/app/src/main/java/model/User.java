@@ -3,6 +3,7 @@ package model;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -931,4 +932,7 @@ public class User implements Serializable {
     }
 
 
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
 }

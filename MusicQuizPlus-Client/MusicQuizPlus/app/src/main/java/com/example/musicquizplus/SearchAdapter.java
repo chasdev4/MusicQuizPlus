@@ -84,6 +84,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
                         intent.putExtra("currentArtist", artist);
                         intent.putExtra("source", Source.SEARCH);
+                        intent.putExtra("currentUser", user);
                         view.getContext().startActivity(intent);
                     }
                 });

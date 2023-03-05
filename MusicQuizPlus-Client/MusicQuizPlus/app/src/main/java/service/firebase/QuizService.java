@@ -1,5 +1,7 @@
 package service.firebase;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.google.firebase.database.DataSnapshot;
@@ -10,6 +12,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.GeneratedQuiz;
 import model.Quiz;
@@ -20,28 +25,42 @@ import model.Quiz;
 public class QuizService {
 
     public static Map<String, GeneratedQuiz> retrieveGeneratedQuizzes(DatabaseReference db, String topicId) {
-        CountDownLatch done = new CountDownLatch(1);
+//        CountDownLatch done = new CountDownLatch(1);
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
         Map<String, GeneratedQuiz> data = new HashMap<>();
         DatabaseReference generatedQuizzesRef = db.child("generated_quizzes").child(topicId);
-        generatedQuizzesRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    data.put(ds.getKey(), (GeneratedQuiz) ds.getValue(GeneratedQuiz.class));
-                }
-                done.countDown();
-            }
+        final DataSnapshot[] snap = {null};
 
+        executorService.submit(new Runnable() {
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void run() {
+                generatedQuizzesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        snap[0] = snapshot;
 
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
             }
         });
 
+
+
+        executorService.shutdown();
         try {
-            done.await();
-        } catch(InterruptedException e) {
-            e.printStackTrace();
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            Log.e("QuizService", "retrieveGeneratedQuizzes: Error retrieving generated quizzes." );
+        }
+
+        if (snap[0] != null) {
+            for (DataSnapshot ds : snap[0].getChildren()) {
+                data.put(ds.getKey(), ds.getValue(GeneratedQuiz.class));
+            }
         }
 
         return data;

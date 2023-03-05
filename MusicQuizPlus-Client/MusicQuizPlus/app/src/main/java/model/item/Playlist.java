@@ -32,6 +32,7 @@ public class Playlist implements Serializable {
 
     // Excluded from Database
     private Map<Integer, Track> tracks;
+    private boolean isInitializing;
 
     private final String TAG = "Playlist.java";
 
@@ -101,6 +102,7 @@ public class Playlist implements Serializable {
     public void initCollection(DatabaseReference db) { initTracks(db); }
 
     private void initTracks(DatabaseReference db) {
+        isInitializing = true;
         LogUtil log = new LogUtil(TAG, "initTracks");
         Map<Integer, List<String>> data = new HashMap<>();
         tracks = new HashMap<>();
@@ -149,5 +151,11 @@ public class Playlist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        isInitializing = false;
+    }
+
+    @Exclude
+    public boolean isInitializing() {
+        return isInitializing;
     }
 }

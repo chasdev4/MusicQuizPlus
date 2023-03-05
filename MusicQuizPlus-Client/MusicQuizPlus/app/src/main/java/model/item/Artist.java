@@ -58,6 +58,7 @@ public class Artist implements Serializable {
     private List<Integer> sortedDecades;
     private Map<Integer, Integer> decadesMap;
     private String latest;
+    private boolean isInitializing;
 
     private static String TAG = "Artist.java";
 
@@ -157,6 +158,34 @@ public class Artist implements Serializable {
     @Exclude
     public List<Track> getTracks() {
         return getAllTracks();
+    }
+    @Exclude
+    public List<String> getAllTrackIds() {
+        List<String> trackIds = new ArrayList<>();
+
+        if (singles != null) {
+            for (Album album : singles) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    trackIds.addAll(album.getTrackIds());
+                }
+            }
+        }
+        if (albums != null) {
+            for (Album album : albums) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    trackIds.addAll(album.getTrackIds());
+                }
+            }
+        }
+        if (compilations != null) {
+            for (Album album : compilations) {
+                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                    trackIds.addAll(album.getTrackIds());
+                }
+            }
+        }
+
+        return trackIds;
     }
     @Exclude
     private List<Track> getAllTracks() {
@@ -464,6 +493,7 @@ public class Artist implements Serializable {
 
     //#region Collection Initialization
     public void initCollections(DatabaseReference db, User user) {
+        isInitializing = true;
         LogUtil log = new LogUtil(TAG, "initCollections");
 
         ExecutorService executorService = Executors.newFixedThreadPool(3);
@@ -493,6 +523,7 @@ public class Artist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        isInitializing = false;
     }
 
     public void initTracks(DatabaseReference db) {
@@ -559,6 +590,11 @@ public class Artist implements Serializable {
                 compilations = albumsList;
                 break;
         }
+    }
+
+    @Exclude
+    public boolean isInitializing() {
+        return isInitializing;
     }
     //#endregion
 

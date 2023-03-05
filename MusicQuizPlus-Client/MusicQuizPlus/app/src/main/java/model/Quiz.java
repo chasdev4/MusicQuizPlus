@@ -315,14 +315,12 @@ public class Quiz implements Serializable {
         {
             difficulty = Difficulty.EASY;
         }
-        generateQuiz(topicId);
+//        generateQuiz(topicId);
 
-        //TODO: Re-enable and debug
-        /*
         if (type == QuizType.ARTIST || !retrieveQuiz(topicId)) {
             generateQuiz(topicId);
         }
-         */
+
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
@@ -537,6 +535,7 @@ public class Quiz implements Serializable {
                 else {
                     log.v("No quiz history found.");
                     noQuizHistory = true;
+                    tracks = rawTracks;
                 }
             }
 
@@ -595,6 +594,15 @@ public class Quiz implements Serializable {
                         } else {
                             skippedTracks.add(track);
                         }
+                        rawTracks.remove(track);
+                    }
+                }
+                else {
+                    int size = tracks.size();
+                    for (int i = 0; i < numQuestions + BUFFER - size; i++) {
+                        int random = rnd.nextInt(rawTracks.size());
+                        Track track = rawTracks.get(random);
+                        tracks.add(track);
                         rawTracks.remove(track);
                     }
                 }
@@ -921,12 +929,12 @@ public class Quiz implements Serializable {
             previousLevel = user.getLevel();
         }
 
+
         calculateXp();
         if (firebaseUser != null) {
             updateDatabase();
         }
-//        return new Results(user, this, previousXp, previousLevel, badges);
-        return null;
+        return new Results(user, this, previousXp, previousLevel, badges);
     }
 
     private void calculateXp() {

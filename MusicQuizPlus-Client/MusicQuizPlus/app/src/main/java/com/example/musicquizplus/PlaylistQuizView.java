@@ -256,10 +256,12 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                intent.putExtra("currentPlaylist", finalPlaylist);
-                intent.putExtra("currentUser", user);
-                startActivity(intent);
+                if (!playlist.isInitializing()) {
+                    Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
+                    intent.putExtra("currentPlaylist", playlist);
+                    intent.putExtra("currentUser", user);
+                    startActivity(intent);
+                }
             }
         });
 
