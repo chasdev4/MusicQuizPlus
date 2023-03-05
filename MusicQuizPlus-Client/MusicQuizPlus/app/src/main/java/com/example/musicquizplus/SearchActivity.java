@@ -231,9 +231,14 @@ public class SearchActivity extends AppCompatActivity {
         SearchFilter lastFilter = search.getCurrentFilter();
         search = new Search(query, 100, spotifyService, lastFilter, allSearch);
         if (!search.execute(offset)) {
-            Toast toast = Toast.makeText(context,
-                    "Encountered an error while searching, try again later.", Toast.LENGTH_SHORT);
-            toast.show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast toast = Toast.makeText(context,
+                            "Encountered an error while searching, try again later.", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
         }
 
         user.incrementSearchCount();
