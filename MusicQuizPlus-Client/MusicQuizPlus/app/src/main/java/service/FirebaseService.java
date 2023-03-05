@@ -211,7 +211,10 @@ public class FirebaseService {
             reference.child("playlists").child(id).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    playlists.add(snapshot.getValue(Playlist.class));
+                    if(snapshot.getValue(Playlist.class) != null)
+                    {
+                        playlists.add(snapshot.getValue(Playlist.class));
+                    }
                     cdl.countDown();
                 }
 
