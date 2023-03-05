@@ -232,19 +232,26 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvAlbumTitle.setText(album.getName());
                 viewHolder.aqvAlbumType.setText(album.getType().toString());
                 viewHolder.aqvAlbumYear.setText(album.getYear());
+                viewHolder.aqvHeartAlbum.setChecked(user.getAlbumIds().containsValue(album.getId()));
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(user!=null)
                         {
-                            if(viewHolder.aqvHeartAlbum.isChecked())
-                            {
-                                AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
-                            }
-                            else
-                            {
-                                AlbumService.unheart(user, firebaseUser, reference, album);
-                            }
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(viewHolder.aqvHeartAlbum.isChecked())
+                                    {
+                                        AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                    }
+                                    else
+                                    {
+                                        AlbumService.unheart(user, firebaseUser, reference, album);
+                                    }
+                                }
+                            }).start();
+
                         }
                         else
                         {

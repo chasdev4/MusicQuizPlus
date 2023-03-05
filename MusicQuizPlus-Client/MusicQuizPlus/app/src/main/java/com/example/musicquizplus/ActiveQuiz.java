@@ -186,6 +186,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
 
         if(currentQuestion == null)
         {
+            countDownTimer.cancel();
             Intent intent = new Intent(this, QuizResults.class);
             Results results = quiz.end();
             intent.putExtra("quizResults", results);

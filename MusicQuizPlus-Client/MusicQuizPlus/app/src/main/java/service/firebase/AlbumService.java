@@ -169,35 +169,53 @@ public class AlbumService {
                 .getAsJsonObject("album")
                 .getAsJsonObject("tracks")
                 .getAsJsonArray("items");
-
+        String trackIds = "";
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
+            String[] idParts = jsonTrack.get("uri").getAsString().split(":");
+            trackIds += idParts[2] + "%2C";
+        }
+        trackIds = trackIds.substring(0, trackIds.length()-3);
+        Map<String, String> previewUrls = new HashMap<>();
+        JsonArray tracks = spotifyService.getTracks(trackIds);
+        for (int i = 0; i < tracks.size(); i++) {
+            JsonObject track = tracks.get(i).getAsJsonObject();
+            if (track.get("is_playable").getAsBoolean()) {
+                previewUrls.put(track.get("uri").getAsString(), track.get("preview_url").getAsString());
+            }
+        }
 
         for (int i = 0; i < jsonArray.size(); i++) {
             JsonObject jsonTrack = jsonArray.get(i).getAsJsonObject().getAsJsonObject("track");
+            String trackId = jsonTrack.get("uri").getAsString();
 
-            JsonArray artistsArray = jsonTrack.get("artists").getAsJsonObject().get("items").getAsJsonArray();
-            String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
-            Map<String, String> artistsMap = new HashMap<>();
-            for (int j = 0; j < artistsArray.size(); j++) {
-                artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
-                        artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").getAsString());
+            if (previewUrls.containsKey(trackId)) {
+
+                JsonArray artistsArray = jsonTrack.get("artists").getAsJsonObject().get("items").getAsJsonArray();
+                String artistId = artistsArray.get(0).getAsJsonObject().get("uri").getAsString();
+                Map<String, String> artistsMap = new HashMap<>();
+                for (int j = 0; j < artistsArray.size(); j++) {
+                    artistsMap.put(artistsArray.get(j).getAsJsonObject().get("uri").getAsString(),
+                            artistsArray.get(j).getAsJsonObject().getAsJsonObject("profile").get("name").getAsString());
+                }
+
+                Track track = new Track(
+                        trackId,
+                        jsonTrack.get("name").getAsString(),
+                        album.getId(),
+                        album.getName(),
+                        true,
+                        artistId,
+                        artistsMap,
+                        0,
+                        false,
+                        previewUrls.get(trackId),
+                        album.getYear(),
+                        jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean(),
+                        album.getPhotoUrl());
+                album.addTrackId(track.getId());
+                db.child("tracks").child(track.getId()).setValue(track);
             }
-
-            Track track = new Track(
-                    jsonTrack.get("uri").getAsString(),
-                    jsonTrack.get("name").getAsString(),
-                    album.getId(),
-                    album.getName(),
-                    true,
-                    artistId,
-                    artistsMap,
-                    0,
-                    false,
-                    null,
-                    album.getYear(),
-                    jsonTrack.getAsJsonObject("playability").get("playable").getAsBoolean(),
-                    album.getPhotoUrl());
-            album.addTrackId(track.getId());
-            db.child("tracks").child(track.getId()).setValue(track);
         }
         album.setTrackIdsKnown(true);
         db.child("albums").child(album.getId()).child("trackIdsKnown").setValue(true);

@@ -315,14 +315,12 @@ public class Quiz implements Serializable {
         {
             difficulty = Difficulty.EASY;
         }
-        generateQuiz(topicId);
+//        generateQuiz(topicId);
 
-        //TODO: Re-enable and debug
-        /*
         if (type == QuizType.ARTIST || !retrieveQuiz(topicId)) {
             generateQuiz(topicId);
         }
-         */
+
     }
 
     // Checks the database for generated quizzes and whether or not a user has taken it yet
@@ -927,10 +925,10 @@ public class Quiz implements Serializable {
 
         if(user != null)
         {
-            user = new User();
+            previousXp = user.getXp();
+            previousLevel = user.getLevel();
         }
-        previousXp = user.getXp();
-        previousLevel = user.getLevel();
+
 
         calculateXp();
         if (firebaseUser != null) {

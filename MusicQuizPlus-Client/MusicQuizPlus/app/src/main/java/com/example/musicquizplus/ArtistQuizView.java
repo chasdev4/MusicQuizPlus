@@ -5,14 +5,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -64,6 +67,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ImageButton instagram;
     ImageButton share;
     ToggleButton heartLatest;
+    Button startQuiz;
     ImageView latestImage;
     TextView latestTitle;
     TextView latestType;
@@ -96,6 +100,7 @@ public class ArtistQuizView extends AppCompatActivity {
     SpotifyService spotifyService;
     private Source source;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,6 +123,7 @@ public class ArtistQuizView extends AppCompatActivity {
         latestYear = findViewById(R.id.aqvTrackYear);
         latestMiddleDot = findViewById(R.id.middleDotAfterAlbum);
         heartLatest = findViewById(R.id.aqvHeartToggleButton);
+        startQuiz = findViewById(R.id.aqvStartButton);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
         albumsRV = findViewById(R.id.aqvAlbums);
@@ -147,6 +153,27 @@ public class ArtistQuizView extends AppCompatActivity {
             }
 
         }
+        Context context = this;
+        startQuiz.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (artist.getAllTrackIds().size() < 15) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+                    });
+                }
+                else if (!artist.isInitializing()) {
+                    Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
+                    intent.putExtra("currentArtist", artist);
+                    intent.putExtra("currentUser", user);
+                    startActivity(intent);
+                }
+            }
+        });
 
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -372,11 +399,13 @@ public class ArtistQuizView extends AppCompatActivity {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             latest = (Album) snapshot.getValue(Album.class);
-                            Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
-                            latestTitle.setText(latest.getName());
-                            latestType.setText(latest.getType().toString());
-                            latestYear.setText(latest.getYear());
-                            latestMiddleDot.setText(getString(R.string.middle_dot));
+                            if (latest != null) {
+                                Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
+                                latestTitle.setText(latest.getName());
+                                latestType.setText(latest.getType().toString());
+                                latestYear.setText(latest.getYear());
+                                latestMiddleDot.setText(getString(R.string.middle_dot));
+                            }
                         }
 
                         @Override
@@ -409,7 +438,12 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     singlesRV.setAdapter(singleAdapter);
-                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
+                                        @Override
+                                        public boolean canScrollVertically() {
+                                            return false;
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -436,7 +470,12 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     compilationsRV.setAdapter(compilationAdapter);
-                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
+                                        @Override
+                                        public boolean canScrollVertically() {
+                                            return false;
+                                        }
+                                    });
                                 }
                             });
                         }
@@ -463,7 +502,12 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     albumsRV.setAdapter(albumAdapter);
-                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
+                                        @Override
+                                        public boolean canScrollVertically() {
+                                            return false;
+                                        }
+                                    });
                                 }
                             });
                         }

@@ -249,4 +249,28 @@ public class SpotifyService {
 
         return null;
     }
+
+    public JsonArray getTracks(String trackIds) {
+        // Create the client and request
+        OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder()
+                .url("https://spotify23.p.rapidapi.com/tracks/?ids="
+                        + trackIds
+                )
+                .get()
+                .addHeader("X-RapidAPI-Key", _key)
+                .addHeader("X-RapidAPI-Host", "spotify23.p.rapidapi.com")
+                .build();
+
+        try (Response response = client.newCall(request).execute())
+        {
+            // Use gson to get a JsonObject
+            String json = response.body().string();
+            return gson.fromJson(json, JsonElement.class).getAsJsonObject().get("tracks").getAsJsonArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }
