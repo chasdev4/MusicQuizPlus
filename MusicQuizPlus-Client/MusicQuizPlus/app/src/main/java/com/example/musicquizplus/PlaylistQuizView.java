@@ -5,49 +5,34 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Application;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.google.firebase.auth.FirebaseUser;
-import com.example.musicquizplus.fragments.PlaylistFragment;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
-import model.Quiz;
-import model.User;
-import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
 import model.type.Source;
 import service.SpotifyService;
-import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
@@ -72,6 +57,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private SpotifyService spotifyService;
     private ToggleButton heartButton;
     private User user;
+    private ProgressBar progressBar;
 
 
     @Override
@@ -85,12 +71,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         owner = findViewById(R.id.pqvPlaylistOwner);
         owner.setSelected(true);
         listView = findViewById(R.id.pqvRecyclerView);
+        listView.setVisibility(View.INVISIBLE);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
         backButton = findViewById(R.id.pqvBackButton);
         spotifyButton = findViewById(R.id.pqvSpotifyButton);
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
+        progressBar = findViewById(R.id.playlist_quiz_view_progress_bar);
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
@@ -243,8 +231,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     @Override
                     public void run() {
                         adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
+                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                            @Override
+                            public void onChanged() {
+                                super.onChanged();
+                                onDataChange();
+                            }
+                        });
                         listView.setAdapter(adapter);
                         listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                        onDataChange();
                     }
                 });
 
@@ -265,6 +261,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
 
+    }
+
+    private void onDataChange() {
+        if (adapter.getItemCount() == 0) {
+            listView.setVisibility(View.INVISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
+        }else {
+        listView.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
+        }
     }
 
     public String getPlaylistIdAsUrl(String playlistID) {
