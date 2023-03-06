@@ -154,6 +154,9 @@ public class PlaylistFragment extends Fragment {
                             reference.child("default_playlists").addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    if (defaultPlaylistIDs.size() > 0) {
+                                        defaultPlaylistIDs.clear();
+                                    }
                                     for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                                         defaultPlaylistIDs.add(dataSnapshot.getValue(String.class));
                                     }
