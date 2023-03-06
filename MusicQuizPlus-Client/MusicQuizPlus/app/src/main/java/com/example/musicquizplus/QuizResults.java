@@ -10,6 +10,7 @@ import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -166,12 +167,21 @@ public class QuizResults extends AppCompatActivity {
             results = (Results) extras.getSerializable("quizResults");
             user = results.getUser();
 }
-        Picasso.get().load(firebaseUser.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
+        if (firebaseUser != null) {
+            Picasso.get().load(firebaseUser.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
+            level.setText("Lvl. " + String.valueOf(user.getLevel()));
+
+        }
+        else {
+            Picasso.get().load(R.drawable.default_avatar).into(avatar);
+            level.setText(getString(R.string.guest));
+        }
+        Uri photoUrl = firebaseUser != null ? firebaseUser.getPhotoUrl() : null;
+        Picasso.get().load(photoUrl).placeholder(R.drawable.default_avatar).into(avatar);
 
         score.setText(FormatUtil.formatNumberWithComma(results.getScore()));
         accuracy.setText(results.getAccuracy());
 
-        level.setText("Lvl. " + String.valueOf(user.getLevel()));
 
         earnedXp.setText("+" + FormatUtil.formatNumberWithComma(results.getXp()) + " XP");
         setupBadges();

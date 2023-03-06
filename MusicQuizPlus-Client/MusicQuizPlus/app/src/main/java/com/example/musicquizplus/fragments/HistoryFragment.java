@@ -263,6 +263,10 @@ public class HistoryFragment extends Fragment {
                 }
             }).start();
         }
+        else {
+            user = new User();
+            user.initGuest(getActivity());
+        }
     }
 
     private List<Track> getFiftyItems()
