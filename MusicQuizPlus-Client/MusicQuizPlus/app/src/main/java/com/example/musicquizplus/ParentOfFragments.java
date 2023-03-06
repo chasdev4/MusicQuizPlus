@@ -8,6 +8,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -218,6 +219,7 @@ public class ParentOfFragments extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        Activity activity = this;
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -237,6 +239,8 @@ public class ParentOfFragments extends AppCompatActivity {
                         }
                     });
                 } else {
+                    user = new User();
+                    user.initGuest(activity);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

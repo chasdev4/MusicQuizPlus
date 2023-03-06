@@ -169,36 +169,36 @@ public class SearchActivity extends AppCompatActivity {
     private <T> void doSearch(String query) {
         SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-//        if (searchLimitReached || firebaseUser == null
-//                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
-//            searchLimitReached = true;
-//            Context context = this;
-//            Activity activity = this;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.join_message_search_guest));
-//                    signUpPopUp.createAndShow();
-//                }
-//            });
-//
-//            return;
-//        }
-//        else if (searchLimitReached || firebaseUser != null
-//                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
-//
-//            Context context = this;
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    final Toast toast = Toast.makeText(context,
-//                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
-//                    toast.show();
-//                }
-//            });
-//
-//            finish();
-//        }
+        if (searchLimitReached || firebaseUser == null
+                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
+            searchLimitReached = true;
+            Context context = this;
+            Activity activity = this;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.join_message_search_guest));
+                    signUpPopUp.createAndShow();
+                }
+            });
+
+            return;
+        }
+        else if (searchLimitReached || firebaseUser != null
+                && user.isSearchLimitReached(firebaseUser, Role.USER, this)) {
+
+            Context context = this;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    final Toast toast = Toast.makeText(context,
+                            "You've reached you're daily search limit.", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
+
+            finish();
+        }
 
 
 
