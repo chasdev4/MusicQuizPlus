@@ -53,6 +53,7 @@ public class QuizResults extends AppCompatActivity {
     private TextView level;
     private ProgressBar xpBar;
     private User user;
+    private TextView badgesLabel;
     private RecyclerView badges;
     private Results results;
     private ValueAnimator valueAnimator;
@@ -73,6 +74,7 @@ public class QuizResults extends AppCompatActivity {
         avatar = findViewById(R.id.userCustomAvatar);
         xpBar = findViewById(R.id.xp_progress_bar);
         level = findViewById(R.id.userLevel);
+        badgesLabel = findViewById(R.id.results_badges_label);
         badges = findViewById(R.id.results_badges_container);
 
         continueButton.setOnClickListener(new View.OnClickListener() {
@@ -198,9 +200,11 @@ public class QuizResults extends AppCompatActivity {
 
     private void onDataChange() {
         if (badgesAdapter.getItemCount() == 0) {
+            badgesLabel.setVisibility(View.GONE);
             badges.setVisibility(View.GONE);
         }
         else {
+            badgesLabel.setVisibility(View.VISIBLE);
             badges.setVisibility(View.VISIBLE);
         }
     }
