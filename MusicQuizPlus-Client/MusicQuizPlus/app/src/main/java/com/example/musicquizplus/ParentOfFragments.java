@@ -1,19 +1,13 @@
 package com.example.musicquizplus;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RawRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -21,48 +15,29 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.example.musicquizplus.fragments.ArtistsFragment;
-import com.example.musicquizplus.fragments.HistoryFragment;
-import com.example.musicquizplus.fragments.PlaylistFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.Locale;
-import java.util.concurrent.CountDownLatch;
 
-import model.Badge;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
-import model.type.BadgeType;
-import service.BadgeService;
 import service.FirebaseService;
-import service.ItemService;
-import utils.FormatUtil;
-import utils.LogUtil;
 
 public class ParentOfFragments extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager2;
-    private ViewPagerAdapter viewPagerAdapter;
     private MediaPlayer mediaPlayer;
     private ToggleButton muteButton;
     private TextView userLevel;
     private ImageView userCustomAvatar;
     private ImageButton backToTop;
-    private ImageButton searchButton;
-    private View userAvatar;
     private Button pageTitle;
-    private ImageButton helpButton;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -73,7 +48,6 @@ public class ParentOfFragments extends AppCompatActivity {
     private User user;
 
     private boolean ignoreMuteAction;
-    private boolean mediaPlayerInitialized;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +56,7 @@ public class ParentOfFragments extends AppCompatActivity {
         ignoreMuteAction = true;
 
         Context context = this;
-        helpButton = findViewById(R.id.embeddedHelp);
+        ImageButton helpButton = findViewById(R.id.embeddedHelp);
         helpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -122,7 +96,7 @@ public class ParentOfFragments extends AppCompatActivity {
         pageTitle = findViewById(R.id.page_title);
         userLevel = findViewById(R.id.userLevel);
         userCustomAvatar = findViewById(R.id.userCustomAvatar);
-        userAvatar = findViewById(R.id.home_user_avatar);
+        View userAvatar = findViewById(R.id.home_user_avatar);
         Activity activity = this;
         userAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,11 +119,11 @@ public class ParentOfFragments extends AppCompatActivity {
 
         tabLayout = findViewById(R.id.tab_layout);
         viewPager2 = findViewById(R.id.view_pager);
-        viewPagerAdapter = new ViewPagerAdapter(this);
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this);
         viewPager2.setAdapter(viewPagerAdapter);
         backToTop = findViewById(R.id.backToTop);
 
-        searchButton = findViewById(R.id.mainSearchButton);
+        ImageButton searchButton = findViewById(R.id.mainSearchButton);
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
