@@ -73,6 +73,7 @@ public class SignUpPopUp {
             public void onClick(View view) {
                 GoogleSignIn googleSignIn = new GoogleSignIn();
                 googleSignIn.signInWithGoogle(view, activity, view.getContext());
+                alertDialog.cancel();
             }
         });
 
