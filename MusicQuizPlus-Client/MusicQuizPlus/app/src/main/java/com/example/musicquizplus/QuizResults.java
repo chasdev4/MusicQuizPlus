@@ -65,6 +65,7 @@ public class QuizResults extends AppCompatActivity {
     private int xpCount;
     private boolean overlap;
     private Xp xp;
+    private FirebaseUser firebaseUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +135,10 @@ public class QuizResults extends AppCompatActivity {
                     xpLeft.setText(FormatUtil.formatNumberWithComma(left));
                     xpRight.setText(FormatUtil.formatNumberWithComma(right));
                     xpBar.setMax(right - left);
+                    if (firebaseUser != null) {
+                        level.setText("Lvl. " + String.valueOf(xp.getCurrentLevel() - levelsCount));
+
+                    }
                     setupValueAnimator();
                 }
 
@@ -158,7 +163,6 @@ public class QuizResults extends AppCompatActivity {
 
             @Override
             public void run() {
-                xp = results.getXpBar();
                 xpBar.setProgress(xp.getPreviousXp());
                 xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel() + 1)) - xp.getLevels().get(xp.getPreviousLevel()));
                 xpCount = results.getXp();
@@ -166,61 +170,6 @@ public class QuizResults extends AppCompatActivity {
                 xpLeft.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel())));
                 xpRight.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel() + 1)));
                 setupValueAnimator();
-
-//                if (levelsCount > 0) {
-//                    final int[] finalLevelsProgressed = {levelsCount};
-//                    valueAnimator.addListener(new AnimatorListenerAdapter() {
-//                        int i = 0;
-//                        @Override
-//                        public void onAnimationEnd(Animator animation) {
-//                            super.onAnimationEnd(animation);
-//                            if (finalLevelsProgressed[0] > 0) {
-//                                xpBar.setProgress(0);
-//                                xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel() + 1+i)) - xp.getLevels().get(xp.getPreviousLevel()+i));
-////                            valueAnimator = ValueAnimator.ofInt(xp.getPreviousXp(), xp.getLevels().get(xp.getCurrentLevel() + 1+i) - xp.getCurrentXp());
-////                            valueAnimator.setDuration(5000);
-////                            valueAnimator = ValueAnimator.ofInt(xp.getPreviousXp(),
-////                                    xp.getLevels().get(xp.getCurrentLevel() + 1) - xp.getCurrentXp());
-////                            valueAnimator.setDuration(5000);
-//                                valueAnimator.setStartDelay(0);
-//                                valueAnimator.start();
-//
-//                            }
-//                            i++;
-//                            finalLevelsProgressed[0]--;
-//
-//                        }
-
-//                        @Override
-//                        public void onAnimationEnd(Animator animation) {
-//                            super.onAnimationEnd(animation);
-//                            if (levelsCount >= 0) {
-//                                setupValueAnimator();
-//                            }
-//
-//                        }
-//                    });
-//                }
-//                else {
-//
-//                }
-
-
-
-
-//                final int[] progress = {0};
-//                Timer timer = new Timer();
-//                timer.scheduleAtFixedRate(new TimerTask() {
-//                    @Override
-//                    public void run() {
-//                        progress[0] +=10;
-//                        xpBar.setProgress(progress[0]);
-//                    }
-//                }, 1000, 10);
-
-
-
-
 
             }
         });
@@ -249,16 +198,17 @@ public class QuizResults extends AppCompatActivity {
          */
 
         GoogleSignIn googleSignIn = new GoogleSignIn();
-        FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+        firebaseUser = googleSignIn.getAuth().getCurrentUser();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             results = (Results) extras.getSerializable("quizResults");
             user = results.getUser();
+            xp = results.getXpBar();
         }
         if (firebaseUser != null) {
             Picasso.get().load(firebaseUser.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
-            level.setText("Lvl. " + String.valueOf(user.getLevel()));
+            level.setText("Lvl. " + String.valueOf(xp.getPreviousLevel()));
 
         } else {
             Picasso.get().load(R.drawable.default_avatar).into(avatar);
