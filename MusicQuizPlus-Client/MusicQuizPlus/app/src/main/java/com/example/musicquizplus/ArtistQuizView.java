@@ -438,12 +438,7 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     singlesRV.setAdapter(singleAdapter);
-                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
-                                        @Override
-                                        public boolean canScrollVertically() {
-                                            return false;
-                                        }
-                                    });
+                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
                         }
@@ -470,12 +465,7 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     compilationsRV.setAdapter(compilationAdapter);
-                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
-                                        @Override
-                                        public boolean canScrollVertically() {
-                                            return false;
-                                        }
-                                    });
+                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
                         }
@@ -502,12 +492,7 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     albumsRV.setAdapter(albumAdapter);
-                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()){
-                                        @Override
-                                        public boolean canScrollVertically() {
-                                            return false;
-                                        }
-                                    });
+                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
                                 }
                             });
                         }

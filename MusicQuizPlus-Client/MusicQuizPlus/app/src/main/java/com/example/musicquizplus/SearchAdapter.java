@@ -32,6 +32,7 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.Role;
 import model.type.SearchFilter;
 import model.type.Source;
 import service.ItemService;
@@ -75,6 +76,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
+        FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
         switch (searchResults.get(position).getType()) {
             case ARTIST:
                 Artist artist = searchResults.get(position).getArtist();
@@ -97,7 +99,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 Album album = searchResults.get(position).getAlbum();
                 holder.setTitle(album.getName());
                 holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getArtistsMap().get(album.getArtistId()), album.getYear()));
-                FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
                 if (firebaseUser != null) {
                     DatabaseReference db = ((SearchActivity)context).getDb();
                     holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
