@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.example.musicquizplus.fragments.ArtistsFragment;
@@ -62,6 +63,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private View userAvatar;
     private Button pageTitle;
     private ImageButton helpButton;
+    private ImageButton settingsButton;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -85,9 +87,15 @@ public class ParentOfFragments extends AppCompatActivity {
         helpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(context, QuizResults.class);
-                intent.putExtra("user", user);
-                context.startActivity(intent);
+                Toast.makeText(getBaseContext(), "Help Button Is Coming Soon...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        settingsButton = findViewById(R.id.embeddedSettings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getBaseContext(), "Settings Button Is Coming Soon...", Toast.LENGTH_SHORT).show();
             }
         });
 
