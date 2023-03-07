@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -59,6 +61,10 @@ public class QuizResults extends AppCompatActivity {
     private Results results;
     private ValueAnimator valueAnimator;
     private ResultsBadgesAdapter badgesAdapter;
+    private int levelsCount;
+    private int xpCount;
+    private boolean overlap;
+    private Xp xp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,48 +95,131 @@ public class QuizResults extends AppCompatActivity {
 
     }
 
+    private void setupValueAnimator() {
+        if (levelsCount < xp.getLevelsProgressed() && !overlap) {
+            overlap = true;
+        }
+        int min = 0;
+        if (!overlap) {
+            min = xp.getPreviousXp();
+        }
+        else {
+            xpCount = results.getXp();
+            xpCount -= xp.getLevels().get(xp.getCurrentLevel() - levelsCount);
+        }
+        levelsCount--;
+
+        if (levelsCount >= 0) {
+            valueAnimator = ValueAnimator.ofInt(min, xpBar.getMax());
+        }
+        else {
+            int max = xpCount;
+            valueAnimator = ValueAnimator.ofInt(min, max);
+        }
+        if (overlap) {
+            xpBar.setProgress(0);
+            valueAnimator.setStartDelay(0);
+        }
+        else {
+            valueAnimator.setStartDelay(1000);
+        }
+        valueAnimator.setDuration(5000);
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                if (levelsCount >= 0) {
+                    int left = xp.getLevels().get(xp.getCurrentLevel() - levelsCount);
+                    int right = xp.getLevels().get(xp.getCurrentLevel() + 1 - levelsCount);
+                    xpLeft.setText(FormatUtil.formatNumberWithComma(left));
+                    xpRight.setText(FormatUtil.formatNumberWithComma(right));
+                    xpBar.setMax(right - left);
+                    setupValueAnimator();
+                }
+
+            }
+        });
+
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                xpBar.setProgress((Integer) animation.getAnimatedValue());
+            }
+        });
+        valueAnimator.start();
+
+    }
+
     @Override
     public void onResume() {
         super.onResume();
         runOnUiThread(new Runnable() {
+
+
             @Override
             public void run() {
-                Xp xp = results.getXpBar();
-
+                xp = results.getXpBar();
                 xpBar.setProgress(xp.getPreviousXp());
-                xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel()+1)) - xp.getLevels().get(xp.getPreviousLevel()));
-                valueAnimator = ValueAnimator.ofInt(xp.getPreviousXp(), xp.getLevels().get(xp.getCurrentLevel()+1) - xp.getCurrentXp());
-                valueAnimator.setDuration(5000);
-                valueAnimator.setStartDelay(1000);
+                xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel() + 1)) - xp.getLevels().get(xp.getPreviousLevel()));
+                xpCount = results.getXp();
+                levelsCount = xp.getLevelsProgressed();
                 xpLeft.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel())));
-                xpRight.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel()+1)));
+                xpRight.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel() + 1)));
+                setupValueAnimator();
 
-                valueAnimator.addPauseListener(new Animator.AnimatorPauseListener() {
-                    @Override
-                    public void onAnimationPause(Animator animator) {
+//                if (levelsCount > 0) {
+//                    final int[] finalLevelsProgressed = {levelsCount};
+//                    valueAnimator.addListener(new AnimatorListenerAdapter() {
+//                        int i = 0;
+//                        @Override
+//                        public void onAnimationEnd(Animator animation) {
+//                            super.onAnimationEnd(animation);
+//                            if (finalLevelsProgressed[0] > 0) {
+//                                xpBar.setProgress(0);
+//                                xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel() + 1+i)) - xp.getLevels().get(xp.getPreviousLevel()+i));
+////                            valueAnimator = ValueAnimator.ofInt(xp.getPreviousXp(), xp.getLevels().get(xp.getCurrentLevel() + 1+i) - xp.getCurrentXp());
+////                            valueAnimator.setDuration(5000);
+////                            valueAnimator = ValueAnimator.ofInt(xp.getPreviousXp(),
+////                                    xp.getLevels().get(xp.getCurrentLevel() + 1) - xp.getCurrentXp());
+////                            valueAnimator.setDuration(5000);
+//                                valueAnimator.setStartDelay(0);
+//                                valueAnimator.start();
+//
+//                            }
+//                            i++;
+//                            finalLevelsProgressed[0]--;
+//
+//                        }
 
-                    }
+//                        @Override
+//                        public void onAnimationEnd(Animator animation) {
+//                            super.onAnimationEnd(animation);
+//                            if (levelsCount >= 0) {
+//                                setupValueAnimator();
+//                            }
+//
+//                        }
+//                    });
+//                }
+//                else {
+//
+//                }
 
-                    @Override
-                    public void onAnimationResume(Animator animator) {
 
-                    }
-                });
-                valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    int i = 0;
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        if (xpBar.getProgress() >= xpBar.getMax()) {
-                            xpBar.setProgress(0);
-                            xpLeft.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel()+i)));
-                            xpRight.setText(FormatUtil.formatNumberWithComma(xp.getLevels().get(xp.getPreviousLevel()+i+1)));
-                            xpBar.setMax((xp.getLevels().get(xp.getPreviousLevel() + i)) - xp.getLevels().get(xp.getPreviousLevel())+i);
-                            i++;
-                        }
-                            xpBar.setProgress((Integer) animation.getAnimatedValue());
-                    }
-                });
-                valueAnimator.start();
+
+
+//                final int[] progress = {0};
+//                Timer timer = new Timer();
+//                timer.scheduleAtFixedRate(new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        progress[0] +=10;
+//                        xpBar.setProgress(progress[0]);
+//                    }
+//                }, 1000, 10);
+
+
+
 
 
             }
@@ -166,13 +255,12 @@ public class QuizResults extends AppCompatActivity {
         if (extras != null) {
             results = (Results) extras.getSerializable("quizResults");
             user = results.getUser();
-}
+        }
         if (firebaseUser != null) {
             Picasso.get().load(firebaseUser.getPhotoUrl()).placeholder(R.drawable.default_avatar).into(avatar);
             level.setText("Lvl. " + String.valueOf(user.getLevel()));
 
-        }
-        else {
+        } else {
             Picasso.get().load(R.drawable.default_avatar).into(avatar);
             level.setText(getString(R.string.guest));
         }
@@ -189,7 +277,7 @@ public class QuizResults extends AppCompatActivity {
     }
 
     private void setupBadges() {
-        badgesAdapter = new ResultsBadgesAdapter(((Context)this), results.getBadges());
+        badgesAdapter = new ResultsBadgesAdapter(((Context) this), results.getBadges());
         badgesAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -207,13 +295,11 @@ public class QuizResults extends AppCompatActivity {
     }
 
 
-
     private void onDataChange() {
         if (badgesAdapter.getItemCount() == 0) {
             badgesLabel.setVisibility(View.GONE);
             badges.setVisibility(View.GONE);
-        }
-        else {
+        } else {
             badgesLabel.setVisibility(View.VISIBLE);
             badges.setVisibility(View.VISIBLE);
         }

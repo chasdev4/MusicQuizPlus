@@ -25,6 +25,17 @@ public class Results implements Serializable {
         this.xpBar = new Xp(previousLevel, user.getLevel(), 100, previousXp, user.getXp(), user.getLevels());
     }
 
+    public Results(int score, int currentLevel, int previousLevel, int previousXp, int currentXp, String accuracy, List<Badge> badges, int quizXp) {
+
+        this.score = score;
+        this.accuracy = accuracy;
+        this.badges = badges;
+        xp = quizXp;
+        user = new User();
+        this.xpBar = new Xp(previousLevel, currentLevel, 100, previousXp, currentXp, user.getLevels());
+
+    }
+
     public List<Badge> getBadges() { return badges; }
 
     public int getScore() {
