@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -81,6 +83,8 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView singlesTextView;
     TextView compilationsTextView;
     TextView albumsTextView;
+    ConstraintLayout entireAQV;
+    ProgressBar aqvProgressBar;
     Album latest;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
@@ -133,6 +137,8 @@ public class ArtistQuizView extends AppCompatActivity {
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         compilationsTextView = findViewById(R.id.compilationsTextView);
         albumsTextView = findViewById(R.id.albumsTextView);
+        entireAQV = findViewById(R.id.entireAQVConstraintLayout);
+        aqvProgressBar = findViewById(R.id.aqvProgressBar);
 
         PackageManager pm = getPackageManager();
 
@@ -523,6 +529,14 @@ public class ArtistQuizView extends AppCompatActivity {
                         }
                     });
                 }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        aqvProgressBar.setVisibility(View.GONE);
+                        entireAQV.setVisibility(View.VISIBLE);
+                    }
+                });
 
                 executorService.shutdown();
 
