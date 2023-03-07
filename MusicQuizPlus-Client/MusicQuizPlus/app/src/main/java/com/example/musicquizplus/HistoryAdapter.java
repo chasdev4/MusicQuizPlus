@@ -232,7 +232,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvAlbumTitle.setText(album.getName());
                 viewHolder.aqvAlbumType.setText(album.getType().toString());
                 viewHolder.aqvAlbumYear.setText(album.getYear());
-                viewHolder.aqvHeartAlbum.setChecked(user.getAlbumIds().containsValue(album.getId()));
+                if(user != null)
+                {
+                    viewHolder.aqvHeartAlbum.setChecked(user.getAlbumIds().containsValue(album.getId()));
+                }
+                else
+                {
+                    viewHolder.aqvHeartAlbum.setChecked(false);
+                }
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
