@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.content.pm.PackageManager;
@@ -32,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.ContentHandler;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -195,6 +198,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
             }
 
+            Activity activity = this;
+            Context context = this;
+
             heartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -212,6 +218,17 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                                 } else {
                                     PlaylistService.unheart(user, firebaseUser, db, playlist);
                                 }
+                            }
+                            else
+                            {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, "Pump Up The Jam! You Can Save This Playlist By Joining");
+                                        signUpPopUp.createAndShow();
+                                        heartButton.setChecked(false);
+                                    }
+                                });
                             }
                         }
                     }).start();
