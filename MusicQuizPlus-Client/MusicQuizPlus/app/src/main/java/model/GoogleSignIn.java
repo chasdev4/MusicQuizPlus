@@ -9,6 +9,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.example.musicquizplus.MainActivity;
+import com.example.musicquizplus.ParentOfFragments;
 import com.example.musicquizplus.R;
 import com.google.android.gms.auth.api.identity.BeginSignInRequest;
 import com.google.android.gms.auth.api.identity.BeginSignInResult;
@@ -114,8 +115,11 @@ public class GoogleSignIn {
                 });
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data, MainActivity activity) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data, Activity activity) {
         LogUtil log = new LogUtil(TAG, "onActivityResult");
+
+        oneTapClient = Identity.getSignInClient(activity);
+
         // Check the request code
         switch (requestCode) {
             case REQ_ONE_TAP:
@@ -138,11 +142,14 @@ public class GoogleSignIn {
                                             // Sign in success, update UI with the signed-in user's information
                                             log.d("signInWithCredential:success");
                                             FirebaseUser firebaseUser = auth.getCurrentUser();
-                                            activity.updateUI(firebaseUser);
+                                            //activity.updateUI(firebaseUser);
+                                            Intent intent = new Intent(activity.getBaseContext(), ParentOfFragments.class);
+                                            //activity.finish();
+                                            activity.startActivity(intent);
                                         } else {
                                             // If sign in fails, display a message to the user.
                                             log.w("signInWithCredential:failure", task.getException());
-                                            activity.updateUI(null);
+                                            //activity.updateUI(null);
                                         }
                                     }
                                 });
