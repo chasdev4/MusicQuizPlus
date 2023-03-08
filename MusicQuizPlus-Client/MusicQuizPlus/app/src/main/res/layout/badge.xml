@@ -4,7 +4,7 @@
     android:id="@+id/badge"
     android:orientation="vertical"
     android:layout_width="50dp"
-    android:layout_height="50dp"
+    android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true">
     <include layout="@layout/badge_performance"

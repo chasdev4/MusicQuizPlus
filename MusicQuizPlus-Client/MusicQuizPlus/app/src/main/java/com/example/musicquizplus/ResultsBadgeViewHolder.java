@@ -1,9 +1,7 @@
 package com.example.musicquizplus;
 
-import android.graphics.PorterDuff;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -24,9 +22,7 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
     public ResultsBadgeViewHolder(@NonNull View itemView) {
         super(itemView);
         this.itemView = itemView;
-        image = itemView.findViewById(R.id.badge_thumbnail);
         text = itemView.findViewById(R.id.badge_text);
-        tint = itemView.findViewById(R.id.badge_tint);
         badge = itemView.findViewById(R.id.included_badge);
         badgeName = itemView.findViewById(R.id.badge_name);
         badgeDescription = itemView.findViewById(R.id.badge_description);
@@ -43,7 +39,10 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
 
     public ImageView getTint() {return tint;}
 
-    public void setTint(int color) {
+    public void setTint(int id) {
+        tint = badge.findViewById(id).findViewById(R.id.badge_tint);
+    }
+    public void setColor(int color) {
         tint.setColorFilter(color);
     }
 
@@ -53,6 +52,7 @@ public class ResultsBadgeViewHolder extends RecyclerView.ViewHolder {
 
     public void setBadge(int id) {
         this.badge.findViewById(id).setVisibility(View.VISIBLE);
+        image = this.badge.findViewById(id).findViewById(R.id.badge_thumbnail);
     }
 
     public void setBadgeName(String badgeName) {

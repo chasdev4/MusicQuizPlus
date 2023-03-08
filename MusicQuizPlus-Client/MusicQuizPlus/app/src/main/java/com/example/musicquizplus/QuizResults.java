@@ -124,7 +124,7 @@ public class QuizResults extends AppCompatActivity {
         else {
             valueAnimator.setStartDelay(1000);
         }
-        valueAnimator.setDuration(5000);
+        valueAnimator.setDuration(3000);
         valueAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
