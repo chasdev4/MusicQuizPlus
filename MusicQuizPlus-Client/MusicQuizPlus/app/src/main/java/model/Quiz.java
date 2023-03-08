@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.history.TopicHistory;
 import model.item.Album;
@@ -30,6 +33,7 @@ import model.type.QuizType;
 import model.type.Severity;
 import service.BadgeService;
 import service.FirebaseService;
+import service.ItemService;
 import service.firebase.QuizService;
 import utils.LogUtil;
 import utils.ValidationUtil;
@@ -995,7 +999,25 @@ public class Quiz implements Serializable {
             user.getBadges().put(key, badge);
 
             if (BadgeService.hasThumbnail(badge.getType())) {
-                user.getBadges().get(key).setPhotoUrl(BadgeService.getBadgeThumbnail(db, BadgeService.getPath(badge)));
+                String url = null;
+                switch (badge.getType()) {
+                    case ARTIST_KNOWLEDGE_1:
+                    case ARTIST_KNOWLEDGE_2:
+                    case ARTIST_KNOWLEDGE_3:
+                    case ARTIST_KNOWLEDGE_4:
+                        url = ItemService.getSmallestPhotoUrl(artist.getPhotoUrl());
+                        break;
+                    case PLAYLIST_KNOWLEDGE:
+                        url = ItemService.getSmallestPhotoUrl(playlist.getPhotoUrl());
+                        break;
+                    case OTHER_ALBUM_KNOWLEDGE:
+                    case STUDIO_ALBUM_KNOWLEDGE:
+                        url = ItemService.getSmallestPhotoUrl(artist.getAlbum(badge.getId()).getPhotoUrl());
+                        break;
+                }
+                if (url != null) {
+                    user.getBadges().get(key).setPhotoUrl(url);
+                }
             }
             db.child("users").child(firebaseUser.getUid()).child("badges").child(key).setValue(badge);
 
