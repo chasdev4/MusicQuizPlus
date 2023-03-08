@@ -148,16 +148,6 @@ public class ArtistQuizView extends AppCompatActivity {
             artist = (Artist) extras.getSerializable("currentArtist");
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
-
-            artistNameTV.setText(artist.getName());
-            artistBioTV.setText(artist.getBio());
-            Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
-
-            if(artist.getExternalLinks() != null)
-            {
-                initializeExternalLinkButtons();
-            }
-
         }
         Context context = this;
         startQuiz.setOnClickListener(new View.OnClickListener() {
@@ -399,6 +389,20 @@ public class ArtistQuizView extends AppCompatActivity {
                     artist = spotifyService.artistOverview(artist.getId());
                 }
 
+                artistNameTV.setText(artist.getName());
+                artistBioTV.setText(artist.getBio());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                    }
+                });
+
+                if(artist.getExternalLinks() != null)
+                {
+                    initializeExternalLinkButtons();
+                }
+
                 if(artist.getLatest() != null)
                 {
                     reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -411,6 +415,11 @@ public class ArtistQuizView extends AppCompatActivity {
                                 latestType.setText(latest.getType().toString());
                                 latestYear.setText(latest.getYear());
                                 latestMiddleDot.setText(getString(R.string.middle_dot));
+                            }
+                            else
+                            {
+                                latestText.setVisibility(View.GONE);
+                                latestRelease.setVisibility(View.GONE);
                             }
                         }
 
