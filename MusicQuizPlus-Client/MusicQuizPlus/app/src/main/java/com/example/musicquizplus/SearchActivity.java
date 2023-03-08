@@ -394,7 +394,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        searchAdapter = new SearchAdapter(context, new ArrayList<>());
+        searchAdapter = new SearchAdapter(this, this, new ArrayList<>());
         searchAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {

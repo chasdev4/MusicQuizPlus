@@ -163,6 +163,8 @@ public class ArtistsFragment extends Fragment {
                 }
                 else
                 {
+                    user = new User();
+                    user.initGuest(getActivity());
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

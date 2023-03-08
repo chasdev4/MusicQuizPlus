@@ -5,6 +5,7 @@ import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ public class Album implements Serializable {
 
     // Excluded from database
     private List<Track> tracks;
+    private List<String> removeQueue;
 
     public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId,
                  Map<String, String> artistsMap, AlbumType type, List<String> trackIds,
@@ -141,13 +143,29 @@ public class Album implements Serializable {
 
     public void initCollection(DatabaseReference db) {
         initTracks(db);
+        checkForInvalid(db);
+    }
+
+    private void checkForInvalid(DatabaseReference db) {
+        if (removeQueue.size() > 0) {
+            for (String trackId : removeQueue) {
+                db.child("albums").child(id).child("trackIds").child(trackId).removeValue();
+                db.child("tracks").child(trackId).removeValue();
+            }
+        }
     }
 
     private void initTracks(DatabaseReference db) {
         tracks = new ArrayList<>();
+        removeQueue = new ArrayList<>();
         for (String trackId : trackIds) {
             Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-            tracks.add(track);
+            if (track.getPreviewUrl() == null) {
+                removeQueue.add(trackId);
+            }
+            else {
+                tracks.add(track);
+            }
         }
     }
 

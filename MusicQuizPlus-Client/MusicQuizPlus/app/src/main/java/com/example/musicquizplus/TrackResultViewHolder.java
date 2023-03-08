@@ -44,4 +44,8 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
     public ImageView getImage() {
         return image;
     }
+
+    public ToggleButton getToggleButton() {
+        return toggleButton;
+    }
 }

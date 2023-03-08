@@ -23,6 +23,7 @@ import com.squareup.picasso.Picasso;
 import model.GoogleSignIn;
 import model.TrackResult;
 import model.User;
+import model.type.Role;
 import service.ItemService;
 import service.SpotifyService;
 
@@ -45,7 +46,6 @@ public class TrackResultActivity extends AppCompatActivity {
     private FirebaseUser firebaseUser;
     private DatabaseReference db;
     private User user;
-    private SpotifyService spotifyService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,7 +124,7 @@ public class TrackResultActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        trackResultAdapter = new TrackResultAdapter(context, trackResult);
+        trackResultAdapter = new TrackResultAdapter(this, this);
         trackResultAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {
@@ -177,4 +177,6 @@ public class TrackResultActivity extends AppCompatActivity {
             Log.d("TAG", "onStart: ");
         }
     }
+
+
 }

@@ -149,6 +149,8 @@ public class PlaylistFragment extends Fragment {
                 }
                 else
                 {
+                    user = new User();
+                    user.initGuest(getActivity());
                     new Thread(new Runnable() {
                         public void run() {
                             reference.child("default_playlists").addValueEventListener(new ValueEventListener() {

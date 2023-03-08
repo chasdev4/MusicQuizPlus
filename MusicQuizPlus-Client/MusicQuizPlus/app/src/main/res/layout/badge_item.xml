@@ -16,8 +16,8 @@
     <RelativeLayout
         android:id="@+id/badge"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:paddingStart="10dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -25,15 +25,6 @@
     <include layout="@layout/badge"
         android:id="@+id/included_badge"/>
     </RelativeLayout>
-<!--    <ImageView-->
-<!--        android:id="@+id/image"-->
-<!--        android:src="@drawable/badge_milestone_background"-->
-<!--        android:layout_width="50dp"-->
-<!--        android:layout_height="50dp"-->
-<!--        android:layout_marginLeft="10dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
 
     <TextView
         android:id="@+id/badge_name"
@@ -65,7 +56,7 @@
 
     <TextView
         android:id="@+id/badge_bonus_xp"
-        android:layout_width="80dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:background="@color/mqPurple2"
         android:text="@string/_0_xp"
@@ -73,7 +64,7 @@
         android:textColor="@color/mqWhite"
         android:gravity="center"
         android:textSize="20sp"
-        android:padding="8dp"
+        android:layout_margin="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

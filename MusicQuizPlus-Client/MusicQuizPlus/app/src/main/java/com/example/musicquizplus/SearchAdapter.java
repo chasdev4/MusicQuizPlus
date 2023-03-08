@@ -1,5 +1,6 @@
 package com.example.musicquizplus;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
@@ -24,12 +25,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 
 import model.SearchResult;
+import model.SignUpPopUp;
 import model.TrackResult;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.Role;
 import model.type.SearchFilter;
 import model.type.Source;
 import service.ItemService;
@@ -39,11 +42,13 @@ import service.firebase.AlbumService;
 public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     private Context context;
+    private Activity activity;
     private List<SearchResult> searchResults;
     private User user;
 
-    public SearchAdapter(Context context, List<SearchResult> searchResults) {
+    public SearchAdapter(Context context, Activity activity, List<SearchResult> searchResults) {
         this.context = context;
+        this.activity = activity;
         this.searchResults = searchResults;
     }
 
@@ -71,6 +76,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
+        FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
         switch (searchResults.get(position).getType()) {
             case ARTIST:
                 Artist artist = searchResults.get(position).getArtist();
@@ -93,7 +99,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 Album album = searchResults.get(position).getAlbum();
                 holder.setTitle(album.getName());
                 holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getArtistsMap().get(album.getArtistId()), album.getYear()));
-                FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
                 if (firebaseUser != null) {
                     DatabaseReference db = ((SearchActivity)context).getDb();
                     holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
@@ -117,10 +122,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                     });
                 }
                 else {
-                    holder.setChecked(false);
                     holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            holder.setChecked(false);
+                            SignUpPopUp popUp = new SignUpPopUp(activity, context, context.getString(R.string.logged_out_artists));
+                            popUp.createAndShow();
                             // TODO: Display the sign-up pop up
                         }
                     });

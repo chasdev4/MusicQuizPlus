@@ -184,4 +184,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
 
+    <ProgressBar
+        android:id="@+id/playlist_quiz_view_progress_bar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:indeterminateTintMode="src_atop"
+        android:alpha="0.4"
+        android:indeterminateTint="@color/mqWhite"
+        app:layout_constraintBottom_toTopOf="@+id/pqvStartButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/pqvRecyclerView" />
 </androidx.constraintlayout.widget.ConstraintLayout>
