@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -81,6 +83,8 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView singlesTextView;
     TextView compilationsTextView;
     TextView albumsTextView;
+    ConstraintLayout entireAQV;
+    ProgressBar aqvProgressBar;
     Album latest;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
@@ -133,6 +137,8 @@ public class ArtistQuizView extends AppCompatActivity {
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         compilationsTextView = findViewById(R.id.compilationsTextView);
         albumsTextView = findViewById(R.id.albumsTextView);
+        entireAQV = findViewById(R.id.entireAQVConstraintLayout);
+        aqvProgressBar = findViewById(R.id.aqvProgressBar);
 
         PackageManager pm = getPackageManager();
 
@@ -142,16 +148,6 @@ public class ArtistQuizView extends AppCompatActivity {
             artist = (Artist) extras.getSerializable("currentArtist");
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
-
-            artistNameTV.setText(artist.getName());
-            artistBioTV.setText(artist.getBio());
-            Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
-
-            if(artist.getExternalLinks() != null)
-            {
-                initializeExternalLinkButtons();
-            }
-
         }
         Context context = this;
         startQuiz.setOnClickListener(new View.OnClickListener() {
@@ -393,6 +389,20 @@ public class ArtistQuizView extends AppCompatActivity {
                     artist = spotifyService.artistOverview(artist.getId());
                 }
 
+                artistNameTV.setText(artist.getName());
+                artistBioTV.setText(artist.getBio());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                    }
+                });
+
+                if(artist.getExternalLinks() != null)
+                {
+                    initializeExternalLinkButtons();
+                }
+
                 if(artist.getLatest() != null)
                 {
                     reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -405,6 +415,11 @@ public class ArtistQuizView extends AppCompatActivity {
                                 latestType.setText(latest.getType().toString());
                                 latestYear.setText(latest.getYear());
                                 latestMiddleDot.setText(getString(R.string.middle_dot));
+                            }
+                            else
+                            {
+                                latestText.setVisibility(View.GONE);
+                                latestRelease.setVisibility(View.GONE);
                             }
                         }
 
@@ -523,6 +538,14 @@ public class ArtistQuizView extends AppCompatActivity {
                         }
                     });
                 }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        aqvProgressBar.setVisibility(View.GONE);
+                        entireAQV.setVisibility(View.VISIBLE);
+                    }
+                });
 
                 executorService.shutdown();
 

@@ -44,7 +44,6 @@
         android:layout_width="90dp"
         android:layout_height="90dp"
         android:layout_marginStart="5dp"
-        android:src="@drawable/spotify_todays_hits"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toEndOf="@+id/pqvBackButton"
         app:layout_constraintTop_toTopOf="parent" />
@@ -57,7 +56,6 @@
         android:layout_marginTop="-18dp"
         android:layout_marginEnd="5dp"
         android:fontFamily="@font/concert_one"
-        android:text="@string/sample_song_title"
         android:textColor="@color/mqWhite"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
@@ -94,7 +92,6 @@
         android:layout_marginTop="5dp"
         android:layout_marginEnd="5dp"
         android:fontFamily="@font/commissioner"
-        android:text="@string/playlist_by_spotify"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
         app:layout_constraintEnd_toStartOf="@+id/playlist_heart"
