@@ -32,6 +32,7 @@ public class Playlist implements Serializable {
 
     // Excluded from Database
     private Map<Integer, Track> tracks;
+    private List<String> removeQueue;
     private boolean isInitializing;
 
     private final String TAG = "Playlist.java";
@@ -99,10 +100,23 @@ public class Playlist implements Serializable {
 
     public void putTrack(int i, Track track) { tracks.put(i, track); }
 
-    public void initCollection(DatabaseReference db) { initTracks(db); }
+    public void initCollection(DatabaseReference db) {
+        initTracks(db);
+        checkForInvalid(db);
+    }
+
+    private void checkForInvalid(DatabaseReference db) {
+        if (removeQueue.size() > 0) {
+            for (String trackId : removeQueue) {
+                db.child("playlists").child(id).child("trackIds").child(trackId).removeValue();
+                db.child("tracks").child(trackId).removeValue();
+            }
+        }
+    }
 
     private void initTracks(DatabaseReference db) {
         isInitializing = true;
+        removeQueue = new ArrayList<>();
         LogUtil log = new LogUtil(TAG, "initTracks");
         Map<Integer, List<String>> data = new HashMap<>();
         tracks = new HashMap<>();
@@ -135,11 +149,17 @@ public class Playlist implements Serializable {
                     for (String trackId : data.get(finalI)) {
                         Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
                         if (track != null) {
-                            tracks.put((finalI * 10 + j), track);
+                            if (track.getPreviewUrl() == null) {
+                                removeQueue.add(trackId);
+                            }
+                            else {
+                                tracks.put((finalI * 10 + j), track);
+                            }
                             j++;
                         } else {
                             log.w(String.format("%s is missing from the database.", trackId));
                         }
+
                     }
                 }
             });
