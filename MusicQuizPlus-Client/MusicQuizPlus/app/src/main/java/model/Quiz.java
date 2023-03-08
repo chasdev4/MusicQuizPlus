@@ -256,8 +256,12 @@ public class Quiz implements Serializable {
 
     @Exclude
     private String getAnswerText(QuestionType type, int randomIndex) {
+        if (tracks.get(randomIndex) == null) {
+            Log.d(TAG, "getAnswerText: ");
+        }
         switch (type) {
             case GUESS_TRACK:
+                String name = tracks.get(randomIndex).getName();
                 return tracks.get(randomIndex).getName();
             case GUESS_ALBUM:
                 switch (this.type) {
@@ -433,6 +437,8 @@ public class Quiz implements Serializable {
                 log.v("Artist members initialized.");
                 break;
         }
+        rawTracks.removeAll(Collections.singleton(null));
+
         // For creating a quiz history
         poolCount = rawTracks.size();
 

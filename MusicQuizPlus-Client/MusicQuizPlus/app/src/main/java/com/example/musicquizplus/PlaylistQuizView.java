@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 
 import model.GoogleSignIn;
+import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
