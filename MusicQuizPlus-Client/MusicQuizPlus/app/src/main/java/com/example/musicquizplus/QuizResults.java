@@ -101,12 +101,12 @@ public class QuizResults extends AppCompatActivity {
             overlap = true;
         }
         int min = 0;
-        if (!overlap) {
-            min = xp.getPreviousXp();
-        }
-        else {
-            xpCount = results.getXp();
+        if (overlap) {
+            xpCount = xp.getCurrentXp();
             xpCount -= xp.getLevels().get(xp.getCurrentLevel() - levelsCount);
+        }
+        else if (xp.getLevelsProgressed() > 0) {
+            min = xp.getPreviousXp();
         }
         levelsCount--;
 
