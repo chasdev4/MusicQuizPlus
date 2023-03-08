@@ -142,8 +142,10 @@ public class PlaylistFragment extends Fragment {
                             pgb.setVisibility(View.GONE);
                         }
                     });
-                    FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, playlistIDs);
-
+                    if(gridView.getCount() == 0)
+                    {
+                        FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, playlistIDs);
+                    }
                 }
                 else
                 {
@@ -179,7 +181,10 @@ public class PlaylistFragment extends Fragment {
                                         pgb.setVisibility(View.GONE);
                                     }
                                 });
-                                FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, defaultPlaylistIDs);
+                                if(gridView.getCount() == 0)
+                                {
+                                    FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, defaultPlaylistIDs);
+                                }
                             }
 
                         }

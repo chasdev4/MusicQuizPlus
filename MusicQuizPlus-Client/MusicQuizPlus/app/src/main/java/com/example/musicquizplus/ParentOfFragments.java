@@ -1,5 +1,6 @@
 package com.example.musicquizplus;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -13,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.android.material.tabs.TabLayout;
@@ -22,11 +24,18 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
 import service.FirebaseService;
+import service.ItemService;
+import service.firebase.PlaylistService;
+import service.firebase.UserService;
+import utils.FormatUtil;
+import utils.LogUtil;
 
 public class ParentOfFragments extends AppCompatActivity {
 
@@ -38,6 +47,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private ImageView userCustomAvatar;
     private ImageButton backToTop;
     private Button pageTitle;
+    private ImageButton settingsButton;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -46,6 +56,8 @@ public class ParentOfFragments extends AppCompatActivity {
     private DatabaseReference db;
     private FirebaseUser firebaseUser;
     private User user;
+    private GoogleSignIn googleSignIn = new GoogleSignIn();
+    private Map<String, String> defaultPlaylistIds;
 
     private boolean ignoreMuteAction;
 
@@ -60,7 +72,15 @@ public class ParentOfFragments extends AppCompatActivity {
         helpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: Help dialog
+                Toast.makeText(getBaseContext(), "Help Button Is Coming Soon...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        settingsButton = findViewById(R.id.embeddedSettings);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getBaseContext(), "Settings Button Is Coming Soon...", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -113,7 +133,6 @@ public class ParentOfFragments extends AppCompatActivity {
             }
         });
 
-        GoogleSignIn googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
@@ -188,6 +207,12 @@ public class ParentOfFragments extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        googleSignIn.onActivityResult(requestCode, resultCode, data, this);
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
 
@@ -198,6 +223,11 @@ public class ParentOfFragments extends AppCompatActivity {
                 if (firebaseUser != null) {
 
                     user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    if(user == null)
+                    {
+                        defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
+                        UserService.createUser(firebaseUser, db, defaultPlaylistIds);
+                    }
                     user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
                     user.initArtists(db, false);
                     user.initBadges(db);

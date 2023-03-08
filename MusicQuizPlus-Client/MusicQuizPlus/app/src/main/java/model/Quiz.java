@@ -267,14 +267,23 @@ public class Quiz implements Serializable {
                         Random rnd = new Random();
                         int collection = rnd.nextInt(3);
                         if (collection == 0) {
-                            randomIndex = rnd.nextInt(artist.getSingles().size());
-                            return artist.getSingles().get(randomIndex).getName();
+                            if(artist.getSingles().size() > 0)
+                            {
+                                randomIndex = rnd.nextInt(artist.getSingles().size());
+                                return artist.getSingles().get(randomIndex).getName();
+                            }
                         } else if (collection == 1) {
-                            randomIndex = rnd.nextInt(artist.getAlbums().size());
-                            return artist.getAlbums().get(randomIndex).getName();
+                            if(artist.getAlbums().size() > 0)
+                            {
+                                randomIndex = rnd.nextInt(artist.getAlbums().size());
+                                return artist.getAlbums().get(randomIndex).getName();
+                            }
                         } else {
-                            randomIndex = rnd.nextInt(artist.getCompilations().size());
-                            return artist.getCompilations().get(randomIndex).getName();
+                            if(artist.getCompilations().size() > 0)
+                            {
+                                randomIndex = rnd.nextInt(artist.getCompilations().size());
+                                return artist.getCompilations().get(randomIndex).getName();
+                            }
                         }
                 }
 
@@ -283,7 +292,10 @@ public class Quiz implements Serializable {
                     case PLAYLIST:
                         return tracks.get(randomIndex).getArtistName();
                     case ARTIST:
-                        return featuredArtistsNames.get(randomIndex);
+                        if(featuredArtistsNames.size() > randomIndex)
+                        {
+                            return featuredArtistsNames.get(randomIndex);
+                        }
                 }
             case GUESS_YEAR:
                 return tracks.get(randomIndex).getYear();
