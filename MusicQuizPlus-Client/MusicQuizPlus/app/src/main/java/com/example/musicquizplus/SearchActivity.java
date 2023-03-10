@@ -389,6 +389,9 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
+//    @Override
+//    public void onResume()
+
     public TrackResult getTrackResult(Track track) {
         return search.getTrackResult(track);
     }
@@ -435,4 +438,6 @@ public class SearchActivity extends AppCompatActivity {
     public Search getSearch() {
         return search;
     }
+
+    public void setUser(User user) {this.user = user;}
 }

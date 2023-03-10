@@ -26,12 +26,17 @@ import com.squareup.picasso.Picasso;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
 import service.FirebaseService;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.FormatUtil;
@@ -201,6 +206,76 @@ public class ParentOfFragments extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+//        mediaPlayer.start();
+//    if (firebaseUser != null && user != null) {
+//        SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+//        if (user.getUpdateCollections()) {
+//            if (firebaseUser != null) {
+//                ExecutorService executorService = Executors.newFixedThreadPool(4);
+//                executorService.submit(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (user.getHeartAlbumQueue().size() > 0) {
+//                            for (int i =0; i < user.getHeartAlbumQueue().size(); i++) {
+//                                AlbumService.heart(user,
+//                                        firebaseUser, db, user.getHeartAlbumQueue().get(i),
+//                                        spotifyService);
+//                            }
+//                        }
+//                    }
+//                });
+//                executorService.submit(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (user.getUnheartAlbumQueue().size() > 0) {
+//                            for (int i =0; i < user.getUnheartAlbumQueue().size(); i++) {
+//                                AlbumService.unheart(user,
+//                                        firebaseUser, db, user.getUnheartAlbumQueue().get(i));
+//                            }
+//                        }
+//                    }
+//                });
+//                executorService.submit(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (user.getHeartPlaylistQueue().size() > 0) {
+//                            for (int i =0; i < user.getHeartPlaylistQueue().size(); i++) {
+//                                PlaylistService.heart(user,
+//                                        firebaseUser, db, user.getHeartPlaylistQueue().get(i),
+//                                        spotifyService);
+//                            }
+//                        }
+//                    }
+//                });
+//                executorService.submit(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        if (user.getUnheartPlaylistQueue().size() > 0) {
+//                            for (int i =0; i < user.getUnheartPlaylistQueue().size(); i++) {
+//                                PlaylistService.heart(user,
+//                                        firebaseUser, db, user.getUnheartPlaylistQueue().get(i),
+//                                        spotifyService);
+//                            }
+//                        }
+//                    }
+//                });
+//                executorService.shutdown();
+//                try {
+//                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            user.setUpdateCollections(false);
+//        }
+//    }
+
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         mediaPlayer.stop();
@@ -229,7 +304,7 @@ public class ParentOfFragments extends AppCompatActivity {
                         UserService.createUser(firebaseUser, db, defaultPlaylistIds);
                     }
                     user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
-                    user.initArtists(db, false);
+                    user.initArtists(db, firebaseUser, false);
                     user.initBadges(db);
                     runOnUiThread(new Runnable() {
                         @Override

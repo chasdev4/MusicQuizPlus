@@ -34,6 +34,7 @@ public class Playlist implements Serializable {
     private Map<Integer, Track> tracks;
     private List<String> removeQueue;
     private boolean isInitializing;
+    private boolean locked;
 
     private final String TAG = "Playlist.java";
 
@@ -177,5 +178,14 @@ public class Playlist implements Serializable {
     @Exclude
     public boolean isInitializing() {
         return isInitializing;
+    }
+
+    @Exclude
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

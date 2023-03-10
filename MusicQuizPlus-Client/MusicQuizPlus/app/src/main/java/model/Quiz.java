@@ -441,6 +441,9 @@ public class Quiz implements Serializable {
                 log.v("Artist members initialized.");
                 break;
         }
+        //TODO: disable me when guess album is fixed
+        guessAlbumChance = 0;
+
         rawTracks.removeAll(Collections.singleton(null));
 
         // For creating a quiz history
