@@ -27,12 +27,17 @@ import com.squareup.picasso.Picasso;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
 import service.FirebaseService;
 import service.ItemService;
+import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 import service.firebase.UserService;
 import utils.FormatUtil;
@@ -197,6 +202,12 @@ public class ParentOfFragments extends AppCompatActivity {
                 tabLayout.getTabAt(position).select();
             }
         });
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -244,7 +255,7 @@ public class ParentOfFragments extends AppCompatActivity {
                         }
                     }
                     user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
-                    user.initArtists(db, false);
+                    user.initArtists(db, firebaseUser, false);
                     user.initBadges(db);
                     runOnUiThread(new Runnable() {
                         @Override

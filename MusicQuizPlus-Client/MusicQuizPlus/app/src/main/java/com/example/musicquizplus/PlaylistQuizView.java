@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.SignUpPopUp;
@@ -183,6 +184,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         {
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
             source = (Source) extras.getSerializable("source");
+            user = (User) extras.getSerializable("currentUser");
 
             if(user != null)
             {
@@ -240,10 +242,20 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
         new Thread(new Runnable() {
             public void run() {
+                CountDownLatch cdl = new CountDownLatch(1);
                 if (source != Source.SEARCH) {
                     playlist.initCollection(reference);
+                    cdl.countDown();
                 } else {
-                    PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
+                    playlist = PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
+                    playlist.initCollection(reference);
+                    cdl.countDown();
+                }
+
+                try {
+                    cdl.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
                 List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
 
@@ -266,8 +278,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             }
         }).start();
-
-        Playlist finalPlaylist = playlist;
 
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override

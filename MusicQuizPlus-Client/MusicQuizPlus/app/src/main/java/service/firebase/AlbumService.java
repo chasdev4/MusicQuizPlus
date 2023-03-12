@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 
 import model.User;
 import model.ValidationObject;
@@ -35,7 +36,6 @@ public class AlbumService {
     // When the user "hearts" an album
     public static void heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                              SpotifyService spotifyService) {
-
         LogUtil log = new LogUtil(TAG, "heartAlbum");
 
         // Null check
@@ -55,8 +55,8 @@ public class AlbumService {
         Map<String, Object> updates = new HashMap<>();
 
         // Add the albumId to the user
-        String key = db.child("users").child(firebaseUser.getUid()).child("albumIds").push().getKey();
-        boolean result = user.addAlbumId(key, album.getId());
+        String albumKey = db.child("users").child(firebaseUser.getUid()).child("albumIds").push().getKey();
+        boolean result = !user.getAlbumIds().containsValue(album.getId());
 
         // If the album wasn't added, return
         if (!result) {
@@ -65,25 +65,26 @@ public class AlbumService {
         }
 
         // Save the albumId to the db user
-        db.child("users")
-                .child(firebaseUser.getUid())
-                .child("albumIds")
-                .child(key)
-                .setValue(album.getId());
+        updates.put("users/"+firebaseUser.getUid()+"/albumsIds/"+albumKey, album.getId());
+//        db.child("users")
+//                .child(firebaseUser.getUid())
+//                .child("albumIds")
+//                .child(key)
+//                .setValue(album.getId());
 
         // Add the artistId to the user
         String artistId = album.getArtistId();
-        key = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-        result = user.addArtistId(key, artistId);
+        String aritstKey = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+        result = !user.getArtistIds().containsValue(album.getArtistId());
 
         // If the artist was added, add it to the db user
         if (result) {
-            db.child("users")
-                    .child(firebaseUser.getUid())
-                    .child("artistIds")
-                    .child(key)
-                    .setValue(artistId);
-            log.i(String.format("%s added to the artistIds list.", artistId));
+            updates.put("users/"+firebaseUser.getUid()+"/artistIds/"+aritstKey, album.getArtistId());
+//            db.child("users")
+//                    .child(firebaseUser.getUid())
+//                    .child("artistIds")
+//                    .child(key)
+//                    .setValue(artistId);
         } else {
             log.i(String.format("%s already exists in the artistIds list.", artistId));
         }
@@ -109,6 +110,7 @@ public class AlbumService {
 
         if (album1 == null) {
             //TODO: Inform the user? Error occurs when hearting directly from search view
+            updates.remove("users/"+firebaseUser.getUid()+"/albumsIds/"+albumKey);
             log.e("Album can't be saved because it isn't saved to artist.");
             return;
         }
@@ -131,7 +133,14 @@ public class AlbumService {
 
         user.getArtists().put(album.getArtistId(), artist);
         db.updateChildren(updates);
-    }
+        user.addAlbumId(albumKey, album.getId());
+        if (result) {
+            user.addArtistId(aritstKey, artistId);
+            log.i(String.format("%s added to the artistIds list.", artistId));
+        }
+        album.setLocked(false);
+            }
+
 
     private static Artist saveArtistOverview(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
         LogUtil log = new LogUtil(TAG, "saveArtistOverview");
@@ -223,6 +232,7 @@ public class AlbumService {
     }
 
     public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
+
         LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
         // Null check
@@ -246,12 +256,12 @@ public class AlbumService {
             log.w("Album not previously saved to user. Aborting...");
             return;
         }
+        Map<String, Object> updates = new HashMap<>();
 
         // Remove the album from the database user
-        db.child("users").child(firebaseUser.getUid()).child("albumIds").child(key).removeValue();
+        updates.put("users/"+firebaseUser.getUid()+"/albumIds/"+key, null);
+//        db.child("users").child(firebaseUser.getUid()).child("albumIds").child(key).removeValue();
         log.i(String.format("\"%s : %s\" removed from users/%s/albumIds", key, album.getId(), firebaseUser.getUid()));
-
-        Map<String, Object> updates = new HashMap<>();
 
         // If the album is on it's last follower or lower, remove it's tracks from the database
         if (album.getFollowers() <= 1 && album.isFollowersKnown()) {
@@ -261,10 +271,11 @@ public class AlbumService {
                 if (track != null) {
                     // Check to see if it's safe to delete, the track may belong to a saved playlist
                     if (track.isAlbumKnown() && track.getPlaylistIds() == null) {
-                        db.child("tracks").child(trackId).removeValue();
-                        log.i(String.format("%s removed from database child /tracks", trackId));
+                        updates.put("tracks/"+trackId, null);
+//                        db.child("tracks").child(trackId).removeValue();
+//                        log.i(String.format("%s removed from database child /tracks", trackId));
                     } else {
-                        log.i(String.format("%s belongs to one or more playlists.", trackId));
+//                        log.i(String.format("%s belongs to one or more playlists.", trackId));
                     }
                 }
             }
@@ -310,8 +321,9 @@ public class AlbumService {
             user.getArtists().remove(album.getArtistId());
 
             // Remove the artist from the database user
-            db.child("users").child(firebaseUser.getUid()).child("artistIds").child(key).removeValue();
-            log.i(String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
+            updates.put("users/"+firebaseUser.getUid()+"/artistIds/"+key, null);
+//            db.child("users").child(firebaseUser.getUid()).child("artistIds").child(key).removeValue();
+//            log.i(String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
             updates.put("albums/" + album.getId() + "/followers", ServerValue.increment(-1));
 
             CountDownLatch cdl = new CountDownLatch(1);
@@ -340,8 +352,7 @@ public class AlbumService {
                 updates.put("albums/" + album.getId() + "/tracksIdsKnown", false);
             }
 
-            db.updateChildren(updates);
-            updates.clear();
+
         }
 
         // Check the database artist to see if it has enough followers to live
@@ -350,66 +361,35 @@ public class AlbumService {
         if (artist.getFollowers() <= 1) {
             if (artist.getAlbumIds().size() > 0) {
                 for (String albumId : artist.getAlbumIds()) {
-                    db.child("albums").child(albumId).removeValue();
+                    updates.put("albums/"+albumId, null);
+//                    db.child("albums").child(albumId).removeValue();
                 }
             }
             if (artist.getSingleIds().size() > 0) {
                 for (String albumId : artist.getSingleIds()) {
-                    db.child("albums").child(albumId).removeValue();
+                    updates.put("albums/"+albumId, null);
+
+//                    db.child("albums").child(albumId).removeValue();
                 }
             }
             if (artist.getCompilationIds().size() > 0) {
                 for (String albumId : artist.getCompilationIds()) {
-                    db.child("albums").child(albumId).removeValue();
+                    updates.put("albums/"+albumId, null);
+//                    db.child("albums").child(albumId).removeValue();
                 }
             }
 
-            db.child("artists").child(artist.getId()).removeValue();
+            updates.put("artists/"+artist.getId(), null);
+//            db.child("artists").child(artist.getId()).removeValue();
         } else {
             updates.put("artists/" + artist.getId() + "/followers", ServerValue.increment(-1));
-            db.updateChildren(updates);
         }
-
-
-//            // If the album's artist is on it's last follower, remove it and it's albums from the database.
-//            if (artist.getFollowers() <= 1) {
-//                for (String albumId : artist.getAlbumIds()) {
-//                    db.child("albums").child(albumId).removeValue();
-//                }
-//                for (String albumId : artist.getSingleIds()) {
-//                    db.child("albums").child(albumId).removeValue();
-//                }
-//                for (String albumId : artist.getCompilationIds()) {
-//                    db.child("albums").child(albumId).removeValue();
-//                }
-//
-//                db.child("artists").child(artist.getId()).removeValue();
-//            }
-//            // The artist is still followed, update the entries instead
-//            else {
-//                updates.put("albums/" + album.getId() + "/followers", 0);
-//                updates.put("albums/" + album.getId() + "/followersKnown", false);
-//                updates.put("albums/" + album.getId() + "/tracksIds", null);
-//                updates.put("albums/" + album.getId() + "/tracksIdsKnown", false);
-//                updates.put("artists/" + artist.getId() + "/followers", ServerValue.increment(-1));
-//                db.updateChildren(updates);
-//                log.i(String.format("%s follower count has decremented.", album.getId()));
-//                log.i(String.format("%s follower count has decremented.", artist.getId()));
-//            }
 
         // Remove the album from the database
         db.child("albums").child(album.getId()).removeValue();
         log.i(String.format("%s removed from /albums", album.getId()));
-
-
-    // Else the album has enough followers to live
-//        else {
-//            // Decrement the follower count
-//            updates.put("albums/" + album.getId() + "/followers", ServerValue.increment(-1));
-//            db.updateChildren(updates);
-//            log.i(String.format("%s follower count has decremented.", album.getId()));
-//        }
-
-
+        db.updateChildren(updates);
+        updates.clear();
+        album.setLocked(false);
     }
 }

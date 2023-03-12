@@ -7,12 +7,9 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.ImageButton;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,15 +17,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 
 import model.GoogleSignIn;
-import model.PhotoUrl;
 import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
@@ -54,9 +51,9 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
+    private boolean lastChoice;
 
-    public HistoryAdapter(User user, List<Track> trackList, List<Album> albumList, Context context, int switchOn)
-    {
+    public HistoryAdapter(User user, List<Track> trackList, List<Album> albumList, Context context, int switchOn) {
         this.user = user;
         this.trackList = trackList;
         this.albumList = albumList;
@@ -66,13 +63,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     }
 
     @Override
-    public HistoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
-    {
+    public HistoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        switch (switchOn)
-        {
+        switch (switchOn) {
             case 0:
                 //if switchOn is 0, its for history view
                 photoView = inflater.inflate(R.layout.history_listview_contents, parent, false);
@@ -93,34 +88,26 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position)
-    {
+    public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position) {
 
-        switch (switchOn)
-        {
+        switch (switchOn) {
             case 0:
                 //if switchOn is 0, its for history view
                 track = trackList.get(position);
 
                 viewHolder.historyTrackTitle.setText(track.getName());
 
-                if (track.getArtistName().length() > 15)
-                {
+                if (track.getArtistName().length() > 15) {
                     String artist = track.getArtistName().substring(0, 12) + "\u2026";
                     viewHolder.historyArtist.setText(artist);
-                }
-                else
-                {
+                } else {
                     viewHolder.historyArtist.setText(track.getArtistName());
                 }
 
-                if (track.getAlbumName().length() > 15)
-                {
+                if (track.getAlbumName().length() > 15) {
                     String album = track.getAlbumName().substring(0, 12) + "\u2026";
                     viewHolder.historyAlbum.setText(album);
-                }
-                else
-                {
+                } else {
                     viewHolder.historyAlbum.setText(track.getAlbumName());
                 }
 
@@ -138,15 +125,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                             isSpotifyInstalled = false;
                         }
 
-                        if(isSpotifyInstalled)
-                        {
+                        if (isSpotifyInstalled) {
                             Intent intent = new Intent(Intent.ACTION_VIEW);
                             intent.setData(Uri.parse(trackList.get(viewHolder.getAdapterPosition()).getId()));
                             intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse("android-app://" + context.getPackageName()));
                             context.startActivity(intent);
-                        }
-                        else
-                        {
+                        } else {
                             String url = getTrackIdAsUrl(trackList.get(viewHolder.getAdapterPosition()).getId());
                             Intent browserIntent = new Intent(Intent.ACTION_VIEW);
                             browserIntent.setData(Uri.parse(url));
@@ -195,19 +179,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
                         mediaPlayer = new MediaPlayer();
 
-                        if(viewHolder.playlistAudio.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.stop_audio).getConstantState()))
-                        {
+                        if (viewHolder.playlistAudio.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.stop_audio).getConstantState())) {
                             viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
-                        }
-                        else
-                        {
+                        } else {
                             viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.stop_audio));
                             mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
                         }
 
 
-                        if(old != pos)
-                        {
+                        if (old != pos) {
                             //notifyDataSetChanged();
                             //set image at position old to stop
                             //View v = viewHolder.recyclerView.getChildAt(old);
@@ -232,36 +212,45 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.aqvAlbumTitle.setText(album.getName());
                 viewHolder.aqvAlbumType.setText(album.getType().toString());
                 viewHolder.aqvAlbumYear.setText(album.getYear());
-                if(user != null)
-                {
-                    viewHolder.aqvHeartAlbum.setChecked(user.getAlbumIds().containsValue(album.getId()));
-                }
-                else
-                {
+                if (user != null) {
+                    lastChoice = user.getAlbumIds().containsValue(album.getId());
+                    viewHolder.aqvHeartAlbum.setChecked(lastChoice);
+                } else {
+                    lastChoice = false;
                     viewHolder.aqvHeartAlbum.setChecked(false);
                 }
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        if(user!=null)
-                        {
+                        if (user != null) {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(viewHolder.aqvHeartAlbum.isChecked())
-                                    {
-                                        AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
-                                    }
-                                    else
-                                    {
-                                        AlbumService.unheart(user, firebaseUser, reference, album);
+                                    if (!album.isLocked()) {
+                                        album.setLocked(true);
+                                        if (viewHolder.aqvHeartAlbum.isChecked()) {
+                                            AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                        } else {
+                                            AlbumService.unheart(user, firebaseUser, reference, album);
+                                        }
+                                    } else {
+//                                        if (viewHolder.aqvHeartAlbum.isChecked()) {
+//                                            user.getHeartAlbumQueue().add(album);
+//                                            if (user.getUnheartAlbumQueue().contains(album)) {
+//                                                user.getUnheartPlaylistQueue().remove(album);
+//                                            }
+//                                        }
+//                                        else {
+//                                            user.getUnheartAlbumQueue().add(album);
+//                                            if (user.getHeartAlbumQueue().contains(album)) {
+//                                                user.getHeartAlbumQueue().remove(album);
+//                                            }
+//                                        }
                                     }
                                 }
                             }).start();
 
-                        }
-                        else
-                        {
+                        } else {
                             SignUpPopUp signUpPopUp = new SignUpPopUp(new Activity(), context, "Get Up And Dance! You Can Save This Album By Joining");
                             signUpPopUp.createAndShow();
                         }
@@ -271,29 +260,24 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     }
 
     @Override
-    public int getItemCount()
-    {
-        if(switchOn == 2)
-        {
+    public int getItemCount() {
+        if (switchOn == 2) {
             return albumList.size();
         }
         return trackList.size();
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView)
-    {
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public String getTrackIdAsUrl(String trackId)
-    {
+    public String getTrackIdAsUrl(String trackId) {
         String id = trackId.substring(14);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/track/%s", id);
     }
 
-    private MediaPlayer playAudio(String url)
-    {
+    private MediaPlayer playAudio(String url) {
         MediaPlayer mediaPlayer = new MediaPlayer();
 
         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

@@ -532,9 +532,20 @@ public class Artist implements Serializable {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
+                List<Album> removeQueue = new ArrayList<>();
                 for (Album single : singles) {
-                    if (single.isTrackIdsKnown()) {
-                        single.initCollection(db);
+                    if (single != null) {
+                        if (single.isTrackIdsKnown()) {
+                            single.initCollection(db);
+                        }
+                    }
+                    else {
+                        removeQueue.add(single);
+                    }
+                }
+                if (removeQueue.size() > 0) {
+                    for (Album album : removeQueue) {
+                        albums.remove(album);
                     }
                 }
             }
@@ -542,9 +553,20 @@ public class Artist implements Serializable {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
+                List<Album> removeQueue = new ArrayList<>();
                 for (Album album : albums) {
-                    if (album.isTrackIdsKnown()) {
-                        album.initCollection(db);
+                    if (album != null) {
+                        if (album.isTrackIdsKnown()) {
+                            album.initCollection(db);
+                        }
+                    }
+                    else {
+                        removeQueue.add(album);
+                    }
+                }
+                if (removeQueue.size() > 0) {
+                    for (Album album : removeQueue) {
+                        albums.remove(album);
                     }
                 }
             }
@@ -552,9 +574,20 @@ public class Artist implements Serializable {
         executorService.execute(new Runnable() {
             @Override
             public void run() {
+                List<Album> removeQueue = new ArrayList<>();
                 for (Album compilation : compilations) {
-                    if (compilation.isTrackIdsKnown()) {
-                        compilation.initCollection(db);
+                    if (compilation != null) {
+                        if (compilation.isTrackIdsKnown()) {
+                            compilation.initCollection(db);
+                        }
+                    }
+                    else {
+                        removeQueue.add(compilation);
+                    }
+                }
+                if (removeQueue.size() > 0) {
+                    for (Album album : removeQueue) {
+                        albums.remove(album);
                     }
                 }
             }

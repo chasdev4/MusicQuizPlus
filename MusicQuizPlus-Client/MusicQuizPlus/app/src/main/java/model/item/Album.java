@@ -5,7 +5,6 @@ import com.google.firebase.database.Exclude;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,7 @@ public class Album implements Serializable {
     // Excluded from database
     private List<Track> tracks;
     private List<String> removeQueue;
+    private boolean locked;
 
     public Album(String id, String name, List<PhotoUrl> photoUrl, String artistId,
                  Map<String, String> artistsMap, AlbumType type, List<String> trackIds,
@@ -160,7 +160,7 @@ public class Album implements Serializable {
         removeQueue = new ArrayList<>();
         for (String trackId : trackIds) {
             Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-            if (track.getPreviewUrl() == null) {
+            if (track == null || track.getPreviewUrl() == null) {
                 removeQueue.add(trackId);
             }
             else {
@@ -187,5 +187,14 @@ public class Album implements Serializable {
 
     public void setArtistsMap(Map<String, String> artistsMap) {
         this.artistsMap = artistsMap;
+    }
+
+    @Exclude
+    public boolean isLocked() {
+        return locked;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
     }
 }

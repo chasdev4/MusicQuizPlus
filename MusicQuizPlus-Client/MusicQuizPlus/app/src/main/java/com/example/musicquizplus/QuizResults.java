@@ -227,7 +227,7 @@ public class QuizResults extends AppCompatActivity {
     }
 
     private void setupBadges() {
-        badgesAdapter = new ResultsBadgesAdapter(((Context) this), results.getBadges());
+        badgesAdapter = new ResultsBadgesAdapter(this, results.getBadges());
         badgesAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onChanged() {

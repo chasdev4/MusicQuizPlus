@@ -791,19 +791,27 @@ public class User implements Serializable {
         }
     }
 
-    public void initCollections(DatabaseReference db) {
-        initArtists(db, true);
+    public void initCollections(DatabaseReference db, FirebaseUser firebaseUser) {
+        initArtists(db, firebaseUser, true);
         initPlaylists(db);
         initHistory(db);
     }
 
-    public void initArtists(DatabaseReference db, boolean initCollections) {
+    public void initArtists(DatabaseReference db, FirebaseUser firebaseUser, boolean initCollections) {
         LogUtil log = new LogUtil(TAG, "initArtists");
         artists = new HashMap<>();
         for (Map.Entry<String, String> entry : artistIds.entrySet()) {
-            artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
-            if (initCollections) {
-                artists.get(entry.getKey()).initCollections(db, this);
+            Artist artist = FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class);
+            if (artist!=null) {
+                artists.put(entry.getKey(), FirebaseService.checkDatabase(db, "artists", entry.getValue(), Artist.class));
+                if (initCollections) {
+                    artists.get(entry.getKey()).initCollections(db, this);
+                }
+            }
+            else {
+                log.w(String.format("%s doesn't exist in database. Removing from id list...",entry.getValue()));
+                artistIds.remove(entry.getKey());
+                db.child("users").child(firebaseUser.getUid()).child("artistIds").child(entry.getKey()).removeValue();
             }
         }
         log.i("Artists retrieved.");
