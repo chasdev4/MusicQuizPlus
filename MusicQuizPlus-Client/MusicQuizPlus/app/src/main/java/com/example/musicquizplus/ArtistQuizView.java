@@ -364,10 +364,14 @@ public class ArtistQuizView extends AppCompatActivity {
                             artistNameTV.setText(artist.getName());
                             artistBioTV.setText(artist.getBio());
 
-                            Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
-                    if (artist.getExternalLinks() != null) {
-                        initializeExternalLinkButtons();
-                    }
+
+
+         
+                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                        if(artist.getExternalLinks() != null)
+                        {
+                            initializeExternalLinkButtons();
+                        }
                     }
                 });
 
