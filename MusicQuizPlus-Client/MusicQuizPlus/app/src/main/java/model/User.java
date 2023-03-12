@@ -109,6 +109,9 @@ public class User implements Serializable {
         artistIds = new HashMap<>();
         this.playlistIds = playlistIds;
         historyIds = new ArrayList<>();
+        history = new LinkedList<>();
+        artists = new HashMap<>();
+        playlists = new HashMap<>();
         badges = new HashMap<>();
         playlistHistory = new HashMap<>();
         artistHistory = new HashMap<>();
