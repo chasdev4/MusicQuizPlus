@@ -478,17 +478,20 @@ public class User implements Serializable {
     //#region Update History
     public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
         LinkedList<String> historyIds = new LinkedList<>();
+
         for (String id : this.historyIds) {
-            historyIds.add(id);
+            if(historyIds.size() == 50)
+            {
+                break;
+            }
+            historyIds.addLast(id);
         }
 
         for (int i = 0; i < tracks.size(); i++) {
             if (this.historyIds.contains(tracks.get(i).getId())) {
-                history.remove(tracks.get(i));
                 historyIds.remove(tracks.get(i).getId());
             }
-            if (history.size() == HISTORY_LIMIT) {
-                history.removeLast();
+            if (historyIds.size() == HISTORY_LIMIT) {
                 historyIds.removeLast();
             }
             history.addFirst(tracks.get(i));
@@ -818,9 +821,11 @@ public class User implements Serializable {
     public void initHistory(DatabaseReference db) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         history = new LinkedList<>();
+
         for (String trackId : historyIds) {
             history.add(FirebaseService.checkDatabase(db, "tracks", trackId, Track.class));
         }
+
         if (history.size() > 0) {
             log.i("History retrieved.");
         } else {
