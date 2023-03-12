@@ -31,7 +31,7 @@ public class UserService {
     private final static String TAG = "UserService.java";
 
     // Create a new user on both databases
-    public static void createUser(FirebaseUser firebaseUser, DatabaseReference db, Map<String, String> playlistIds) {
+    public static User createUser(FirebaseUser firebaseUser, DatabaseReference db, Map<String, String> playlistIds) {
         LogUtil log = new LogUtil(TAG, "createUser");
         List<ValidationObject> validationObjects = new ArrayList<>() {
             {
@@ -40,11 +40,12 @@ public class UserService {
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {
-            return;
+            return null;
         }
 
         User user = new User(firebaseUser, new Settings(), playlistIds);
-        db.child("users").child(firebaseUser.getUid()).setValue(user);
+        //db.child("users").child(firebaseUser.getUid()).setValue(user);
+        return user;
     }
 
 
