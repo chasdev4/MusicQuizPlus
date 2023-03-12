@@ -92,9 +92,8 @@ public class PlaylistFragment extends Fragment {
                 Adapter playlistAdapter = adapterView.getAdapter();
                 Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
                 Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
-                intent.putExtra("currentUser", user);
                 intent.putExtra("currentPlaylist", clickedOnPlaylist);
-                intent.putExtra("user", ((ParentOfFragments) getActivity()).getUser());
+                intent.putExtra("currentUser", ((ParentOfFragments) getActivity()).getUser());
                 startActivity(intent);
             }
         });
@@ -120,7 +119,12 @@ public class PlaylistFragment extends Fragment {
             public void run() {
                 if(firebaseUser != null)
                 {
-                    user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                    //user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                    while(user == null)
+                    {
+                        user = ((ParentOfFragments) getActivity()).getUser();
+                    }
+                    /*
                     latch.countDown();
 
                     try {
@@ -128,13 +132,14 @@ public class PlaylistFragment extends Fragment {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
+                     */
                 }
 
                 CountDownLatch cdl = new CountDownLatch(1);
 
                 if(firebaseUser != null && user.getPlaylistIds().size() != 0)
                 {
-
                     List<String> playlistIDs = new ArrayList<>(user.getPlaylistIds().values());
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
