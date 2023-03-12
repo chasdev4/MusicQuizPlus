@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -92,17 +93,26 @@ public class Artist implements Serializable {
     }
 
     //#region Accessors
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
+
     public List<PhotoUrl> getPhotoUrl() {
         return photoUrl;
     }
-    public String getBio() { return bio; }
+
+    public String getBio() {
+        return bio;
+    }
+
     public List<ExternalLink> getExternalLinks() {
         return externalLinks;
     }
+
     @Exclude
     public String getLatest() {
         String latest = null;
@@ -136,78 +146,155 @@ public class Artist implements Serializable {
         }
         return latest;
     }
-    public List<String> getSingleIds() { return singleIds; }
-    public List<String> getAlbumIds() { return albumIds; }
+
+    public List<String> getSingleIds() {
+        return singleIds;
+    }
+
+    public List<String> getAlbumIds() {
+        return albumIds;
+    }
+
     public List<String> getCompilationIds() {
         return compilationIds;
     }
+
     public int getFollowers() {
         return followers;
     }
+
     public boolean isFollowersKnown() {
         return followersKnown;
     }
-    public List<Integer> getSortedDecades() { return sortedDecades; }
-    public List<Integer> getDecades() { return decades; }
+
+    public List<Integer> getSortedDecades() {
+        return sortedDecades;
+    }
+
+    public List<Integer> getDecades() {
+        return decades;
+    }
+
     @Exclude
-    public List<Album> getSingles() { return singles; }
+    public List<Album> getSingles() {
+        return singles;
+    }
+
     @Exclude
-    public List<Album> getAlbums() { return albums; }
+    public List<Album> getAlbums() {
+        return albums;
+    }
+
     @Exclude
-    public List<Album> getCompilations() { return compilations; }
+    public List<Album> getCompilations() {
+        return compilations;
+    }
+
     @Exclude
     public List<Track> getTracks() {
         return getAllTracks();
     }
+
     @Exclude
     public List<String> getAllTrackIds() {
         List<String> trackIds = new ArrayList<>();
 
         if (singles != null) {
             for (Album album : singles) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    trackIds.addAll(album.getTrackIds());
+                if (album != null) {
+                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                        trackIds.addAll(album.getTrackIds());
+                    }
                 }
             }
         }
         if (albums != null) {
             for (Album album : albums) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    trackIds.addAll(album.getTrackIds());
+                if (album != null) {
+                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                        trackIds.addAll(album.getTrackIds());
+                    }
                 }
             }
         }
         if (compilations != null) {
             for (Album album : compilations) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                    trackIds.addAll(album.getTrackIds());
+                if (album != null) {
+                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                        trackIds.addAll(album.getTrackIds());
+                    }
                 }
             }
         }
 
         return trackIds;
     }
+
+    @Exclude
+    public int getTrackPoolSize() {
+        int count = 0;
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (singles != null) {
+            for (Album album : singles) {
+                if (album != null && album.getTracks() != null) {
+                    count += album.getTracks().size();
+                }
+            }
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (albums != null) {
+            for (Album album : albums) {
+                if (album != null && album.getTracks() != null) {
+                    count += album.getTracks().size();
+                }
+            }
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (compilations != null) {
+            for (Album album : compilations) {
+                if (album != null && album.getTracks() != null) {
+                    count += album.getTracks().size();
+                }
+            }
+        }
+
+        return count;
+    }
+
     @Exclude
     private List<Track> getAllTracks() {
         List<Track> tracks = new ArrayList<>();
 
         if (singles != null) {
             for (Album album : singles) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                if (album.isTrackIdsKnown() && album.getTracks() != null) {
                     tracks.addAll(album.getTracks());
                 }
             }
         }
         if (albums != null) {
             for (Album album : albums) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                if (album.isTrackIdsKnown() && album.getTracks() != null && album.getTracks().size() > 0) {
                     tracks.addAll(album.getTracks());
                 }
             }
         }
         if (compilations != null) {
             for (Album album : compilations) {
-                if (album.isTrackIdsKnown() || album.getTracks() != null) {
+                if (album.isTrackIdsKnown() && album.getTracks() != null && album.getTracks().size() > 0) {
                     tracks.addAll(album.getTracks());
                 }
             }
@@ -215,6 +302,7 @@ public class Artist implements Serializable {
 
         return tracks;
     }
+
     @Exclude
     public List<String> getFeaturedArtists(List<Track> trackList) {
         List<String> featuredArtistNames = new ArrayList<>();
@@ -231,6 +319,7 @@ public class Artist implements Serializable {
 
         return featuredArtistNames;
     }
+
     @Exclude
     public int getAlbumTrackCount(String albumId) {
         for (Album album : albums) {
@@ -250,6 +339,7 @@ public class Artist implements Serializable {
         }
         return -1;
     }
+
     @Exclude
     public int getAveragePopularity(List<Track> tracks) {
         int averagePopularity = 0;
@@ -260,6 +350,7 @@ public class Artist implements Serializable {
 
         return (tracks.size() == 0) ? 0 : averagePopularity / tracks.size();
     }
+
     @Exclude
     public Album getAlbum(String albumId) {
         for (Album a : albums) {
@@ -285,11 +376,9 @@ public class Artist implements Serializable {
         Random rnd = new Random();
         if (compilationIds.size() > 0) {
             return compilationIds.get(rnd.nextInt(compilationIds.size()));
-        }
-        else if (albumIds.size() > 0) {
+        } else if (albumIds.size() > 0) {
             return albumIds.get(rnd.nextInt(albumIds.size()));
-        }
-        else if (singleIds.size() > 0) {
+        } else if (singleIds.size() > 0) {
             return singleIds.get(rnd.nextInt(singleIds.size()));
         }
 
@@ -298,16 +387,37 @@ public class Artist implements Serializable {
     //#endregion
 
     //#region Mutators
-    public void setFollowers(int followers) { this.followers = followers; }
+    public void setFollowers(int followers) {
+        this.followers = followers;
+    }
+
     public void setFollowersKnown(boolean followersKnown) {
         this.followersKnown = followersKnown;
     }
-    public void setAlbumIds(List<String> albumIds) { this.albumIds = albumIds; }
-    public void setSingleIds(List<String> singleIds) { this.singleIds = singleIds; }
-    public void setCompilationIds(List<String> compilationIds) { this.compilationIds = compilationIds; }
-    public void setAlbums(List<Album> albums) { this.albums = albums; }
-    public void setSingles(List<Album> singles) { this.singles = singles; }
-    public void setCompilations(List<Album> compilations) { this.compilations = compilations; }
+
+    public void setAlbumIds(List<String> albumIds) {
+        this.albumIds = albumIds;
+    }
+
+    public void setSingleIds(List<String> singleIds) {
+        this.singleIds = singleIds;
+    }
+
+    public void setCompilationIds(List<String> compilationIds) {
+        this.compilationIds = compilationIds;
+    }
+
+    public void setAlbums(List<Album> albums) {
+        this.albums = albums;
+    }
+
+    public void setSingles(List<Album> singles) {
+        this.singles = singles;
+    }
+
+    public void setCompilations(List<Album> compilations) {
+        this.compilations = compilations;
+    }
     //#endregion
 
     //#region Data Extraction
@@ -371,35 +481,34 @@ public class Artist implements Serializable {
         decadesMap = new HashMap<>();
 
 
-
         // Save compilations from artist overview
         jsonArray = discography.getAsJsonObject("compilations")
                 .getAsJsonArray("items");
         addReleases(jsonArray);
-            jsonArray = retrieveArtistAlbums(AlbumType.ALBUM, spotifyService);
-            addReleases(jsonArray);
-            jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
-            addReleases(jsonArray);
+        jsonArray = retrieveArtistAlbums(AlbumType.ALBUM, spotifyService);
+        addReleases(jsonArray);
+        jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
+        addReleases(jsonArray);
 
-            latest = getLatest();
+        latest = getLatest();
 
-            decades = new ArrayList<>();
-            for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
-                if (decades.size() == 0) {
-                    decades.add(d.getKey());
-                } else {
-                    int index = decades.size();
-                    for (int i = 0; i < decades.size(); i++) {
-                        if (d.getValue() < decadesMap.get(decades.get(i))) {
-                            index = decades.indexOf(decades.get(i));
-                            break;
-                        }
+        decades = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
+            if (decades.size() == 0) {
+                decades.add(d.getKey());
+            } else {
+                int index = decades.size();
+                for (int i = 0; i < decades.size(); i++) {
+                    if (d.getValue() < decadesMap.get(decades.get(i))) {
+                        index = decades.indexOf(decades.get(i));
+                        break;
                     }
-                    decades.add(decades.size() - index, d.getKey());
                 }
+                decades.add(decades.size() - index, d.getKey());
             }
-
         }
+
+    }
 
     private void addReleases(JsonArray jsonArray) {
         for (int i = 0; i < jsonArray.size(); i++) {
@@ -438,9 +547,9 @@ public class Artist implements Serializable {
 
                 }
             }
-    }
+        }
 
-}
+    }
 
     private JsonArray retrieveArtistAlbums(AlbumType albumType, SpotifyService spotifyService) {
         return spotifyService.artistAlbums(id, albumType);
@@ -526,20 +635,20 @@ public class Artist implements Serializable {
         isInitializing = false;
     }
 
-    public void initTracks(DatabaseReference db) {
+    public void initTracks(DatabaseReference db, User user) {
         LogUtil log = new LogUtil(TAG, "initTracks");
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        List<Album> albumsToInit = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(1);
         executorService.execute(new Runnable() {
             @Override
             public void run() {
                 List<Album> removeQueue = new ArrayList<>();
                 for (Album single : singles) {
                     if (single != null) {
-                        if (single.isTrackIdsKnown()) {
-                            single.initCollection(db);
+                        if (single.isTrackIdsKnown() && user.getAlbumIds().containsValue(single.getId())) {
+                            albumsToInit.add(single);
                         }
-                    }
-                    else {
+                    } else {
                         removeQueue.add(single);
                     }
                 }
@@ -556,11 +665,10 @@ public class Artist implements Serializable {
                 List<Album> removeQueue = new ArrayList<>();
                 for (Album album : albums) {
                     if (album != null) {
-                        if (album.isTrackIdsKnown()) {
-                            album.initCollection(db);
+                        if (album.isTrackIdsKnown() && user.getAlbumIds().containsValue(album.getId())) {
+                            albumsToInit.add(album);
                         }
-                    }
-                    else {
+                    } else {
                         removeQueue.add(album);
                     }
                 }
@@ -577,11 +685,10 @@ public class Artist implements Serializable {
                 List<Album> removeQueue = new ArrayList<>();
                 for (Album compilation : compilations) {
                     if (compilation != null) {
-                        if (compilation.isTrackIdsKnown()) {
-                            compilation.initCollection(db);
+                        if (compilation.isTrackIdsKnown() && user.getAlbumIds().containsValue(compilation.getId())) {
+                            albumsToInit.add(compilation);
                         }
-                    }
-                    else {
+                    } else {
                         removeQueue.add(compilation);
                     }
                 }
@@ -598,6 +705,14 @@ public class Artist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (Album album : albumsToInit) {
+                    album.initCollection(db);
+                }
+            }
+        }).start();
 
     }
 

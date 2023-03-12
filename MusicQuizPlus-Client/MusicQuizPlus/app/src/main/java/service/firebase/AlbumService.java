@@ -56,16 +56,16 @@ public class AlbumService {
 
         // Add the albumId to the user
         String albumKey = db.child("users").child(firebaseUser.getUid()).child("albumIds").push().getKey();
-        boolean result = !user.getAlbumIds().containsValue(album.getId());
+        final boolean[] result = {!user.getAlbumIds().containsValue(album.getId())};
 
         // If the album wasn't added, return
-        if (!result) {
+        if (!result[0]) {
             log.w(String.format("%s already exists in albumIds list.", album.getId()));
             return;
         }
 
         // Save the albumId to the db user
-        updates.put("users/"+firebaseUser.getUid()+"/albumsIds/"+albumKey, album.getId());
+        updates.put("users/" + firebaseUser.getUid() + "/albumsIds/" + albumKey, album.getId());
 //        db.child("users")
 //                .child(firebaseUser.getUid())
 //                .child("albumIds")
@@ -74,17 +74,47 @@ public class AlbumService {
 
         // Add the artistId to the user
         String artistId = album.getArtistId();
-        String aritstKey = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-        result = !user.getArtistIds().containsValue(album.getArtistId());
+        String artistKey = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+        result[0] = !user.getArtistIds().containsValue(album.getArtistId());
 
         // If the artist was added, add it to the db user
-        if (result) {
-            updates.put("users/"+firebaseUser.getUid()+"/artistIds/"+aritstKey, album.getArtistId());
+        if (result[0]) {
+//            CountDownLatch cdl = new CountDownLatch(1);
+//            final boolean[] tempResult = {false};
+//            db.child("users")
+//                    .child(firebaseUser.getUid())
+//                    .child("artistIds").addValueEventListener(new ValueEventListener() {
+//                        @Override
+//                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+//                            for (DataSnapshot ds : snapshot.getChildren()) {
+//                                if (ds.getValue().toString() == artistId) {
+//                                    tempResult[0] = false;
+//                                }
+//                                cdl.countDown();
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onCancelled(@NonNull DatabaseError error) {
+//
+//                        }
+//                    });
+//            try {
+//                cdl.await();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            result[0] = tempResult[0];
+
+//            if (!result[0]) {
+
+                updates.put("users/" + firebaseUser.getUid() + "/artistIds/" + artistKey, album.getArtistId());
 //            db.child("users")
 //                    .child(firebaseUser.getUid())
 //                    .child("artistIds")
 //                    .child(key)
 //                    .setValue(artistId);
+//            }
         } else {
             log.i(String.format("%s already exists in the artistIds list.", artistId));
         }
@@ -110,7 +140,7 @@ public class AlbumService {
 
         if (album1 == null) {
             //TODO: Inform the user? Error occurs when hearting directly from search view
-            updates.remove("users/"+firebaseUser.getUid()+"/albumsIds/"+albumKey);
+            updates.remove("users/" + firebaseUser.getUid() + "/albumsIds/" + albumKey);
             log.e("Album can't be saved because it isn't saved to artist.");
             return;
         }
@@ -126,7 +156,7 @@ public class AlbumService {
         if (!album1.isFollowersKnown()) {
             updates.put("albums/" + album.getId() + "/followersKnown", true);
         }
-        if (result) {
+        if (result[0]) {
             updates.put("artists/" + artistId + "/followers", ServerValue.increment(1));
             updates.put("artists/" + artistId + "/followersKnown", true);
         }
@@ -134,12 +164,12 @@ public class AlbumService {
         user.getArtists().put(album.getArtistId(), artist);
         db.updateChildren(updates);
         user.addAlbumId(albumKey, album.getId());
-        if (result) {
-            user.addArtistId(aritstKey, artistId);
+        if (result[0]) {
+            user.addArtistId(artistKey, artistId);
             log.i(String.format("%s added to the artistIds list.", artistId));
         }
         album.setLocked(false);
-            }
+    }
 
 
     private static Artist saveArtistOverview(String artistId, Album album, DatabaseReference db, SpotifyService spotifyService) {
@@ -184,7 +214,7 @@ public class AlbumService {
             String[] idParts = jsonTrack.get("uri").getAsString().split(":");
             trackIds += idParts[2] + "%2C";
         }
-        trackIds = trackIds.substring(0, trackIds.length()-3);
+        trackIds = trackIds.substring(0, trackIds.length() - 3);
         Map<String, String> previewUrls = new HashMap<>();
         JsonArray tracks = spotifyService.getTracks(trackIds);
         for (int i = 0; i < tracks.size(); i++) {
@@ -259,7 +289,7 @@ public class AlbumService {
         Map<String, Object> updates = new HashMap<>();
 
         // Remove the album from the database user
-        updates.put("users/"+firebaseUser.getUid()+"/albumIds/"+key, null);
+        updates.put("users/" + firebaseUser.getUid() + "/albumIds/" + key, null);
 //        db.child("users").child(firebaseUser.getUid()).child("albumIds").child(key).removeValue();
         log.i(String.format("\"%s : %s\" removed from users/%s/albumIds", key, album.getId(), firebaseUser.getUid()));
 
@@ -271,7 +301,7 @@ public class AlbumService {
                 if (track != null) {
                     // Check to see if it's safe to delete, the track may belong to a saved playlist
                     if (track.isAlbumKnown() && track.getPlaylistIds() == null) {
-                        updates.put("tracks/"+trackId, null);
+                        updates.put("tracks/" + trackId, null);
 //                        db.child("tracks").child(trackId).removeValue();
 //                        log.i(String.format("%s removed from database child /tracks", trackId));
                     } else {
@@ -321,7 +351,7 @@ public class AlbumService {
             user.getArtists().remove(album.getArtistId());
 
             // Remove the artist from the database user
-            updates.put("users/"+firebaseUser.getUid()+"/artistIds/"+key, null);
+            updates.put("users/" + firebaseUser.getUid() + "/artistIds/" + key, null);
 //            db.child("users").child(firebaseUser.getUid()).child("artistIds").child(key).removeValue();
 //            log.i(String.format("\"%s : %s\" removed from users/%s/artistIds", key, album.getId(), firebaseUser.getUid()));
             updates.put("albums/" + album.getId() + "/followers", ServerValue.increment(-1));
@@ -361,25 +391,25 @@ public class AlbumService {
         if (artist.getFollowers() <= 1) {
             if (artist.getAlbumIds().size() > 0) {
                 for (String albumId : artist.getAlbumIds()) {
-                    updates.put("albums/"+albumId, null);
+                    updates.put("albums/" + albumId, null);
 //                    db.child("albums").child(albumId).removeValue();
                 }
             }
             if (artist.getSingleIds().size() > 0) {
                 for (String albumId : artist.getSingleIds()) {
-                    updates.put("albums/"+albumId, null);
+                    updates.put("albums/" + albumId, null);
 
 //                    db.child("albums").child(albumId).removeValue();
                 }
             }
             if (artist.getCompilationIds().size() > 0) {
                 for (String albumId : artist.getCompilationIds()) {
-                    updates.put("albums/"+albumId, null);
+                    updates.put("albums/" + albumId, null);
 //                    db.child("albums").child(albumId).removeValue();
                 }
             }
 
-            updates.put("artists/"+artist.getId(), null);
+            updates.put("artists/" + artist.getId(), null);
 //            db.child("artists").child(artist.getId()).removeValue();
         } else {
             updates.put("artists/" + artist.getId() + "/followers", ServerValue.increment(-1));

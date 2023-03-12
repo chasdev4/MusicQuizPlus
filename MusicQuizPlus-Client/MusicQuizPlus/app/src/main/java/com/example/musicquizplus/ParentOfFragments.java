@@ -152,9 +152,11 @@ public class ParentOfFragments extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(view.getContext(), SearchActivity.class);
-                intent.putExtra("user", user);
-                view.getContext().startActivity(intent);
+                if (user != null) {
+                    Intent intent = new Intent(view.getContext(), SearchActivity.class);
+                    intent.putExtra("user", user);
+                    view.getContext().startActivity(intent);
+                }
             }
         });
 

@@ -105,6 +105,7 @@ public class ArtistQuizView extends AppCompatActivity {
     HistoryAdapter compilationAdapter;
     SpotifyService spotifyService;
     private Source source;
+    private int trackPoolSize;
 
 
     @Override
@@ -332,207 +333,210 @@ public class ArtistQuizView extends AppCompatActivity {
                     signUpPopUp.createAndShow();
                 }
             }
-            });
-        }
+        });
+    }
 
-        @Override
-        protected void onStart () {
-            super.onStart();
-            SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
-            CountDownLatch cdl = new CountDownLatch(2);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
+        CountDownLatch cdl = new CountDownLatch(2);
 
-            new Thread(new Runnable() {
-                public void run() {
+        new Thread(new Runnable() {
+            public void run() {
 
-                    if (source != Source.SEARCH) {
-                        artist.initCollections(reference, user);
-                        cdl.countDown();
-                        artist.initTracks(reference);
-                        cdl.countDown();
+                if (source != Source.SEARCH) {
+                    artist.initCollections(reference, user);
+                    cdl.countDown();
+                    artist.initTracks(reference, user);
+                    cdl.countDown();
 
-                        try {
-                            cdl.await();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        artist = spotifyService.artistOverview(artist.getId());
+                    try {
+                        cdl.await();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            artistNameTV.setText(artist.getName());
-                            artistBioTV.setText(artist.getBio());
+                } else {
+                    artist = spotifyService.artistOverview(artist.getId());
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        artistNameTV.setText(artist.getName());
+                        artistBioTV.setText(artist.getBio());
 
 
-
-         
                         Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
-                        if(artist.getExternalLinks() != null)
-                        {
+                        if (artist.getExternalLinks() != null) {
                             initializeExternalLinkButtons();
                         }
                     }
                 });
 
 
-
-                if(artist.getLatest() != null)
-                {
-                        reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                latest = (Album) snapshot.getValue(Album.class);
-                                if (latest != null) {
-                                    Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
-                                    latestTitle.setText(latest.getName());
-                                    latestType.setText(latest.getType().toString());
-                                    latestYear.setText(latest.getYear());
-                                    latestMiddleDot.setText(getString(R.string.middle_dot));
-                                } else {
-                                    latestText.setVisibility(View.GONE);
-                                    latestRelease.setVisibility(View.GONE);
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError error) {
-
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                if (artist.getLatest() != null) {
+                    reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            latest = (Album) snapshot.getValue(Album.class);
+                            if (latest != null) {
+                                Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
+                                latestTitle.setText(latest.getName());
+                                latestType.setText(latest.getType().toString());
+                                latestYear.setText(latest.getYear());
+                                latestMiddleDot.setText(getString(R.string.middle_dot));
+                            } else {
                                 latestText.setVisibility(View.GONE);
                                 latestRelease.setVisibility(View.GONE);
                             }
-                        });
-                    }
+                        }
 
-                    LogUtil log = new LogUtil("ArtistQuizView", "onStart");
-                    ExecutorService executorService = Executors.newFixedThreadPool(3);
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
 
-                    if (artist.getSingles().size() != 0) {
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), getBaseContext(), 2);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        singlesRV.setAdapter(singleAdapter);
-                                        singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                singlesRV.setVisibility(View.GONE);
-                                singlesTextView.setVisibility(View.GONE);
-                            }
-                        });
-                    }
-
-                    if (artist.getCompilations().size() != 0) {
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), getBaseContext(), 2);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        compilationsRV.setAdapter(compilationAdapter);
-                                        compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                compilationsRV.setVisibility(View.GONE);
-                                compilationsTextView.setVisibility(View.GONE);
-                            }
-                        });
-                    }
-
-                    if (artist.getAlbums().size() != 0) {
-                        executorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), getBaseContext(), 2);
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        albumsRV.setAdapter(albumAdapter);
-                                        albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                albumsRV.setVisibility(View.GONE);
-                                albumsTextView.setVisibility(View.GONE);
-                            }
-                        });
-                    }
-
+                        }
+                    });
+                } else {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            aqvProgressBar.setVisibility(View.GONE);
-                            entireAQV.setVisibility(View.VISIBLE);
+                            latestText.setVisibility(View.GONE);
+                            latestRelease.setVisibility(View.GONE);
+                        }
+                    });
+                }
+
+                LogUtil log = new LogUtil("ArtistQuizView", "onStart");
+                ExecutorService executorService = Executors.newFixedThreadPool(3);
+
+                if (artist.getSingles().size() != 0) {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    singlesRV.setAdapter(singleAdapter);
+                                    singlesRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            singlesRV.setVisibility(View.GONE);
+                            singlesTextView.setVisibility(View.GONE);
+                        }
+                    });
+                }
+
+                if (artist.getCompilations().size() != 0) {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    compilationsRV.setAdapter(compilationAdapter);
+                                    compilationsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            compilationsRV.setVisibility(View.GONE);
+                            compilationsTextView.setVisibility(View.GONE);
+                        }
+                    });
+                }
+
+                if (artist.getAlbums().size() != 0) {
+                    executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), getBaseContext(), 2);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    albumsRV.setAdapter(albumAdapter);
+                                    albumsRV.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            albumsRV.setVisibility(View.GONE);
+                            albumsTextView.setVisibility(View.GONE);
+                        }
+                    });
+                }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        aqvProgressBar.setVisibility(View.GONE);
+                        entireAQV.setVisibility(View.VISIBLE);
+                    }
+                });
+
+                executorService.shutdown();
+
+                try {
+                    executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+                } catch (InterruptedException e) {
+                    log.e(e.getMessage());
+                }
+            }
+        }).start();
+
+        Context context = this;
+
+        startQuiz.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (source == Source.SEARCH) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
+                            toast.show();
                         }
                     });
 
-                    executorService.shutdown();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Artist artist = initArtist();
 
-                    try {
-                        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-                    } catch (InterruptedException e) {
-                        log.e(e.getMessage());
-                    }
-                }
-            }).start();
+                            int size = artist.getTrackPoolSize();
 
-            Context context = this;
-            startQuiz.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (source == Source.SEARCH && artist.getAllTrackIds().size() == 0 && !artist.isInitializing()) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                CountDownLatch countDownLatch = new CountDownLatch(1);
-                                artist.initCollections(reference, user);
-                                countDownLatch.countDown();
-                                try {
-                                    countDownLatch.await();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                                countDownLatch = new CountDownLatch(1);
-                                artist.initTracks(reference);
-                                countDownLatch.countDown();
-                                try {
-                                    countDownLatch.await();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+                            if (size >= 15) {
+                                goToQuiz(context);
+                            } else {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
+                                        toast.show();
+                                    }
+                                });
                             }
-                        }).start();
+                        }
+                    }).start();
 
-                    }
+                } else {
                     if (artist.getAllTrackIds().size() < 15) {
-
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -541,49 +545,72 @@ public class ArtistQuizView extends AppCompatActivity {
                             }
                         });
                     } else if (!artist.isInitializing()) {
-                        Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                        intent.putExtra("currentArtist", artist);
-                        intent.putExtra("currentUser", user);
-                        startActivity(intent);
+                        goToQuiz(view.getContext());
+                    }
+                }
+            }
+        });
+    }
+
+    private Artist initArtist() {
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        artist.initCollections(reference, user);
+        countDownLatch.countDown();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        countDownLatch = new CountDownLatch(1);
+        artist.initTracks(reference, user);
+        countDownLatch.countDown();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Artist artist = this.artist;
+        return artist;
+    }
+
+    private void goToQuiz(Context context) {
+        Intent intent = new Intent(context, ActiveQuiz.class);
+        intent.putExtra("currentArtist", artist);
+        intent.putExtra("currentUser", user);
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void initializeExternalLinkButtons() {
+        for (ExternalLink link : artist.getExternalLinks()) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (link.getType() == ExternalLinkType.FACEBOOK) {
+                        facebook.setVisibility(View.VISIBLE);
+                        facebookURL = link.getUrl();
+                    } else if (link.getType() == ExternalLinkType.INSTAGRAM) {
+                        instagram.setVisibility(View.VISIBLE);
+                        instagramURL = link.getUrl();
+                    } else if (link.getType() == ExternalLinkType.TWITTER) {
+                        twitter.setVisibility(View.VISIBLE);
+                        twitterURL = link.getUrl();
+                    } else if (link.getType() == ExternalLinkType.WIKIPEDIA) {
+                        wikipedia.setVisibility(View.VISIBLE);
+                        wikipediaURL = link.getUrl();
                     }
                 }
             });
 
         }
-
-        @Override
-        protected void onDestroy () {
-            super.onDestroy();
-        }
-
-        private void initializeExternalLinkButtons ()
-        {
-            for (ExternalLink link : artist.getExternalLinks()) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (link.getType() == ExternalLinkType.FACEBOOK) {
-                            facebook.setVisibility(View.VISIBLE);
-                            facebookURL = link.getUrl();
-                        } else if (link.getType() == ExternalLinkType.INSTAGRAM) {
-                            instagram.setVisibility(View.VISIBLE);
-                            instagramURL = link.getUrl();
-                        } else if (link.getType() == ExternalLinkType.TWITTER) {
-                            twitter.setVisibility(View.VISIBLE);
-                            twitterURL = link.getUrl();
-                        } else if (link.getType() == ExternalLinkType.WIKIPEDIA) {
-                            wikipedia.setVisibility(View.VISIBLE);
-                            wikipediaURL = link.getUrl();
-                        }
-                    }
-                });
-
-            }
-        }
-
-        public String getArtistIdAsSpotifyUrl (String artistId)
-        {
-            String id = artistId.substring(15);
-            return String.format(Locale.ENGLISH, "https://open.spotify.com/artist/%s", id);
-        }
     }
+
+    public String getArtistIdAsSpotifyUrl(String artistId) {
+        String id = artistId.substring(15);
+        return String.format(Locale.ENGLISH, "https://open.spotify.com/artist/%s", id);
+    }
+}
