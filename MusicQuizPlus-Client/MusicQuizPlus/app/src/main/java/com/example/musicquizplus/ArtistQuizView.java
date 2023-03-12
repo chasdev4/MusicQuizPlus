@@ -365,14 +365,16 @@ public class ArtistQuizView extends AppCompatActivity {
                             artistBioTV.setText(artist.getBio());
 
                             Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
-                        }
-                    });
-
                     if (artist.getExternalLinks() != null) {
                         initializeExternalLinkButtons();
                     }
+                    }
+                });
 
-                    if (artist.getLatest() != null) {
+
+
+                if(artist.getLatest() != null)
+                {
                         reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
