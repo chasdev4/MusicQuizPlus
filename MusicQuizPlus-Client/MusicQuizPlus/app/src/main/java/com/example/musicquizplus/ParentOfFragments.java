@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -196,8 +197,6 @@ public class ParentOfFragments extends AppCompatActivity {
                 tabLayout.getTabAt(position).select();
             }
         });
-
-
     }
 
     @Override
@@ -225,8 +224,24 @@ public class ParentOfFragments extends AppCompatActivity {
                     user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
                     if(user == null)
                     {
+                        CountDownLatch cdl = new CountDownLatch(1);
                         defaultPlaylistIds = PlaylistService.getDefaultPlaylistIds(db);
-                        UserService.createUser(firebaseUser, db, defaultPlaylistIds);
+                        user = UserService.createUser(firebaseUser, db, defaultPlaylistIds);
+
+                        db.child("users").child(firebaseUser.getUid()).setValue(user).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void unused) {
+                                cdl.countDown();
+                            }
+                        });
+
+                        try {
+                            cdl.await();
+                        }
+                        catch (InterruptedException e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
                     user.setPhotoUrl(firebaseUser.getPhotoUrl().toString());
                     user.initArtists(db, false);
