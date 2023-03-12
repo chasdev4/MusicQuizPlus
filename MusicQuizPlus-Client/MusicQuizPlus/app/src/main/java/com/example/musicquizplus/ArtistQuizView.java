@@ -395,13 +395,14 @@ public class ArtistQuizView extends AppCompatActivity {
                     @Override
                     public void run() {
                         Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                        if(artist.getExternalLinks() != null)
+                        {
+                            initializeExternalLinkButtons();
+                        }
                     }
                 });
 
-                if(artist.getExternalLinks() != null)
-                {
-                    initializeExternalLinkButtons();
-                }
+
 
                 if(artist.getLatest() != null)
                 {
