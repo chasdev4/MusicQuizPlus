@@ -488,12 +488,11 @@ public class User implements Serializable {
                 historyIds.remove(tracks.get(i).getId());
             }
             if (history.size() == HISTORY_LIMIT) {
-                history.removeFirst();
-                historyIds.removeFirst();
+                history.removeLast();
+                historyIds.removeLast();
             }
-            history.addLast(tracks.get(i));
-            historyIds.addLast(tracks.get(i).getId());
-
+            history.addFirst(tracks.get(i));
+            historyIds.addFirst(tracks.get(i).getId());
         }
 
         this.historyIds = new ArrayList<>();
