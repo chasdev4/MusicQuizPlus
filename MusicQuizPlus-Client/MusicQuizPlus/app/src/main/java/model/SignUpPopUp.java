@@ -35,7 +35,7 @@ public class SignUpPopUp {
 
         // Set title, icon, can not cancel properties.
         alertDialogBuilder.setTitle("Sign Up for MusicQuizPlus");
-        alertDialogBuilder.setIcon(R.drawable.magicstar);
+        alertDialogBuilder.setIcon(R.mipmap.logo_with_gradient);
         alertDialogBuilder.setCancelable(false);
 
         // Init popup dialog view and it's ui controls.
