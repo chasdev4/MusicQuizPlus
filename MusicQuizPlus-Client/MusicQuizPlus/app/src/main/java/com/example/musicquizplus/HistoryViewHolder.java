@@ -68,7 +68,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 aqvAlbumTitle = itemView.findViewById(R.id.aqvTrackTitle);
                 aqvAlbumType = itemView.findViewById(R.id.aqvTrackAlbum);
                 aqvAlbumYear = itemView.findViewById(R.id.aqvTrackYear);
-                aqvHeartAlbum = itemView.findViewById(R.id.aqvHeartToggleButton);
+                aqvHeartAlbum = itemView.findViewById(R.id.album_heart);
         }
         view  = itemView;
     }

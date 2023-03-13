@@ -68,4 +68,6 @@
     <string name="nothing_to_show_here">Nothing to show here...</string>
     <string name="score_0">Score: 0</string>
     <string name="mulitplier_1_0x">Mulitplier: 1.0x</string>
+    <string name="remove_button_label">Remove</string>
+    <string name="save_button_label">Save</string>
 </resources>

@@ -32,17 +32,25 @@
 
     <TextView
         android:id="@+id/itemTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="-18dp"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+
         android:fontFamily="@font/concert_one"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/sample_song_title"
         android:paddingLeft="10dp"
         android:textColor="@color/mqWhite"
         android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toEndOf="@+id/image"
+        app:layout_constraintEnd_toStartOf="@id/album_heart"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -57,16 +65,22 @@
         android:layout_marginStart="2dp"
         app:layout_constraintStart_toEndOf="@+id/image"
         app:layout_constraintTop_toBottomOf="@+id/itemTitle" />
-
     <ToggleButton
-        android:id="@+id/heart_toggle_button"
+        android:id="@+id/album_heart"
         android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:backgroundTint="@color/mqPurple2"
-        android:button="@drawable/toggle_heart"
-        android:padding="8dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/toggle_heart"
+        android:background="@color/mqPurple2"
+        android:gravity="center"
+        android:textOn="@string/remove_button_label"
+        android:textOff="@string/save_button_label"
+        android:textSize="12dp"
+        android:paddingHorizontal="5dp"
+        android:paddingVertical="13dp"
+        android:textColor="@color/mqWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

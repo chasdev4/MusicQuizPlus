@@ -24,7 +24,7 @@ public class SearchViewHolder extends RecyclerView.ViewHolder {
         title = itemView.findViewById(R.id.itemTitle);
         subtitle = itemView.findViewById(R.id.itemSubtitle);
         image = itemView.findViewById(R.id.image);
-        toggleButton = itemView.findViewById(R.id.heart_toggle_button);
+        toggleButton = itemView.findViewById(R.id.album_heart);
     }
 
     public void setChecked(boolean checked) {

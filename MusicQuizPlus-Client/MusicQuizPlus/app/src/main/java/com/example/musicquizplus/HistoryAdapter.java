@@ -226,11 +226,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                        if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                            AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
-                                        } else {
-                                            AlbumService.unheart(user, firebaseUser, reference, album);
-                                        }
+                                    if (viewHolder.aqvHeartAlbum.isChecked()) {
+                                        AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                    } else {
+                                        AlbumService.unheart(user, firebaseUser, reference, album);
+                                    }
                                 }
                             }).start();
 

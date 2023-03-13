@@ -22,7 +22,7 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
         this.title = itemView.findViewById(R.id.itemTitle);
         this.subtitle = itemView.findViewById(R.id.itemSubtitle);
         this.image = itemView.findViewById(R.id.image);
-        this.toggleButton = itemView.findViewById(R.id.heart_toggle_button);
+        this.toggleButton = itemView.findViewById(R.id.album_heart);
     }
 
     public void setTitle(String title) {

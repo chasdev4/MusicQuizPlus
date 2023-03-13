@@ -127,7 +127,7 @@ public class ArtistQuizView extends AppCompatActivity {
         latestType = findViewById(R.id.aqvTrackAlbum);
         latestYear = findViewById(R.id.aqvTrackYear);
         latestMiddleDot = findViewById(R.id.middleDotAfterAlbum);
-        heartLatest = findViewById(R.id.aqvHeartToggleButton);
+        heartLatest = findViewById(R.id.album_heart);
         startQuiz = findViewById(R.id.aqvStartButton);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
@@ -494,15 +494,14 @@ public class ArtistQuizView extends AppCompatActivity {
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                });
                 if (source == Source.SEARCH) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
-                            toast.show();
-                        }
-                    });
 
                     new Thread(new Runnable() {
                         @Override
@@ -526,7 +525,17 @@ public class ArtistQuizView extends AppCompatActivity {
                     }).start();
 
                 } else {
-                    if (artist.getAllTrackIds().size() < 15) {
+                    new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    Artist artist = initArtist();
+                    int size = artist.getTrackPoolSize();
+                    if (size >= 15 && !artist.isInitializing()) {
+                        goToQuiz(view.getContext());
+                    }
+                    else{
+
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -534,9 +543,9 @@ public class ArtistQuizView extends AppCompatActivity {
                                 toast.show();
                             }
                         });
-                    } else if (!artist.isInitializing()) {
-                        goToQuiz(view.getContext());
                     }
+                }
+            }).start();
                 }
             }
         });
