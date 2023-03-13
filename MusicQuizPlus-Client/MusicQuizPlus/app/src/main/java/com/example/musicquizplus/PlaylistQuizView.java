@@ -56,7 +56,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-    ImageButton backButton;
     ImageButton spotifyButton;
     ImageButton shareButton;
     boolean isSpotifyInstalled;
@@ -81,7 +80,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         listView.setVisibility(View.INVISIBLE);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
-        backButton = findViewById(R.id.pqvBackButton);
         spotifyButton = findViewById(R.id.pqvSpotifyButton);
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
@@ -125,12 +123,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
 
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
         spotifyButton.setOnClickListener(new View.OnClickListener() {

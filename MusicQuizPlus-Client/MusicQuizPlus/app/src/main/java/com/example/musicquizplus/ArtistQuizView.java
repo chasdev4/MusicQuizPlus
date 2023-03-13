@@ -63,7 +63,6 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView artistNameTV;
     TextView artistBioTV;
     ImageView artistPreviewImage;
-    ImageButton backButton;
     ImageButton spotify;
     ImageButton facebook;
     ImageButton twitter;
@@ -116,7 +115,6 @@ public class ArtistQuizView extends AppCompatActivity {
         artistNameTV = findViewById(R.id.aqvArtistName);
         artistBioTV = findViewById(R.id.aqvArtistDescription);
         artistPreviewImage = findViewById(R.id.aqvPreviewImage);
-        backButton = findViewById(R.id.aqvBackButton);
         spotify = findViewById(R.id.aqvSpotify);
         facebook = findViewById(R.id.aqvFacebook);
         twitter = findViewById(R.id.aqvTwitter);
@@ -152,14 +150,6 @@ public class ArtistQuizView extends AppCompatActivity {
             user = (User) extras.getSerializable("currentUser");
         }
         Context context = this;
-
-
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
 
         spotify.setOnClickListener(new View.OnClickListener() {
             @Override

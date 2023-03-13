@@ -33,7 +33,6 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView artists;
     private TextView badgeCount;
     private TextView artistCount;
-    private ImageButton backButton;
     private ImageButton backToTop;
     private BadgesAdapter badgesAdapter;
     private HeartedArtistsAdapter artistsAdapter;
@@ -47,13 +46,6 @@ public class ProfileActivity extends AppCompatActivity {
         level = findViewById(R.id.userLevel);
         badgeCount = findViewById(R.id.badge_count);
         artistCount = findViewById(R.id.artist_count);
-        backButton = findViewById(R.id.profile_back_button);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
         backToTop = findViewById(R.id.profile_back_to_top_button);
         profileArea = findViewById(R.id.profile_area);
         profileArea.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
