@@ -29,5 +29,8 @@
     <color name="translucentWhite">#33FFFFFF</color>
     <color name="silver">#dedede</color>
     <color name="gold">#ffd700</color>
+    <color name="mqPurpleGreen">#284369</color>
+    <color name="mqPurpleRed">#551668</color>
+    <color name="mqPurpleBlue">#2b328a</color>
 
 </resources>

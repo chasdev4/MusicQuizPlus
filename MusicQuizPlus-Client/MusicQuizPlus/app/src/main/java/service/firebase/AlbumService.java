@@ -65,7 +65,7 @@ public class AlbumService {
         }
 
         // Save the albumId to the db user
-        updates.put("users/" + firebaseUser.getUid() + "/albumsIds/" + albumKey, album.getId());
+        updates.put("users/" + firebaseUser.getUid() + "/albumIds/" + albumKey, album.getId());
 //        db.child("users")
 //                .child(firebaseUser.getUid())
 //                .child("albumIds")
@@ -140,7 +140,7 @@ public class AlbumService {
 
         if (album1 == null) {
             //TODO: Inform the user? Error occurs when hearting directly from search view
-            updates.remove("users/" + firebaseUser.getUid() + "/albumsIds/" + albumKey);
+            updates.remove("users/" + firebaseUser.getUid() + "/albumIds/" + albumKey);
             log.e("Album can't be saved because it isn't saved to artist.");
             return;
         }

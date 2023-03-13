@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -82,6 +83,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 Artist artist = searchResults.get(position).getArtist();
                 holder.setTitle(artist.getName());
                 holder.setSubtitle("Artist");
+                holder.getItemView().setBackgroundColor(user.getArtistIds().containsValue(artist.getId())
+                        ? ContextCompat.getColor(context, R.color.mqPurpleRed)
+                        : ContextCompat.getColor(context, R.color.mqPurple2));
+                holder.getBanner().findViewById(R.id.item_result_banner_bg).setBackgroundColor(ContextCompat.getColor(context, R.color.mqRed));
+                holder.getBanner().setVisibility(user.getArtistIds().containsValue(artist.getId()) ? View.VISIBLE : View.GONE);
+//                holder.getHeartedIcon().setVisibility(user.getArtistIds().containsValue(artist.getId()) ? View.VISIBLE : View.GONE);
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
@@ -101,6 +108,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getArtistsMap().get(album.getArtistId()), album.getYear()));
                 if (firebaseUser != null) {
                     DatabaseReference db = ((SearchActivity)context).getDb();
+                    holder.getItemView().setBackgroundColor(user.getAlbumIds().containsValue(album.getId())
+                            ? ContextCompat.getColor(context, R.color.mqPurpleBlue)
+                            : ContextCompat.getColor(context, R.color.mqPurple2));
+                    holder.getBanner().setVisibility(user.getAlbumIds().containsValue(album.getId()) ? View.VISIBLE : View.GONE);
                     holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
                     holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -142,6 +153,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.setSubtitle(String.format("Song by %s", track.getArtistName()));
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(track.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
+                holder.getItemView().setBackgroundColor(user.getAlbumIds().containsValue(track.getAlbumId())
+                        ? ContextCompat.getColor(context, R.color.mqPurpleBlue)
+                        : ContextCompat.getColor(context, R.color.mqPurple2));
+                holder.getBanner().findViewById(R.id.item_result_banner_bg).setBackgroundColor(ContextCompat.getColor(context, R.color.mqBlue));
+                holder.getBanner().setVisibility(user.getAlbumIds().containsValue(track.getAlbumId()) ? View.VISIBLE : View.GONE);
+//                holder.getHeartedIcon().setVisibility(user.getAlbumIds().containsValue(track.getAlbumId()) ? View.VISIBLE : View.GONE);
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -159,6 +176,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 Playlist playlist = searchResults.get(position).getPlaylist();
                 holder.setTitle(playlist.getName());
                 holder.setSubtitle("Playlist");
+                holder.getItemView().setBackgroundColor(user.getPlaylistIds().containsValue(playlist.getId())
+                        ? ContextCompat.getColor(context, R.color.mqPurpleGreen)
+                        : ContextCompat.getColor(context, R.color.mqPurple2));
+                holder.getBanner().findViewById(R.id.item_result_banner_bg).setBackgroundColor(ContextCompat.getColor(context, R.color.spotifyGreen));
+                holder.getBanner().setVisibility(user.getPlaylistIds().containsValue(playlist.getId()) ? View.VISIBLE : View.GONE);
+//                holder.getHeartedIcon().setVisibility(user.getPlaylistIds().containsValue(playlist.getId()) ? View.VISIBLE : View.GONE);
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(playlist.getPhotoUrl()))
                         .placeholder(R.drawable.placeholder).into(holder.getImage());
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
@@ -187,5 +210,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public void clear() {
+        searchResults.clear();
     }
 }

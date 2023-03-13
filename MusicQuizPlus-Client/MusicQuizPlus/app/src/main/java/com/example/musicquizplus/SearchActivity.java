@@ -305,6 +305,7 @@ public class SearchActivity extends AppCompatActivity {
                         results = search.getPlaylists();
                         break;
                 }
+
                 setSearchResults(results);
                 setFilterOnPosition(i);
             }
@@ -334,6 +335,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void setSearchResults(List<SearchResult> results) {
+//        searchAdapter.clear();
         searchAdapter.setSearchResults(results);
         recyclerView.post(new Runnable() {
             @Override

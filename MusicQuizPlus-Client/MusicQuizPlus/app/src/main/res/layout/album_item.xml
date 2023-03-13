@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
+    android:id="@+id/album_item_layout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/mqPurple2"
     android:layout_margin="1dp">
@@ -29,7 +30,35 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <RelativeLayout
+        android:id="@+id/item_result_banner"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:layout_margin="1dp"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:id="@+id/item_result_banner_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/mqBlue"
+            android:visibility="gone"
+            android:background="@drawable/saved_banner_bg"
+            android:paddingVertical="5dp"
+            android:ellipsize="none"
+            android:layout_marginLeft="-25dp"
+            android:layout_marginTop="3dp"
+            android:rotation="-40"
+            android:text="@string/saved_label"
+            android:textSize="10sp"
+            android:paddingHorizontal="30dp"
+            android:textColor="@color/mqWhite"
+            android:fontFamily="@font/fugaz_one"
+            android:textAllCaps="true"
+            />
+    </RelativeLayout>
     <TextView
         android:id="@+id/itemTitle"
         android:layout_width="0dp"
@@ -70,10 +99,10 @@
         android:layout_width="50dp"
         android:layout_height="wrap_content"
         android:drawableTop="@drawable/toggle_heart"
-        android:background="@color/mqPurple2"
+        android:background="@android:color/transparent"
         android:gravity="center"
-        android:textOn="@string/remove_button_label"
-        android:textOff="@string/save_button_label"
+        android:textOn="@string/saved_label"
+        android:textOff="@string/save_label"
         android:textSize="12dp"
         android:paddingHorizontal="5dp"
         android:paddingVertical="13dp"
