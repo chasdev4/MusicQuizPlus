@@ -32,16 +32,24 @@
 
     <TextView
         android:id="@+id/itemTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="-18dp"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+
         android:fontFamily="@font/concert_one"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/sample_song_title"
         android:paddingLeft="10dp"
         android:textColor="@color/mqWhite"
         android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintEnd_toStartOf="@id/go_to_page_icon"
         app:layout_constraintStart_toEndOf="@+id/image"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -59,6 +67,7 @@
         app:layout_constraintTop_toBottomOf="@+id/itemTitle" />
 
     <ImageView
+        android:id="@+id/go_to_page_icon"
         android:layout_width="50dp"
         android:layout_height="match_parent"
         android:backgroundTint="@color/mqPurple2"
