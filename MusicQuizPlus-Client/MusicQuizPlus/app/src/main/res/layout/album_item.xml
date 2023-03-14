@@ -84,15 +84,24 @@
 
     <TextView
         android:id="@+id/itemSubtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:fontFamily="@font/commissioner"
+        android:clickable="true"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/sample_artist"
         android:paddingLeft="10dp"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
         android:layout_marginStart="2dp"
         app:layout_constraintStart_toEndOf="@+id/image"
+        app:layout_constraintEnd_toStartOf="@id/album_heart"
         app:layout_constraintTop_toBottomOf="@+id/itemTitle" />
     <ToggleButton
         android:id="@+id/album_heart"

@@ -24,6 +24,7 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Track;
 import model.type.AlbumType;
+import model.type.HeartResponse;
 import model.type.Severity;
 import service.FirebaseService;
 import service.SpotifyService;
@@ -34,7 +35,7 @@ public class AlbumService {
     private final static String TAG = "AlbumService.java";
 
     // When the user "hearts" an album
-    public static void heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
+    public static HeartResponse heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
                              SpotifyService spotifyService) {
         LogUtil log = new LogUtil(TAG, "heartAlbum");
 
@@ -49,7 +50,7 @@ public class AlbumService {
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {
-            return;
+            return HeartResponse.NULL_PARAMETER;
         }
 
         Map<String, Object> updates = new HashMap<>();
@@ -61,7 +62,7 @@ public class AlbumService {
         // If the album wasn't added, return
         if (!result[0]) {
             log.w(String.format("%s already exists in albumIds list.", album.getId()));
-            return;
+            return HeartResponse.ALBUM_EXISTS;
         }
 
         // Save the albumId to the db user
@@ -142,7 +143,7 @@ public class AlbumService {
             //TODO: Inform the user? Error occurs when hearting directly from search view
             updates.remove("users/" + firebaseUser.getUid() + "/albumIds/" + albumKey);
             log.e("Album can't be saved because it isn't saved to artist.");
-            return;
+            return HeartResponse.ALBUM_ARTIST_DO_NOT_MATCH;
         }
 
         if (!album1.isTrackIdsKnown()) {
@@ -166,9 +167,11 @@ public class AlbumService {
         user.addAlbumId(albumKey, album.getId());
         if (result[0]) {
             user.addArtistId(artistKey, artistId);
+            user.getArtists().put(artistKey, artist);
             log.i(String.format("%s added to the artistIds list.", artistId));
         }
         album.setLocked(false);
+        return HeartResponse.OK;
     }
 
 
@@ -261,7 +264,8 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
+    public HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
+
 
         LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
@@ -275,7 +279,7 @@ public class AlbumService {
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {
-            return;
+            return HeartResponse.NULL_PARAMETER;
         }
 
         // Attempt to remove the album from the user
@@ -284,7 +288,7 @@ public class AlbumService {
         // If the album wasn't found, abort
         if (key == null) {
             log.w("Album not previously saved to user. Aborting...");
-            return;
+            return HeartResponse.ALBUM_NOT_FOUND;
         }
         Map<String, Object> updates = new HashMap<>();
 
@@ -345,7 +349,7 @@ public class AlbumService {
             // If the artist wasn't found, abort
             if (key == null) {
                 log.w("Artist not previously saved to user. Aborting...");
-                return;
+                return HeartResponse.ARTIST_NOT_FOUND;
             }
 
             user.getArtists().remove(album.getArtistId());
@@ -420,6 +424,9 @@ public class AlbumService {
         log.i(String.format("%s removed from /albums", album.getId()));
         db.updateChildren(updates);
         updates.clear();
-        album.setLocked(false);
+
+        return HeartResponse.OK;
     }
+
+
 }

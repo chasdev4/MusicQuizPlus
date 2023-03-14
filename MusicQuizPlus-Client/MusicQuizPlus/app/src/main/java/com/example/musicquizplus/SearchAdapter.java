@@ -116,6 +116,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                     holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            if (holder.getToggleButton().isChecked()) {
+                                holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleBlue));
+                                holder.getBanner().setVisibility(View.VISIBLE);
+                            }
+                            else {
+                                holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                holder.getBanner().setVisibility(View.GONE);
+                            }
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
