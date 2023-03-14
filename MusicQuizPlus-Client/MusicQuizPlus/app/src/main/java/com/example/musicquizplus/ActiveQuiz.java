@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -9,6 +10,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -53,7 +55,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
 
     Button answerA, answerB, answerC, answerD;
     TextView currentQuestionType, currentScore, multiplierText;
-    ImageView quizImage;
+    ImageView quizImage, questionResultImage;
     Quiz quiz;
     QuestionType type;
     List<String> answers;
@@ -67,6 +69,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
     ProgressBar timerBar, multiplierTimer;
     CountDownTimer countDownTimer, multiplierCountDownTimer;
     ImageButton closeQuiz;
+    ConstraintLayout questionResults;
     //boolean multiplierTimerPlaying;
 
     @Override
@@ -106,15 +109,23 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         closeQuiz = findViewById(R.id.closeQuiz);
         //multiplierTimer = findViewById(R.id.multiplierTimer);
         multiplierText = findViewById(R.id.multiplierText);
+        questionResults = findViewById(R.id.questionResultCV);
+        questionResultImage = findViewById(R.id.questionResultIV);
 
         beginTimer();
         //beginMultiplierTimer();
 
-        //answerA.setOnClickListener(this);
+        answerA.setOnClickListener(this);
+        answerB.setOnClickListener(this);
+        answerC.setOnClickListener(this);
+        answerD.setOnClickListener(this);
+
+        /*
         answerA.setOnTouchListener(this::onTouch);
         answerB.setOnTouchListener(this::onTouch);
         answerC.setOnTouchListener(this::onTouch);
         answerD.setOnTouchListener(this::onTouch);
+         */
 
         closeQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -182,6 +193,41 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             index = findIndex(btnClicked);
         }
 
+        if(index == answerIndex)
+        {
+            questionResults.setBackgroundResource(R.color.correctGreen);
+            questionResultImage.setImageResource(R.drawable.green_check);
+        }
+        else
+        {
+            questionResults.setBackgroundResource(R.color.incorrectRed);
+            questionResultImage.setImageResource(R.drawable.red_x);
+        }
+
+        questionResults.setVisibility(View.VISIBLE);
+        answerA.setClickable(false);
+        answerB.setClickable(false);
+        answerC.setClickable(false);
+        answerD.setClickable(false);
+        new Handler().postDelayed(this::continueQuiz, 700);
+
+        /*
+        if(!multiplierTimerPlaying)
+        {
+            beginMultiplierTimer();
+        }
+        */
+    }
+
+    private void continueQuiz()
+    {
+        answerA.setClickable(true);
+        answerB.setClickable(true);
+        answerC.setClickable(true);
+        answerD.setClickable(true);
+
+        questionResults.setVisibility(View.GONE);
+
         currentQuestion = quiz.nextQuestion(index);
 
         if(currentQuestion == null)
@@ -209,13 +255,6 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
             answerD.setText(answers.get(3));
             beginTimer();
         }
-
-        /*
-        if(!multiplierTimerPlaying)
-        {
-            beginMultiplierTimer();
-        }
-        */
     }
 
     private String getTypeAsDisplayableString()

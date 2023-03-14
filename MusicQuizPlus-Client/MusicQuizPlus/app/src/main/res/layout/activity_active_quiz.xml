@@ -8,6 +8,28 @@
     android:background="@color/mqPurple3"
     android:padding="20dp">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/questionResultCV"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:elevation="2dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/questionResultIV"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <TextView
         android:id="@+id/currentScore"
         android:layout_width="wrap_content"
@@ -24,7 +46,7 @@
         android:id="@+id/multiplierText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:elevation="10dp"
+        android:elevation="1dp"
         android:text="@string/mulitplier_1_0x"
         android:textColor="@color/mqWhite"
         android:textSize="28sp"
@@ -38,7 +60,7 @@
         style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="0dp"
         android:layout_height="10dp"
-        android:elevation="8dp"
+        android:elevation="1dp"
         android:progress="30"
         android:max="30"
         android:progressDrawable="@drawable/custom_progressbar_timer"
@@ -49,9 +71,10 @@
     <ImageView
         android:layout_width="450dp"
         android:layout_height="450dp"
-        android:src="@drawable/purple_background_star"
+        android:layout_marginTop="-200dp"
         android:rotation="15"
-        android:layout_marginTop="-30dp"
+        android:src="@drawable/purple_background_star"
+        app:layout_constraintBottom_toBottomOf="@+id/constraintLayout2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -61,7 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/round_button"
-        android:elevation="8dp"
+        android:elevation="1dp"
         android:src="@drawable/close"
         android:layout_marginTop="5dp"
         app:layout_constraintEnd_toEndOf="parent"
