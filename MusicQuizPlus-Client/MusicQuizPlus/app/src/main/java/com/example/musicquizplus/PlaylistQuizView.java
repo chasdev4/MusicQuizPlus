@@ -210,7 +210,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            if(user != null)
+                            if(user != null && firebaseUser != null)
                             {
                                 if (heartButton.isChecked()) {
                                     SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
@@ -274,7 +274,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     cdl.countDown();
                 } else {
                     playlist = PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
-//                    playlist.initCollection(reference);
+                    if (playlist.getTracks() == null || playlist.getTracks().size() == 0) {
+                        playlist.initCollection(reference);
+                    }
                     cdl.countDown();
                 }
 

@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
@@ -208,7 +209,7 @@ public class PlaylistService {
         });
         try {
             done.await();
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -276,16 +277,21 @@ public class PlaylistService {
 
 
         // Increment the follower count
-        updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
+        updates.put("playlists/" + playlist.getId() + "/followers", ServerValue.increment(1));
         if (!playlist.isFollowersKnown()) {
-            updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
+            updates.put("playlists/" + playlist.getId() + "/followersKnown", true);
         }
 
 
         playlist = savePlaylistTracks(db, playlist);
-        updates.put("playlists/"+playlist.getId(), playlist);
-        db.updateChildren(updates);
-        log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+        updates.put("playlists/" + playlist.getId(), playlist);
+        try {
+            db.updateChildren(updates);
+            log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+        }
+        catch (DatabaseException e) {
+            log.e(e.getMessage());
+        }
 
 
     }
@@ -297,8 +303,7 @@ public class PlaylistService {
             Track track = playlist.getTracks().get(i);
             if (track != null) {
                 db.child("tracks").child(track.getId()).setValue(track);
-            }
-            else {
+            } else {
                 removeQueue.add(i);
             }
         }
@@ -336,39 +341,43 @@ public class PlaylistService {
         // Remove the playlist from the database user
         db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(key).removeValue();
         log.i(String.format("\"%s : %s\" removed from users/%s/playlistIds", key, playlist.getId(), firebaseUser.getUid()));
+        Map<String, String> defaultPlaylistIds = getDefaultPlaylistIds(db);
+        if (!defaultPlaylistIds.containsValue(playlist.getId())) {
+            // If the playlist is on it's last follower or lower, remove it and it's tracks from the database
+            if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
+                for (String trackId : playlist.getTrackIds()) {
+                    // Get the track from the database
+                    Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+                    if (track != null) {
+                        // Check to see if it's safe to delete, the track may belong to a saved album
+                        if (!track.isAlbumKnown()) {
+                            db.child("tracks").child(trackId).removeValue();
+                            log.i(String.format("%s removed from database child /tracks", trackId));
+                        } else {
+                            log.i(String.format("%s belongs to a saved album.", trackId));
+                        }
 
-        // If the playlist is on it's last follower or lower, remove it and it's tracks from the database
-        if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
-            for (String trackId : playlist.getTrackIds()) {
-                // Get the track from the database
-                Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-                if (track != null) {
-                    // Check to see if it's safe to delete, the track may belong to a saved album
-                    if (!track.isAlbumKnown()) {
                         db.child("tracks").child(trackId).removeValue();
-                        log.i(String.format("%s removed from database child /tracks", trackId));
-                    } else {
-                        log.i(String.format("%s belongs to a saved album.", trackId));
                     }
-
-                    db.child("tracks").child(trackId).removeValue();
                 }
+                log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
+
+                // Remove the playlist from the database
+
+                db.child("playlists").child(playlist.getId()).removeValue();
+                log.i(String.format("%s removed from /playlists", playlist.getId()));
             }
-            log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 
-            // Remove the playlist from the database
-            db.child("playlists").child(playlist.getId()).removeValue();
-            log.i(String.format("%s removed from /playlists", playlist.getId()));
+            // Else the playlist has enough followers to live
+            else {
+                // Decrement the follower count
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("playlists/" + playlist.getId() + "/followers", ServerValue.increment(-1));
+                db.updateChildren(updates);
+                log.i(String.format("%s follower count has decremented.", playlist.getId()));
+            }
+        }
 
-        }
-        // Else the playlist has enough followers to live
-        else {
-            // Decrement the follower count
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(-1));
-            db.updateChildren(updates);
-            log.i(String.format("%s follower count has decremented.", playlist.getId()));
-        }
     }
 
 }
