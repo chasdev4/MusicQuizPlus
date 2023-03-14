@@ -36,7 +36,7 @@ public class AlbumService {
 
     // When the user "hearts" an album
     public static HeartResponse heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
-                             SpotifyService spotifyService) {
+                                      SpotifyService spotifyService) {
         LogUtil log = new LogUtil(TAG, "heartAlbum");
 
         // Null check
@@ -76,46 +76,17 @@ public class AlbumService {
         // Add the artistId to the user
         String artistId = album.getArtistId();
         String artistKey = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-        result[0] = !user.getArtistIds().containsValue(album.getArtistId());
-
-        // If the artist was added, add it to the db user
+//        result[0] = !user
+        User dbUser = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+        if (dbUser.getArtistIds().size() > user.getArtistIds().size()) {
+            result[0] = !dbUser.getArtistIds().containsValue(album.getArtistId());
+        }
+        else {
+            result[0] = !user.getArtistIds().containsValue(album.getArtistId());
+        }
         if (result[0]) {
-//            CountDownLatch cdl = new CountDownLatch(1);
-//            final boolean[] tempResult = {false};
-//            db.child("users")
-//                    .child(firebaseUser.getUid())
-//                    .child("artistIds").addValueEventListener(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                            for (DataSnapshot ds : snapshot.getChildren()) {
-//                                if (ds.getValue().toString() == artistId) {
-//                                    tempResult[0] = false;
-//                                }
-//                                cdl.countDown();
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(@NonNull DatabaseError error) {
-//
-//                        }
-//                    });
-//            try {
-//                cdl.await();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            result[0] = tempResult[0];
+            updates.put("users/" + firebaseUser.getUid() + "/artistIds/" + artistKey, album.getArtistId());
 
-//            if (!result[0]) {
-
-                updates.put("users/" + firebaseUser.getUid() + "/artistIds/" + artistKey, album.getArtistId());
-//            db.child("users")
-//                    .child(firebaseUser.getUid())
-//                    .child("artistIds")
-//                    .child(key)
-//                    .setValue(artistId);
-//            }
         } else {
             log.i(String.format("%s already exists in the artistIds list.", artistId));
         }
@@ -316,7 +287,7 @@ public class AlbumService {
         }
 
         // Check to see if the user has any other albums saved
-        Artist artist = user.getArtist(album.getArtistId());
+        Artist artist = FirebaseService.checkDatabase(db, "artists", album.getArtistId(), Artist.class);
         int count = 0;
 
         for (String artistAlbumId : artist.getAlbumIds()) {

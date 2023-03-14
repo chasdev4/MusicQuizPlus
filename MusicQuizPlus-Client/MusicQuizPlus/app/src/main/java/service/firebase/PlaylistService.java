@@ -221,12 +221,13 @@ public class PlaylistService {
         LogUtil log = new LogUtil(TAG, "heartPlaylist");
 
         // Return if any of these fields are null
+        Playlist finalPlaylist = playlist;
         List<ValidationObject> validationObjects = new ArrayList<>() {
             {
                 add(new ValidationObject(user, User.class, Severity.HIGH));
                 add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
                 add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
-                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(finalPlaylist, Playlist.class, Severity.HIGH));
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
@@ -269,32 +270,42 @@ public class PlaylistService {
             playlist.setFollowersKnown(true);
             playlist.setFollowers(playlist1.getFollowers());
         }
+        Map<String, Object> updates = new HashMap<>();
 
         // Save the playlist to the db
-        db.child("playlists").child(playlist.getId()).setValue(playlist);
-        log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+
 
         // Increment the follower count
-        Map<String, Object> updates = new HashMap<>();
         updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
         if (!playlist.isFollowersKnown()) {
             updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
         }
 
-        db.updateChildren(updates);
 
-        savePlaylistTracks(db, playlist);
+        playlist = savePlaylistTracks(db, playlist);
+        updates.put("playlists/"+playlist.getId(), playlist);
+        db.updateChildren(updates);
+        log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+
+
     }
 
-    public static void savePlaylistTracks(DatabaseReference db, Playlist playlist) {
+    public static Playlist savePlaylistTracks(DatabaseReference db, Playlist playlist) {
         // Save each track to the database
+        List<Integer> removeQueue = new ArrayList<>();
         for (int i = 0; i < playlist.getTracks().size(); i++) {
             Track track = playlist.getTracks().get(i);
             if (track != null) {
                 db.child("tracks").child(track.getId()).setValue(track);
             }
-
+            else {
+                removeQueue.add(i);
+            }
         }
+        for (Integer index : removeQueue) {
+            playlist.getTracks().remove(index);
+        }
+        return playlist;
     }
 
     public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist) {

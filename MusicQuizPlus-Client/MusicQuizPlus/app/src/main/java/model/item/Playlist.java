@@ -147,6 +147,7 @@ public class Playlist implements Serializable {
                 @Override
                 public void run() {
                     int j = 0;
+                    List<String> removeQueue = new ArrayList<>();
                     for (String trackId : data.get(finalI)) {
                         Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
                         if (track != null) {
@@ -158,9 +159,14 @@ public class Playlist implements Serializable {
                             }
                             j++;
                         } else {
-                            log.w(String.format("%s is missing from the database.", trackId));
+                            log.w(String.format("%s is missing from the database.. Removing from local object.", trackId));
+                            removeQueue.add(trackId);
                         }
 
+                    }
+
+                    for (String trackId : removeQueue) {
+                        trackIds.remove(trackId);
                     }
                 }
             });

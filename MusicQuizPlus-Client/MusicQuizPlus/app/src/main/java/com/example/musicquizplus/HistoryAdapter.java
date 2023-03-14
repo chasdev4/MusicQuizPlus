@@ -240,18 +240,27 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    HeartResponse response = null;
                                     if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                        HeartResponse response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
                                               // TODO: Handle errors
                                           }
+                                          else {
+                                              viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+
+                                          }
 
                                     } else {
-                                        HeartResponse response = AlbumService.unheart(user, firebaseUser, reference, album);
+                                        response = AlbumService.unheart(user, firebaseUser, reference, album);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
                                             // TODO: Handle errors
+                                        }
+                                        else {
+                                            viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+
                                         }
                                     }
                                 }
