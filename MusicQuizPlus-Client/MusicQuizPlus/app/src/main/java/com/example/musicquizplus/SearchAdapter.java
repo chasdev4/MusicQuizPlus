@@ -100,6 +100,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         intent.putExtra("currentArtist", artist);
                         intent.putExtra("source", Source.SEARCH);
                         intent.putExtra("currentUser", user);
+                        intent.putExtra("pos", holder.getAdapterPosition());
                         ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
@@ -179,6 +180,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         String jsonTrack = gson.toJson(trackResult);
                         intent.putExtra("track", jsonTrack);
                         intent.putExtra("user", user);
+                        intent.putExtra("pos", holder.getAdapterPosition());
                         ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
@@ -202,7 +204,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         intent.putExtra("currentPlaylist", playlist);
                         intent.putExtra("currentUser", user);
                         intent.putExtra("source", Source.SEARCH);
-                        view.getContext().startActivity(intent);
+                        intent.putExtra("pos", holder.getAdapterPosition());
+                        ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
                 break;

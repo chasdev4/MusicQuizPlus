@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -31,6 +32,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
@@ -39,6 +41,7 @@ import model.User;
 import model.item.Playlist;
 import model.item.Track;
 import model.type.Source;
+import service.FirebaseService;
 import service.SpotifyService;
 import service.firebase.PlaylistService;
 
@@ -299,6 +302,41 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     public String getPlaylistIdAsUrl(String playlistID) {
         String id = playlistID.substring(17);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+
+            if (heartButton.isChecked()) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                        String playlistKey = null;
+                        String playlistValue = null;
+                        for (Map.Entry<String, String> playlistId : user.getPlaylistIds().entrySet()) {
+                            if (playlistId.getValue().equals(playlist.getId())) {
+                                playlistKey = playlistId.getKey();
+                                playlistValue = playlistId.getValue();
+                            }
+                        }
+
+                        Intent intent = getIntent();
+
+                        intent.putExtra("playlistKey", playlistKey);
+                        intent.putExtra("playlistValue", playlistValue);
+                        intent.putExtra("user", user);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                }).start();
+            }
+
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
 }

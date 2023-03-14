@@ -405,6 +405,8 @@ public class SearchActivity extends AppCompatActivity {
             String artistId = extras.getString("artistId");
             String albumKey = extras.getString("albumKey");
             String albumValue = extras.getString("albumValue");
+            String playlistKey = extras.getString("playlistKey");
+            String playlistValue = extras.getString("playlistValue");
             User user = (User) extras.getSerializable("user");
             boolean updateApater = false;
             if (artistId != null && artistKey != null && pos >= 0 && user != null) {
@@ -417,6 +419,12 @@ public class SearchActivity extends AppCompatActivity {
             else if (albumKey != null && albumValue != null && pos >= 0 && user != null) {
                 if (!user.getAlbumIds().containsValue(albumValue)) {
                     user.addAlbumId(albumKey, albumValue);
+                }
+                updateApater = true;
+            }
+            else if (playlistKey != null && playlistValue != null && pos >= 0 && user != null) {
+                if (!user.getPlaylistIds().containsValue(playlistValue)) {
+                    user.addPlaylistId(playlistKey, playlistValue);
                 }
                 updateApater = true;
             }

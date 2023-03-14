@@ -290,7 +290,10 @@ public class PlaylistService {
     public static void savePlaylistTracks(DatabaseReference db, Playlist playlist) {
         // Save each track to the database
         for (int i = 0; i < playlist.getTracks().size(); i++) {
-            db.child("tracks").child(playlist.getTracks().get(i).getId()).setValue(playlist.getTracks().get(i));
+            Track track = playlist.getTracks().get(i);
+            if (track != null) {
+                db.child("tracks").child(track.getId()).setValue(track);
+            }
 
         }
     }
