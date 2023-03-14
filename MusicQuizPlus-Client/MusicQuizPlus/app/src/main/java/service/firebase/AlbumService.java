@@ -264,7 +264,7 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
+    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
 
 
         LogUtil log = new LogUtil(TAG, "unheartAlbum");

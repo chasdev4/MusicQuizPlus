@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -33,6 +34,7 @@ import org.checkerframework.checker.units.qual.C;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -105,6 +107,7 @@ public class ArtistQuizView extends AppCompatActivity {
     SpotifyService spotifyService;
     private Source source;
     private int trackPoolSize;
+    private boolean updateSearch;
 
 
     @Override
@@ -526,26 +529,25 @@ public class ArtistQuizView extends AppCompatActivity {
 
                 } else {
                     new Thread(new Runnable() {
-                    @Override
-                    public void run() {
+                        @Override
+                        public void run() {
 
-                    Artist artist = initArtist();
-                    int size = artist.getTrackPoolSize();
-                    if (size >= 15 && !artist.isInitializing()) {
-                        goToQuiz(view.getContext());
-                    }
-                    else{
+                            Artist artist = initArtist();
+                            int size = artist.getTrackPoolSize();
+                            if (size >= 15 && !artist.isInitializing()) {
+                                goToQuiz(view.getContext());
+                            } else {
 
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
-                                toast.show();
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
+                                        toast.show();
+                                    }
+                                });
                             }
-                        });
-                    }
-                }
-            }).start();
+                        }
+                    }).start();
                 }
             }
         });
@@ -580,8 +582,43 @@ public class ArtistQuizView extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+            if (source == Source.SEARCH) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                        String artistKey = null;
+                        String artistValue = null;
+                        for (Map.Entry<String, String> artistId : user.getArtistIds().entrySet()) {
+                            if (artistId.getValue().equals(artist.getId())) {
+                                artistKey = artistId.getKey();
+                                artistValue = artistId.getValue();
+                            }
+                        }
+
+//                String artistKey = reference.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+                        Intent intent = getIntent();
+
+                        intent.putExtra("artistKey", artistKey);
+                        intent.putExtra("artistId", artist.getId());
+                        intent.putExtra("user", user);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                }).start();
+            }
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+
     }
 
     private void initializeExternalLinkButtons() {

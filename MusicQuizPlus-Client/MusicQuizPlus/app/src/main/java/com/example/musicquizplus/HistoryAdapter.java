@@ -21,15 +21,14 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Track;
+import model.type.HeartResponse;
+import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -227,9 +226,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                 @Override
                                 public void run() {
                                     if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                        AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                        HeartResponse response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                          if (response != HeartResponse.OK) {
+                                              viewHolder.aqvHeartAlbum.setChecked(false);
+                                              // TODO: Handle errors
+                                          }
+
                                     } else {
-                                        AlbumService.unheart(user, firebaseUser, reference, album);
+                                        HeartResponse response = AlbumService.unheart(user, firebaseUser, reference, album);
+                                        if (response != HeartResponse.OK) {
+                                            viewHolder.aqvHeartAlbum.setChecked(true);
+                                            // TODO: Handle errors
+                                        }
                                     }
                                 }
                             }).start();
@@ -276,6 +284,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
         return mediaPlayer;
     }
+
 }
 
 

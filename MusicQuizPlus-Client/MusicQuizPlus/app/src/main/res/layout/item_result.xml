@@ -67,10 +67,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
         android:layout_marginTop="20dp"
-        android:clickable="true"
+        android:clickable="false"
         android:ellipsize="marquee"
         android:focusable="true"
-        android:focusableInTouchMode="true"
+        android:focusedByDefault="true"
 
         android:fontFamily="@font/concert_one"
         android:marqueeRepeatLimit="marquee_forever"

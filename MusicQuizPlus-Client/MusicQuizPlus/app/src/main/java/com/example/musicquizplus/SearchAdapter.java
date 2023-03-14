@@ -11,6 +11,7 @@ import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -84,6 +85,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.setTitle(artist.getName());
                 holder.setSubtitle("Artist");
                 holder.getItemView().setBackgroundColor(user.getArtistIds().containsValue(artist.getId())
+                        || (activity.getUser() != null && activity.getUser().getArtistIds().containsValue(artist.getId()))
                         ? ContextCompat.getColor(context, R.color.mqPurpleRed)
                         : ContextCompat.getColor(context, R.color.mqPurple2));
                 holder.getBanner().findViewById(R.id.item_result_banner_bg).setBackgroundColor(ContextCompat.getColor(context, R.color.mqRed));
@@ -98,9 +100,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         intent.putExtra("currentArtist", artist);
                         intent.putExtra("source", Source.SEARCH);
                         intent.putExtra("currentUser", user);
-                        view.getContext().startActivity(intent);
+                        ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
+
                 break;
             case ALBUM:
                 Album album = searchResults.get(position).getAlbum();
@@ -216,11 +219,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+
     public void setUser(User user) {
         this.user = user;
     }
 
+    public List<SearchResult> getSearchResults() {
+        return searchResults;
+    }
+
     public void clear() {
         searchResults.clear();
+    }
+
+    public User getUser() {
+        return user;
     }
 }

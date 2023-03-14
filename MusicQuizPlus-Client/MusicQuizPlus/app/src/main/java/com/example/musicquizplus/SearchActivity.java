@@ -33,6 +33,7 @@ import model.SearchResult;
 import model.SignUpPopUp;
 import model.TrackResult;
 import model.User;
+import model.item.Artist;
 import model.item.Track;
 import model.type.Role;
 import model.type.SearchFilter;
@@ -229,7 +230,7 @@ public class SearchActivity extends AppCompatActivity {
 
         lastQuery = query;
         SearchFilter lastFilter = search.getCurrentFilter();
-        search = new Search(query, 100, spotifyService, lastFilter, allSearch);
+        search = new Search(query, 50, spotifyService, lastFilter, allSearch);
         if (!search.execute(offset)) {
             runOnUiThread(new Runnable() {
                 @Override
@@ -376,7 +377,9 @@ public class SearchActivity extends AppCompatActivity {
             if(user != null)
             {
                 user.setSearchCount(sharedPref.getInt(getString(R.string.searchCount), 0));
-                searchAdapter.setUser(user);
+                if (searchAdapter.getUser() == null) {
+                    searchAdapter.setUser(user);
+                }
             }
         }
 
@@ -391,8 +394,32 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-//    @Override
-//    public void onResume()
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode,resultCode,data);
+
+        if (resultCode == RESULT_OK && data != null) {
+            Bundle extras = data.getExtras();
+            int pos = extras.getInt("pos");
+            String artistKey = extras.getString("artistKey");
+            String artistId = extras.getString("artistId");
+            User user = (User) extras.getSerializable("user");
+            if (artistId != null && artistKey != null && pos >= 0) {
+                if (!user.getArtistIds().containsValue(artistId)) {
+                    user.addArtistId(artistKey, artistId);
+                }
+                searchAdapter.setUser(user);
+                searchAdapter.getSearchResults().set(pos, searchAdapter.getSearchResults().get(pos));
+//                searchAdapter.notifyItemChanged(pos);
+                searchAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+
+    private void updateArtistItem() {
+
+    }
 
     public TrackResult getTrackResult(Track track) {
         return search.getTrackResult(track);
@@ -442,4 +469,8 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void setUser(User user) {this.user = user;}
+
+    public User getUser() {
+        return user;
+    }
 }
