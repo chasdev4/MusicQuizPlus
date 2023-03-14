@@ -389,6 +389,9 @@ public class SearchActivity extends AppCompatActivity {
             public void onClick(View view) {
 //                Intent intent = new Intent(view.getContext(), SearchActivity.class);
 //                view.getContext().startActivity(intent);
+                Intent intent = getIntent();
+                intent.putExtra("user", user);
+                setResult(RESULT_OK, intent);
                 activity.finish();
             }
         });
@@ -430,6 +433,7 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             if (updateApater) {
+                this.user = user;
                 searchAdapter.setUser(user);
                 searchAdapter.getSearchResults().set(pos, searchAdapter.getSearchResults().get(pos));
                 searchAdapter.notifyItemChanged(pos);

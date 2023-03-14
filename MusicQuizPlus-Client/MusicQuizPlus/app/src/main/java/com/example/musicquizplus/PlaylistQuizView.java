@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
@@ -282,24 +283,29 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+                if (playlist.getTracks() != null) {
+                    List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
-                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                            @Override
-                            public void onChanged() {
-                                super.onChanged();
-                                onDataChange();
-                            }
-                        });
-                        listView.setAdapter(adapter);
-                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                        onDataChange();
-                    }
-                });
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
+                            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                                @Override
+                                public void onChanged() {
+                                    super.onChanged();
+                                    onDataChange();
+                                }
+                            });
+                            listView.setAdapter(adapter);
+                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                            onDataChange();
+                        }
+                    });
+                }
+                else {
+                    Log.d("TAG", "run: ");
+                }
 
             }
         }).start();

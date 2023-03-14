@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.example.musicquizplus.fragments.PlaylistFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseUser;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
+import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
@@ -155,7 +157,7 @@ public class ParentOfFragments extends AppCompatActivity {
                 if (user != null) {
                     Intent intent = new Intent(view.getContext(), SearchActivity.class);
                     intent.putExtra("user", user);
-                    view.getContext().startActivity(intent);
+                    ((ParentOfFragments)view.getContext()).startActivityForResult(intent, 9);
                 }
             }
         });
@@ -222,6 +224,13 @@ public class ParentOfFragments extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         googleSignIn.onActivityResult(requestCode, resultCode, data, this);
+        if (resultCode == RESULT_OK && data != null) {
+            Bundle extras = data.getExtras();
+            User user = (User) extras.getSerializable("user");
+            if (user != null) {
+
+            }
+        }
     }
 
     @Override

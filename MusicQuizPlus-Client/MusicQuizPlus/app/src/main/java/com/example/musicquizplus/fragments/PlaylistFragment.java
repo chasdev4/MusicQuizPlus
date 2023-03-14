@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,15 +116,18 @@ public class PlaylistFragment extends Fragment {
 
         CountDownLatch latch = new CountDownLatch(1);
 
+        if (user != null) {
+            gridView.setAdapter(new PlaylistsAdapter(getContext(), R.layout.gridview_contents, new ArrayList<>()));
+        }
         new Thread(new Runnable() {
             public void run() {
                 if(firebaseUser != null)
                 {
-                    //user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
-                    while(user == null)
-                    {
-                        user = ((ParentOfFragments) getActivity()).getUser();
-                    }
+                    user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+//                    while(user == null)
+//                    {
+//                        user = ((ParentOfFragments) getActivity()).getUser();
+//                    }
                     /*
                     latch.countDown();
 
