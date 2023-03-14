@@ -403,15 +403,28 @@ public class SearchActivity extends AppCompatActivity {
             int pos = extras.getInt("pos");
             String artistKey = extras.getString("artistKey");
             String artistId = extras.getString("artistId");
+            String albumKey = extras.getString("albumKey");
+            String albumValue = extras.getString("albumValue");
             User user = (User) extras.getSerializable("user");
-            if (artistId != null && artistKey != null && pos >= 0) {
+            boolean updateApater = false;
+            if (artistId != null && artistKey != null && pos >= 0 && user != null) {
                 if (!user.getArtistIds().containsValue(artistId)) {
                     user.addArtistId(artistKey, artistId);
                 }
+                updateApater = true;
+//                searchAdapter.notifyDataSetChanged();
+            }
+            else if (albumKey != null && albumValue != null && pos >= 0 && user != null) {
+                if (!user.getAlbumIds().containsValue(albumValue)) {
+                    user.addAlbumId(albumKey, albumValue);
+                }
+                updateApater = true;
+            }
+
+            if (updateApater) {
                 searchAdapter.setUser(user);
                 searchAdapter.getSearchResults().set(pos, searchAdapter.getSearchResults().get(pos));
-//                searchAdapter.notifyItemChanged(pos);
-                searchAdapter.notifyDataSetChanged();
+                searchAdapter.notifyItemChanged(pos);
             }
         }
     }

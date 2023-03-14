@@ -6,8 +6,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -20,10 +22,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
+import java.util.Map;
+
 import model.GoogleSignIn;
 import model.TrackResult;
 import model.User;
 import model.type.Role;
+import model.type.Source;
+import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 
@@ -170,5 +176,38 @@ public class TrackResultActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                        String albumKey = null;
+                        String albumValue = null;
+                        for (Map.Entry<String, String> albumId : user.getAlbumIds().entrySet()) {
+                            if (albumId.getValue().equals(trackResult.getAlbumId())) {
+                                albumKey = albumId.getKey();
+                                albumValue = albumId.getValue();
+                            }
+                        }
+
+//                String artistKey = reference.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+                        Intent intent = getIntent();
+
+                        intent.putExtra("albumKey", albumKey);
+                        intent.putExtra("albumValue", albumValue);
+                        intent.putExtra("user", user);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                }).start();
+
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 
 }

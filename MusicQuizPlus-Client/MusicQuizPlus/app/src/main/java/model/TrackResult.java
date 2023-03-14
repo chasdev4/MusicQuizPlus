@@ -8,15 +8,17 @@ public class TrackResult {
     private String name;
     private String id;
     private String artistName;
+    private String albumId;
     private List<Album> titleMatch;
     private List<Album> suggested;
     private String imageUrl;
     private boolean currentPageOne;
 
-    public TrackResult(String name, String id, String artistName, List<Album> titleMatch, List<Album> suggested, String imageUrl) {
+    public TrackResult(String name, String id, String artistName, String albumId, List<Album> titleMatch, List<Album> suggested, String imageUrl) {
         this.name = name;
         this.id = id;
         this.artistName = artistName;
+        this.albumId = albumId;
         this.titleMatch = titleMatch;
         this.suggested = suggested;
         this.imageUrl = imageUrl;
@@ -52,5 +54,9 @@ public class TrackResult {
 
     public String getImageUrl() {
         return imageUrl;
+    }
+
+    public String getAlbumId() {
+        return albumId;
     }
 }
