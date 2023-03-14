@@ -262,8 +262,7 @@ public class PlaylistService {
         }
         // Playlist exists but something really really unexpected happened
         else if (!playlist.getId().equals(playlist1.getId())) {
-            log.e("Playlist retrieved but the ID's don't match. That was unexpected...");
-            return;
+            log.w("Playlist retrieved but the ID's don't match. That was unexpected...");
         }
         // Playlist exists and the followers are only known on the db
         else if (playlist1.isFollowersKnown() && !playlist.isFollowersKnown()) {
@@ -332,16 +331,17 @@ public class PlaylistService {
             for (String trackId : playlist.getTrackIds()) {
                 // Get the track from the database
                 Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-                // Check to see if it's safe to delete, the track may belong to a saved album
-                if (!track.isAlbumKnown()) {
-                    db.child("tracks").child(trackId).removeValue();
-                    log.i(String.format("%s removed from database child /tracks", trackId));
-                }
-                else {
-                    log.i(String.format("%s belongs to a saved album.", trackId));
-                }
+                if (track != null) {
+                    // Check to see if it's safe to delete, the track may belong to a saved album
+                    if (!track.isAlbumKnown()) {
+                        db.child("tracks").child(trackId).removeValue();
+                        log.i(String.format("%s removed from database child /tracks", trackId));
+                    } else {
+                        log.i(String.format("%s belongs to a saved album.", trackId));
+                    }
 
-                db.child("tracks").child(trackId).removeValue();
+                    db.child("tracks").child(trackId).removeValue();
+                }
             }
             log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 

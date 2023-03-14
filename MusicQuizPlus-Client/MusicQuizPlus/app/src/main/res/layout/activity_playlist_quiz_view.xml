@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".PlaylistQuizView"
+    android:id="@+id/playlist_quiz_view_layout"
     android:background="@color/mqPurple3">
 
     <androidx.constraintlayout.widget.Guideline

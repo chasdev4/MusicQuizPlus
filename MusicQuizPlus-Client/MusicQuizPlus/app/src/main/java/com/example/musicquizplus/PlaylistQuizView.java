@@ -2,6 +2,8 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -185,6 +188,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             if(user != null)
             {
                 heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
+                if (heartButton.isChecked()) {
+                    Window window = getWindow();
+                    window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                    window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                    ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
+                            .setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurpleGreenBackground));
+                }
             }
 
             Activity activity = this;
@@ -207,6 +217,25 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                                 } else {
                                     PlaylistService.unheart(user, firebaseUser, db, playlist);
                                 }
+                                listView.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (heartButton.isChecked()) {
+                                            Window window = getWindow();
+                                            window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                            window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                            ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
+                                                    .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreenBackground));
+                                        } else {
+                                            Window window = getWindow();
+                                            window.setStatusBarColor(getResources().getColor(R.color.mqPurple3));
+                                            window.setNavigationBarColor(getResources().getColor(R.color.mqPurple3));
+                                            ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
+                                                    .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple3));
+                                        }
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
                             }
                             else
                             {
@@ -244,7 +273,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     cdl.countDown();
                 } else {
                     playlist = PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
-                    playlist.initCollection(reference);
+//                    playlist.initCollection(reference);
                     cdl.countDown();
                 }
 
@@ -333,10 +362,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     }
                 }).start();
             }
+            else {
+                return super.onKeyUp(keyCode, event);
+            }
 
             return true;
         }
         return super.onKeyUp(keyCode, event);
     }
 
+    public boolean isChecked() {
+        return heartButton.isChecked();
+    }
 }

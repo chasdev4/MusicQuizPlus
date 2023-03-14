@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -158,6 +159,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
             case 1:
                 //if switchOn is 1, its for playlist quiz preview
                 track = trackList.get(position);
+
+                if (((PlaylistQuizView)viewHolder.view.getContext()).isChecked()) {
+                    viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreen));
+                }
+                else {
+                    viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+
+                }
+
 
                 viewHolder.playlistTrackTitle.setText(track.getName());
                 viewHolder.playlistArtist.setText(track.getArtistName());
