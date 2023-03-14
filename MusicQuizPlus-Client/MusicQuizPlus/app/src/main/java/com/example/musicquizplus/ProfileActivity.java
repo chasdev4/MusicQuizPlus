@@ -19,6 +19,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.concurrent.CountDownLatch;
 
+import model.GoogleSignIn;
 import model.User;
 import service.ItemService;
 
@@ -36,6 +37,7 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageButton backToTop;
     private BadgesAdapter badgesAdapter;
     private HeartedArtistsAdapter artistsAdapter;
+    private TextView logOut;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +48,15 @@ public class ProfileActivity extends AppCompatActivity {
         level = findViewById(R.id.userLevel);
         badgeCount = findViewById(R.id.badge_count);
         artistCount = findViewById(R.id.artist_count);
+        logOut = findViewById(R.id.log_out_button);
+        logOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                GoogleSignIn googleSignIn = new GoogleSignIn();
+                googleSignIn.signOut();
+                finish();
+            }
+        });
         backToTop = findViewById(R.id.profile_back_to_top_button);
         profileArea = findViewById(R.id.profile_area);
         profileArea.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {

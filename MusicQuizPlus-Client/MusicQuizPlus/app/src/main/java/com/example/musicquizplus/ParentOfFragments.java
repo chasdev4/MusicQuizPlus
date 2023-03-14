@@ -136,7 +136,7 @@ public class ParentOfFragments extends AppCompatActivity {
                 } else {
                     Intent intent = new Intent(context, ProfileActivity.class);
                     intent.putExtra("user", user);
-                    startActivity(intent);
+                    startActivityForResult(intent, 3);
                 }
             }
         });
@@ -224,13 +224,15 @@ public class ParentOfFragments extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         googleSignIn.onActivityResult(requestCode, resultCode, data, this);
-        if (resultCode == RESULT_OK && data != null) {
-            Bundle extras = data.getExtras();
-            User user = (User) extras.getSerializable("user");
-            if (user != null) {
-
+        if (requestCode == 3) {
+            if (googleSignIn.getAuth().getCurrentUser() == null) {
+                firebaseUser = null;
+                user = new User();
+                user.initGuest(this);
+                Picasso.get().load(R.drawable.default_avatar).placeholder(R.drawable.default_avatar).into(userCustomAvatar);
             }
         }
+
     }
 
     @Override
