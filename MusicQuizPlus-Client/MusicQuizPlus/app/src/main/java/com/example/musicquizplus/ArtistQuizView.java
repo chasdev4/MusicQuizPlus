@@ -609,8 +609,13 @@ public class ArtistQuizView extends AppCompatActivity {
                         finish();
                     }
                 }).start();
+                return true;
             }
-            return true;
+            else {
+                finish();
+                return super.onKeyUp(keyCode, event);
+            }
+//           return true;
         }
         return super.onKeyUp(keyCode, event);
     }
@@ -649,4 +654,5 @@ public class ArtistQuizView extends AppCompatActivity {
         String id = artistId.substring(15);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/artist/%s", id);
     }
+
 }

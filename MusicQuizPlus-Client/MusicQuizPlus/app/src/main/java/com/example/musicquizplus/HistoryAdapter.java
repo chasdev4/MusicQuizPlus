@@ -165,7 +165,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 }
                 else {
                     viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
-
                 }
 
 
@@ -224,6 +223,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 if (user != null) {
                     lastChoice = user.getAlbumIds().containsValue(album.getId());
                     viewHolder.aqvHeartAlbum.setChecked(lastChoice);
+                    if (lastChoice) {
+                        viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+                    }
+                    else {
+                        viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                    }
                 } else {
                     lastChoice = false;
                     viewHolder.aqvHeartAlbum.setChecked(false);

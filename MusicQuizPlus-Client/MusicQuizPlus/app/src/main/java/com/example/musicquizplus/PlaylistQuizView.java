@@ -343,7 +343,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
                 && !event.isCanceled()) {
-
             if (heartButton.isChecked()) {
                 new Thread(new Runnable() {
                     @Override
@@ -371,7 +370,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             else {
                 return super.onKeyUp(keyCode, event);
             }
-
             return true;
         }
         return super.onKeyUp(keyCode, event);
