@@ -21,7 +21,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView playlistAlbum;
     TextView playlistArtist;
     TextView playlistYear;
-    ImageButton playlistAudio;
+    ToggleButton playlistAudio;
     RecyclerView recyclerView;
     ImageView aqvPreviewImage;
     TextView aqvAlbumTitle;

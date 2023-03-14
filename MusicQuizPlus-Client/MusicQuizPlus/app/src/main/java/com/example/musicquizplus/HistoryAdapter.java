@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ToggleButton;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -187,15 +188,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
                         mediaPlayer = new MediaPlayer();
 
-                        if (viewHolder.playlistAudio.getDrawable().getConstantState().equals(context.getResources().getDrawable(R.drawable.stop_audio).getConstantState())) {
-                            viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.play_audio));
-                        } else {
-                            viewHolder.playlistAudio.setImageDrawable(context.getResources().getDrawable(R.drawable.stop_audio));
+                        if (viewHolder.playlistAudio.isChecked()) {
                             mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
                         }
 
 
                         if (old != pos) {
+
+                            View v = ((PlaylistQuizView)context).listView.getLayoutManager().findViewByPosition(old);
+                            ((ToggleButton)v.findViewById(R.id.playSampleAudio)).setChecked(false);
                             //notifyDataSetChanged();
                             //set image at position old to stop
                             //View v = viewHolder.recyclerView.getChildAt(old);

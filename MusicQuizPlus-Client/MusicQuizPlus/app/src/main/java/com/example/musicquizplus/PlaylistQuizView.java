@@ -265,6 +265,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
+        Context context = this;
+
 
         new Thread(new Runnable() {
             public void run() {
@@ -287,11 +289,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 }
                 if (playlist.getTracks() != null) {
                     List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
+                            adapter = new HistoryAdapter(user, tracksList, null, context, 1);
                             adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
                                 @Override
                                 public void onChanged() {
