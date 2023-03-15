@@ -232,7 +232,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
             case 2:
                 //if switchOn is 2, its for artist quiz preview
-                album = albumList.get(position);
+                Album album = albumList.get(viewHolder.getAdapterPosition());
                 SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
 
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
