@@ -30,9 +30,9 @@
     <color name="silver">#dedede</color>
     <color name="gold">#ffd700</color>
     <color name="mqPurpleGreen">#284369</color>
-    <color name="mqPurpleGreenBackground">#1a3a46</color>
+    <color name="mqPurpleGreenBackground">#213654</color>
     <color name="mqPurpleRed">#551668</color>
-    <color name="mqPurpleRedBackground">#470e45</color>
+    <color name="mqPurpleRedBackground">#461256</color>
     <color name="mqPurpleBlue">#2b328a</color>
 
 </resources>

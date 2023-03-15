@@ -824,9 +824,7 @@ public class User implements Serializable {
         List<String> removeQueue = new ArrayList<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
             Playlist playlist = FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class);
-//            if (playlist.getName() == null) {
-//                Log.d(TAG, "initPlaylists: ");
-//            }
+
             if (playlist != null && playlist.getId() != null) {
                 playlists.put(entry.getKey(), playlist);
             }
@@ -843,11 +841,37 @@ public class User implements Serializable {
     }
 
     public void initHistory(DatabaseReference db) {
-        LogUtil log = new LogUtil(TAG, "initPlaylists");
+        LogUtil log = new LogUtil(TAG, "initHistory");
         history = new LinkedList<>();
+        List<String> removeQueue = new ArrayList<>();
 
         for (String trackId : historyIds) {
-            history.add(FirebaseService.checkDatabase(db, "tracks", trackId, Track.class));
+            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+            if (track != null) {
+                String id = null;
+                String child = null;
+                if (track.isAlbumKnown()) {
+                    child = "albums";
+                    id = track.getAlbumId();
+                }
+                else if (track.getPlaylistIds() != null && track.getPlaylistIds().size() > 0){
+                    child = "playlists";
+                    for (Map.Entry<String, String> entry : track.getPlaylistIds().entrySet()) {
+                        if (entry.getValue() != null) {
+                            id = entry.getValue();
+                        }
+                    }
+                }
+                track.setPhotoUrl(FirebaseService.getPhotoUrl(db, child, id));
+
+                history.add(track);
+            }
+            else {
+                removeQueue.add(trackId);
+            }
+        }
+        for (String trackId : removeQueue) {
+            historyIds.remove(trackId);
         }
 
         if (history.size() > 0) {

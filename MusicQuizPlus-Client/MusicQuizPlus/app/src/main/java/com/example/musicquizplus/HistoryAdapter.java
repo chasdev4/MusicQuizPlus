@@ -115,8 +115,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 }
 
                 viewHolder.historyYear.setText(track.getYear());
-                Picasso.get().load(ItemService.getSmallestPhotoUrl(track.getPhotoUrl())).into(viewHolder.historyPreviewImage);
-
+                if (track.getPhotoUrl() != null) {
+                    Picasso.get().load(ItemService.getSmallestPhotoUrl(track.getPhotoUrl())).placeholder(R.drawable.placeholder).into(viewHolder.historyPreviewImage);
+                }
+                else {
+                    Picasso.get().load(R.drawable.placeholder).into(viewHolder.historyPreviewImage);
+                }
                 viewHolder.viewOnSpotify.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
