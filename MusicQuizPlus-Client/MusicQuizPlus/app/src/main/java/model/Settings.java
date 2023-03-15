@@ -28,6 +28,7 @@ public class Settings implements Serializable {
     private Difficulty difficulty;
     private boolean ignorePlaylistDifficulty;
     private boolean ignoreArtistDifficulty;
+    private boolean showToolTips;
 
     private User user;
     //#endregion
@@ -47,6 +48,7 @@ public class Settings implements Serializable {
         difficulty = Difficulty.EASY;
         ignorePlaylistDifficulty = false;
         ignoreArtistDifficulty = false;
+        showToolTips = true;
     }
     //#endregion
 
@@ -62,6 +64,8 @@ public class Settings implements Serializable {
     public boolean isIgnoreArtistDifficulty() {
         return ignoreArtistDifficulty;
     }
+
+    public boolean isShowToolTips() { return showToolTips; }
 
     @Exclude
     public User getUser() {
