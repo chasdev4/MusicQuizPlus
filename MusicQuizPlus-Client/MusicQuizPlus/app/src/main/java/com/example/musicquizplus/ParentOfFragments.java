@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
@@ -9,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -23,6 +25,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
+import com.tomergoldst.tooltips.ToolTip;
+import com.tomergoldst.tooltips.ToolTipsManager;
 
 import java.util.Locale;
 import java.util.Map;
@@ -50,10 +54,12 @@ public class ParentOfFragments extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private ToggleButton muteButton;
     private TextView userLevel;
-    private ImageView userCustomAvatar;
+    private ImageView userCustomAvatar, invisibleImage, invisibleGridView;
     private ImageButton backToTop;
     private Button pageTitle;
     private ImageButton settingsButton;
+    private ImageButton searchButton;
+    private ConstraintLayout root;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -66,12 +72,21 @@ public class ParentOfFragments extends AppCompatActivity {
     private Map<String, String> defaultPlaylistIds;
 
     private boolean ignoreMuteAction;
+    private ToolTipsManager toolTipsManager;
+    private ToolTip.Builder builder;
+    private int track;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_of_fragments);
+
+        track = 0;
         ignoreMuteAction = true;
+        toolTipsManager = new ToolTipsManager();
+        invisibleImage = findViewById(R.id.invisibleImage);
+        root = findViewById(R.id.parentOfFragsRoot);
+        invisibleGridView = findViewById(R.id.invisibleGridView);
 
         Context context = this;
         ImageButton helpButton = findViewById(R.id.embeddedHelp);
@@ -148,7 +163,7 @@ public class ParentOfFragments extends AppCompatActivity {
         viewPager2.setAdapter(viewPagerAdapter);
         backToTop = findViewById(R.id.backToTop);
 
-        ImageButton searchButton = findViewById(R.id.mainSearchButton);
+        searchButton = findViewById(R.id.mainSearchButton);
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -204,7 +219,64 @@ public class ParentOfFragments extends AppCompatActivity {
                 tabLayout.getTabAt(position).select();
             }
         });
+    }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if(user.getSettings().isShowToolTips())
+        {
+            new Handler().postDelayed(this::startToolTips, 2000);
+        }
+    }
+
+    private void startToolTips()
+    {
+        //gridview quizzes
+        builder = new ToolTip.Builder(this, invisibleGridView, root, "Click A Playlist To Be Quizzed On", ToolTip.POSITION_ABOVE);
+        builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+        builder.setTextAppearance(R.style.TooltipTextAppearance);
+        toolTipsManager.show(builder.build());
+        track++;
+        new Handler().postDelayed(this::showNext, 3000);
+    }
+
+    private void showNext()
+    {
+        if(track == 1)
+        {
+            //swipe from right to left
+            toolTipsManager.findAndDismiss(invisibleGridView);
+            builder = new ToolTip.Builder(this, invisibleImage, root, "Swipe From Right To Left For Artist View", ToolTip.POSITION_LEFT_TO);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 2)
+        {
+            //search button
+            toolTipsManager.findAndDismiss(invisibleImage);
+            builder = new ToolTip.Builder(this, searchButton, root, "Search for Your Favorite Music", ToolTip.POSITION_LEFT_TO);
+            builder.setAlign(ToolTip.ALIGN_CENTER);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 3)
+        {
+            clearToolTip();
+        }
+    }
+
+    private void clearToolTip()
+    {
+        toolTipsManager.dismissAll();
+        track = 0;
     }
 
     @Override
