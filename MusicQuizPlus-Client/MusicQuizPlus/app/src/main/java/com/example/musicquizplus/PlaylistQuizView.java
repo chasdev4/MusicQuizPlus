@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -317,10 +318,22 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 if (!playlist.isInitializing()) {
-                    Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                    intent.putExtra("currentPlaylist", playlist);
-                    intent.putExtra("currentUser", user);
-                    startActivity(intent);
+                    if (playlist.getTracks().size() >= 15) {
+                        Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
+                        intent.putExtra("currentPlaylist", playlist);
+                        intent.putExtra("currentUser", user);
+                        startActivity(intent);
+                    }
+                    else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(context,
+                                        "Not enough data to start this quiz, choose different playlist", Toast.LENGTH_LONG);
+                                toast.show();
+                            }
+                        });
+                    }
                 }
             }
         });

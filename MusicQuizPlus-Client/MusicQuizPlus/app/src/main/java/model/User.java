@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -791,11 +792,11 @@ public class User implements Serializable {
         }
     }
 
-    public void initCollections(DatabaseReference db, FirebaseUser firebaseUser) {
-        initArtists(db, firebaseUser, true);
-        initPlaylists(db);
-        initHistory(db);
-    }
+//    public void initCollections(DatabaseReference db, FirebaseUser firebaseUser) {
+//        initArtists(db, firebaseUser, true);
+//        initPlaylists(db);
+//        initHistory(db);
+//    }
 
     public void initArtists(DatabaseReference db, FirebaseUser firebaseUser, boolean initCollections) {
         LogUtil log = new LogUtil(TAG, "initArtists");
@@ -817,11 +818,26 @@ public class User implements Serializable {
         log.i("Artists retrieved.");
     }
 
-    private void initPlaylists(DatabaseReference db) {
+    public void initPlaylists(DatabaseReference db, DatabaseReference userRef) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         playlists = new HashMap<>();
+        List<String> removeQueue = new ArrayList<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
-            playlists.put(entry.getKey(), FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class));
+            Playlist playlist = FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class);
+//            if (playlist.getName() == null) {
+//                Log.d(TAG, "initPlaylists: ");
+//            }
+            if (playlist != null && playlist.getId() != null) {
+                playlists.put(entry.getKey(), playlist);
+            }
+            else {
+                removeQueue.add(entry.getKey());
+                userRef.child("playlistIds").child(entry.getKey()).removeValue();
+            }
+        }
+        for (String playlistKey : removeQueue) {
+            playlistIds.remove(playlistKey);
+
         }
         log.i("Playlists retrieved.");
     }
