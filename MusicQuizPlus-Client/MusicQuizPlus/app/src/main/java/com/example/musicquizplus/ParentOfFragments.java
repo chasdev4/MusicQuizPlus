@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -56,6 +57,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private ImageButton backToTop;
     private Button pageTitle;
     private ImageButton settingsButton;
+    private RadioGroup dotNavigator;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -74,6 +76,8 @@ public class ParentOfFragments extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_of_fragments);
         ignoreMuteAction = true;
+
+        dotNavigator = findViewById(R.id.dot_navigator);
 
         Context context = this;
         ImageButton helpButton = findViewById(R.id.embeddedHelp);
@@ -172,16 +176,19 @@ public class ParentOfFragments extends AppCompatActivity {
                     case 0:
                         if (playlistsBackToTopListener != null) {
                             backToTop.setOnClickListener(playlistsBackToTopListener);
+                            dotNavigator.check(R.id.radio_playlists);
                         }
                         break;
                     case 1:
                         if (artistsBackToTopListener != null) {
                             backToTop.setOnClickListener(artistsBackToTopListener);
+                            dotNavigator.check(R.id.radio_artists);
                         }
                         break;
                     case 2:
                         if (historyBackToTopListener != null) {
                             backToTop.setOnClickListener(historyBackToTopListener);
+                            dotNavigator.check(R.id.radio_history);
                         }
                         break;
                 }
