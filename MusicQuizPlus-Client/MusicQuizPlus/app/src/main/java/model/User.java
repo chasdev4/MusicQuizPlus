@@ -50,7 +50,7 @@ public class User implements Serializable {
     private Map<String, String> albumIds;
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
-    private List<String> historyIds;
+    private List<HistoryEntry> historyIds;
     private Map<String, Badge> badges;
     private Map<String, TopicHistory> playlistHistory;
     private Map<String, ArtistHistory> artistHistory;
@@ -195,7 +195,7 @@ public class User implements Serializable {
         return playlistIds;
     }
 
-    public List<String> getHistoryIds() {
+    public List<HistoryEntry> getHistoryIds() {
         return historyIds;
     }
 
@@ -357,7 +357,7 @@ public class User implements Serializable {
         this.artistIds = artistIds;
     }
 
-    public void setHistoryIds(List<String> historyIds) {
+    public void setHistoryIds(List<HistoryEntry> historyIds) {
         this.historyIds = historyIds;
     }
 
@@ -477,15 +477,15 @@ public class User implements Serializable {
     //#endregion
 
     //#region Update History
-    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
+    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks, String sourceId) {
         LinkedList<String> historyIds = new LinkedList<>();
 
-        for (String id : this.historyIds) {
+        for (HistoryEntry id : this.historyIds) {
             if(historyIds.size() == 50)
             {
                 break;
             }
-            historyIds.addLast(id);
+            historyIds.addLast(id.getId());
         }
 
         for (int i = 0; i < tracks.size(); i++) {
@@ -501,9 +501,9 @@ public class User implements Serializable {
 
         this.historyIds = new ArrayList<>();
         for (String id : historyIds) {
-            this.historyIds.add(id);
+            this.historyIds.add(new HistoryEntry(id, sourceId));
         }
-        db.child("users").child(uId).child("historyIds").setValue(historyIds);
+        db.child("users").child(uId).child("historyIds").setValue(this.historyIds);
     }
 
     public void updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
@@ -844,30 +844,34 @@ public class User implements Serializable {
         LogUtil log = new LogUtil(TAG, "initHistory");
         history = new LinkedList<>();
         List<String> removeQueue = new ArrayList<>();
-
-        for (String trackId : historyIds) {
-            Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+        Map<String, List<PhotoUrl>> data = new HashMap<>();
+        for (HistoryEntry entry : historyIds) {
+            Track track = FirebaseService.checkDatabase(db, "tracks", entry.getId(), Track.class);
             if (track != null) {
-                String id = null;
-                String child = null;
-                if (track.isAlbumKnown()) {
-                    child = "albums";
-                    id = track.getAlbumId();
-                }
-                else if (track.getPlaylistIds() != null && track.getPlaylistIds().size() > 0){
-                    child = "playlists";
-                    for (Map.Entry<String, String> entry : track.getPlaylistIds().entrySet()) {
-                        if (entry.getValue() != null) {
-                            id = entry.getValue();
+                if (!data.containsKey(entry.getSource())) {
+                    String[] entrySource = entry.getSource().split(":");
+                    String child = null;
+                    switch (entrySource[1]) {
+                        case "playlist":
+                            child = "playlists";
+                            break;
+                        case "album":
+                            child = "albums";
+                            break;
+                    }
+                    if (child != null) {
+                        List<PhotoUrl> photoUrl = FirebaseService.getPhotoUrl(db, child, entry.getSource());
+                        if (photoUrl != null) {
+                            data.put(entry.getSource(), photoUrl);
                         }
                     }
                 }
-                track.setPhotoUrl(FirebaseService.getPhotoUrl(db, child, id));
+                track.setPhotoUrl(data.get(entry.getSource()));
 
                 history.add(track);
             }
             else {
-                removeQueue.add(trackId);
+                removeQueue.add(entry.getId());
             }
         }
         for (String trackId : removeQueue) {

@@ -245,9 +245,11 @@ public class FirebaseService {
     }
 
     public static List<PhotoUrl> getPhotoUrl(DatabaseReference db, String child, String id) {
+        LogUtil log = new LogUtil("FirebaseService.java","getPhotoUrl");
         final List<PhotoUrl>[] photoUrl = new List[]{null};
         GenericTypeIndicator<List<PhotoUrl>> typeIndicator = new GenericTypeIndicator<List<PhotoUrl>>() {};
         CountDownLatch cdl = new CountDownLatch(1);
+        log.v(String.format("Retrieving photoUrl for %s", id));
         db.child(child).child(id).child("photoUrl").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -257,7 +259,7 @@ public class FirebaseService {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
+                log.e(error.getMessage());
             }
         });
         try {
