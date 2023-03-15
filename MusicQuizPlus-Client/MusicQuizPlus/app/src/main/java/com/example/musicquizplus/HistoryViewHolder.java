@@ -30,6 +30,8 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     ToggleButton aqvHeartAlbum;
 
     View view;
+    private String trackId;
+
 
     HistoryViewHolder(View itemView, int switchOn)
     {
@@ -71,5 +73,13 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 aqvHeartAlbum = itemView.findViewById(R.id.album_heart);
         }
         view  = itemView;
+    }
+
+    public String getTrackId() {
+        return trackId;
+    }
+
+    public void setTrackId(String trackId) {
+        this.trackId = trackId;
     }
 }

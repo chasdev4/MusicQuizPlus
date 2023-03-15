@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     MediaPlayer mediaPlayer = new MediaPlayer();
     int old;
     User user;
+    private Track currentTrack;
 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -89,7 +91,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final HistoryViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(final HistoryViewHolder viewHolder, int position) {
 
         switch (switchOn) {
             case 0:
@@ -168,7 +170,14 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                     viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
                 }
 
-
+                if (currentTrack != null && track != null) {
+                    viewHolder.setTrackId(track.getId());
+                    if (currentTrack.getId().equals(track.getId())) {
+                        viewHolder.playlistAudio.setChecked(true);
+                    } else {
+                        viewHolder.playlistAudio.setChecked(false);
+                    }
+                }
                 viewHolder.playlistTrackTitle.setText(track.getName());
                 viewHolder.playlistArtist.setText(track.getArtistName());
                 viewHolder.playlistAlbum.setText(track.getAlbumName());
@@ -176,7 +185,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                 viewHolder.playlistAudio.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-
 
                         if (mediaPlayer.isPlaying()) {
                             mediaPlayer.stop();
@@ -190,13 +198,19 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
                         if (viewHolder.playlistAudio.isChecked()) {
                             mediaPlayer = playAudio(trackList.get(viewHolder.getAdapterPosition()).getPreviewUrl());
+                            currentTrack = trackList.get(pos);
                         }
 
 
                         if (old != pos) {
 
                             View v = ((PlaylistQuizView)context).listView.getLayoutManager().findViewByPosition(old);
-                            ((ToggleButton)v.findViewById(R.id.playSampleAudio)).setChecked(false);
+                            try {
+                                ((ToggleButton) v.findViewById(R.id.playSampleAudio)).setChecked(false);
+                            }
+                            catch (NullPointerException e) {
+                                Log.e("HistoryAdapter.java", e.getMessage().toString() );
+                            }
                             //notifyDataSetChanged();
                             //set image at position old to stop
                             //View v = viewHolder.recyclerView.getChildAt(old);
