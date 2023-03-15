@@ -6,6 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -135,8 +136,11 @@ public class ArtistQuizView extends AppCompatActivity {
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
         albumsRV = findViewById(R.id.aqvAlbums);
+        albumsRV.setNestedScrollingEnabled(false);
         compilationsRV = findViewById(R.id.aqvCompilations);
+        compilationsRV.setNestedScrollingEnabled(false);
         singlesRV = findViewById(R.id.aqvSingles);
+        singlesRV.setNestedScrollingEnabled(false);
         singlesTextView = findViewById(R.id.singlesTextView);
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         compilationsTextView = findViewById(R.id.compilationsTextView);
@@ -334,7 +338,7 @@ public class ArtistQuizView extends AppCompatActivity {
         super.onStart();
         SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         CountDownLatch cdl = new CountDownLatch(2);
-
+        Activity activity = this;
         new Thread(new Runnable() {
             public void run() {
 
@@ -366,29 +370,18 @@ public class ArtistQuizView extends AppCompatActivity {
                     }
                 });
 
-
-                if (artist.getLatest() != null) {
-                    reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
+                latest = artist.getLatest();
+                if (latest != null) {
+                    activity.runOnUiThread(new Runnable() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            latest = (Album) snapshot.getValue(Album.class);
-                            if (latest != null) {
-                                Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
-                                latestTitle.setText(latest.getName());
-                                latestType.setText(latest.getType().toString());
-                                latestYear.setText(latest.getYear());
-                                latestMiddleDot.setText(getString(R.string.middle_dot));
-                            } else {
-                                latestText.setVisibility(View.GONE);
-                                latestRelease.setVisibility(View.GONE);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
+                        public void run() {
+                            Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
                         }
                     });
+                    latestTitle.setText(latest.getName());
+                    latestType.setText(latest.getType().toString());
+                    latestYear.setText(latest.getYear());
+                    latestMiddleDot.setText(getString(R.string.middle_dot));
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -397,6 +390,7 @@ public class ArtistQuizView extends AppCompatActivity {
                             latestRelease.setVisibility(View.GONE);
                         }
                     });
+
                 }
 
                 LogUtil log = new LogUtil("ArtistQuizView", "onStart");
@@ -474,13 +468,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     });
                 }
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        aqvProgressBar.setVisibility(View.GONE);
-                        entireAQV.setVisibility(View.VISIBLE);
-                    }
-                });
+
 
                 executorService.shutdown();
 
@@ -489,6 +477,13 @@ public class ArtistQuizView extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     log.e(e.getMessage());
                 }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        aqvProgressBar.setVisibility(View.GONE);
+                        entireAQV.setVisibility(View.VISIBLE);
+                    }
+                });
             }
         }).start();
 
@@ -610,8 +605,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     }
                 }).start();
                 return true;
-            }
-            else {
+            } else {
                 finish();
                 return super.onKeyUp(keyCode, event);
             }

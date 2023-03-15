@@ -58,7 +58,7 @@ public class Artist implements Serializable {
     private List<Album> compilations;
     private List<Integer> sortedDecades;
     private Map<Integer, Integer> decadesMap;
-    private String latest;
+    private Album latest;
     private boolean isInitializing;
 
     private static String TAG = "Artist.java";
@@ -113,16 +113,14 @@ public class Artist implements Serializable {
         return externalLinks;
     }
 
-    @Exclude
-    public String getLatest() {
-        String latest = null;
+    private void setLatest() {
         int newest = 0;
         if (albums != null) {
             for (Album a : albums) {
                 int year = Integer.parseInt(a.getYear());
                 if (year > newest) {
                     newest = year;
-                    latest = a.getId();
+                    latest = a;
                 }
             }
         }
@@ -131,7 +129,7 @@ public class Artist implements Serializable {
                 int year = Integer.parseInt(a.getYear());
                 if (year > newest) {
                     newest = year;
-                    latest = a.getId();
+                    latest = a;
                 }
             }
         }
@@ -140,10 +138,14 @@ public class Artist implements Serializable {
                 int year = Integer.parseInt(a.getYear());
                 if (year > newest) {
                     newest = year;
-                    latest = a.getId();
+                    latest = a;
                 }
             }
         }
+    }
+
+    @Exclude
+    public Album getLatest() {
         return latest;
     }
 
@@ -490,7 +492,7 @@ public class Artist implements Serializable {
         jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
         addReleases(jsonArray);
 
-        latest = getLatest();
+        setLatest();
 
         decades = new ArrayList<>();
         for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
@@ -631,6 +633,9 @@ public class Artist implements Serializable {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             log.e(e.getMessage());
+        }
+        if (latest == null) {
+            setLatest();
         }
         isInitializing = false;
     }
