@@ -50,6 +50,7 @@ public class PlaylistFragment extends Fragment {
     private List<String> defaultPlaylistIDs = new ArrayList<>();
     private User user;
     private ProgressBar pgb;
+    ParentOfFragments main;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class PlaylistFragment extends Fragment {
         backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
         reference = FirebaseDatabase.getInstance().getReference();
         pgb = view.findViewById(R.id.playlistProgressBar);
+        main = ((ParentOfFragments)getActivity());
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -98,7 +100,6 @@ public class PlaylistFragment extends Fragment {
             }
         });
         createBackToTopListener();
-        ParentOfFragments main = ((ParentOfFragments)getActivity());
 
         main.setPlaylistsBackToTopListener(backToTopListener);
         if (!main.isBackToTopListenerSet()) {
@@ -107,6 +108,19 @@ public class PlaylistFragment extends Fragment {
 
         // Inflate the layout for this fragment
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if(user != null && user.getSettings().isShowToolTips() && main.toolTipsFinished)
+        {
+            //send playlist to PQV for tooltips there
+            Intent intent = new Intent(getContext(), PlaylistQuizView.class);
+            intent.putExtra("toolTipsPlaylist", (Playlist) gridView.getAdapter().getItem(0));
+            startActivity(intent);
+        }
     }
 
     @Override
