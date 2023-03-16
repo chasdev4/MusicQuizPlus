@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +25,8 @@ import android.widget.ToggleButton;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.tomergoldst.tooltips.ToolTip;
+import com.tomergoldst.tooltips.ToolTipsManager;
 
 import java.io.Serializable;
 import java.net.ContentHandler;
@@ -49,7 +52,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     TextView owner;
     RecyclerView listView;
     Button startQuiz;
-    Playlist playlist;
+    Playlist playlist, playlistForToolTips;
     HistoryAdapter adapter;
     Handler mainHandler = new Handler();
     ImageButton backToTop;
@@ -65,6 +68,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private ToggleButton heartButton;
     private User user;
     private ProgressBar progressBar;
+    private ToolTipsManager toolTipsManager;
+    private ToolTip.Builder builder;
+    ConstraintLayout root;
+    int track = 0;
 
 
     @Override
@@ -86,6 +93,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
         progressBar = findViewById(R.id.playlist_quiz_view_progress_bar);
+        root = findViewById(R.id.pqvRoot);
+        toolTipsManager = new ToolTipsManager();
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
@@ -96,8 +105,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         {
             user = (User) extras.getSerializable("currentUser");
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
+            playlistForToolTips = (Playlist) extras.getSerializable("toolTipsPlaylist");
         }
 
+        if(playlistForToolTips != null)
+        {
+            playlist = playlistForToolTips;
+        }
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -174,6 +188,78 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         });
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if(playlistForToolTips != null && hasFocus)
+        {
+            new Handler().postDelayed(this::startToolTips, 2500);
+        }
+    }
+
+    private void startToolTips()
+    {
+        //gridview quizzes
+        builder = new ToolTip.Builder(this, heartButton, root, "Heart A Playlist To\nAdd It To Your Collection", ToolTip.POSITION_LEFT_TO);
+        builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+        builder.setTextAppearance(R.style.TooltipTextAppearance);
+        toolTipsManager.show(builder.build());
+        track++;
+        new Handler().postDelayed(this::showNext, 3000);
+    }
+
+    private void showNext()
+    {
+        toolTipsManager.dismissAll();
+
+        if(track == 1)
+        {
+            //show tool tip for spotify button
+            toolTipsManager.findAndDismiss(heartButton);
+            builder = new ToolTip.Builder(this, spotifyButton, root, "Click Here To View\nThis Playlist On Spotify", ToolTip.POSITION_BELOW);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 2)
+        {
+            //show tool tip for share button
+            toolTipsManager.findAndDismiss(spotifyButton);
+            builder = new ToolTip.Builder(this, shareButton, root, "Click Here To Share\nThis Spotify Playlist", ToolTip.POSITION_BELOW);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 3)
+        {
+            //show tool tip for start quiz button
+            toolTipsManager.findAndDismiss(shareButton);
+            builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Playlist", ToolTip.POSITION_ABOVE);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else
+        {
+            clearToolTip();
+            Intent intent = new Intent(getBaseContext(), ParentOfFragments.class);
+            intent.putExtra("stopToolTips", true);
+            startActivity(intent);
+        }
+    }
+
+    private void clearToolTip()
+    {
+        toolTipsManager.dismissAll();
+        track = 0;
+    }
 
     @Override
     public void onStart() {
@@ -182,7 +268,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            playlist = (Playlist) extras.getSerializable("currentPlaylist");
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
 
