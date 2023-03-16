@@ -237,10 +237,38 @@ public class ParentOfFragments extends AppCompatActivity {
 
     private void showNext()
     {
+        toolTipsManager.dismissAll();
+
         if(track == 1)
         {
+            if(firebaseUser != null)
+            {
+                //click here to view your profile
+                toolTipsManager.findAndDismiss(invisibleGridView);
+                builder = new ToolTip.Builder(this, userCustomAvatar, root, "Click Here To View Your Profile", ToolTip.POSITION_RIGHT_TO);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else
+            {
+                //click here to create a profile
+                toolTipsManager.findAndDismiss(invisibleGridView);
+                builder = new ToolTip.Builder(this, userCustomAvatar, root, "Click Here To Create An Account", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setAlign(ToolTip.ALIGN_RIGHT);
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+        }
+        else if(track == 2)
+        {
             //swipe from right to left
-            toolTipsManager.findAndDismiss(invisibleGridView);
+            toolTipsManager.findAndDismiss(userCustomAvatar);
             builder = new ToolTip.Builder(this, invisibleImage, root, "Swipe From Right To Left For Artist View", ToolTip.POSITION_LEFT_TO);
             builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
             builder.setTextAppearance(R.style.TooltipTextAppearance);
@@ -248,7 +276,7 @@ public class ParentOfFragments extends AppCompatActivity {
             track++;
             new Handler().postDelayed(this::showNext, 3000);
         }
-        else if(track == 2)
+        else if(track == 3)
         {
             //search button
             toolTipsManager.findAndDismiss(invisibleImage);
@@ -260,9 +288,60 @@ public class ParentOfFragments extends AppCompatActivity {
             track++;
             new Handler().postDelayed(this::showNext, 3000);
         }
-        else if(track == 3)
+        else if(track == 4)
         {
+            //switch to artists view
+            tabLayout.getTabAt(1).select();
+            toolTipsManager.findAndDismiss(invisibleImage);
+            builder = new ToolTip.Builder(this, invisibleGridView, root, "See Your Saved Artists Here", ToolTip.POSITION_ABOVE);
+            builder.setAlign(ToolTip.ALIGN_CENTER);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 5)
+        {
+            toolTipsManager.findAndDismiss(searchButton);
+            builder = new ToolTip.Builder(this, invisibleImage, root, "Swipe From Right To Left For History View", ToolTip.POSITION_LEFT_TO);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 6)
+        {
+            toolTipsManager.findAndDismiss(invisibleGridView);
+            builder = new ToolTip.Builder(this, searchButton, root, "Search For An Artist\nTo Save For Quizzing", ToolTip.POSITION_LEFT_TO);
+            builder.setAlign(ToolTip.ALIGN_CENTER);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3000);
+        }
+        else if(track == 7)
+        {
+            //switch to history view
+            tabLayout.getTabAt(2).select();
+            //give tooltip about artists view
+            toolTipsManager.findAndDismiss(searchButton);
+            builder = new ToolTip.Builder(this, invisibleGridView, root, "See Your Track History From\nPrevious Quizzes Here", ToolTip.POSITION_ABOVE);
+            builder.setAlign(ToolTip.ALIGN_CENTER);
+            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+            builder.setTextAppearance(R.style.TooltipTextAppearance);
+            toolTipsManager.show(builder.build());
+            track++;
+            new Handler().postDelayed(this::showNext, 3250);
+        }
+        else
+        {
+            //Go back to playlist view and clear all tool tips
             clearToolTip();
+            tabLayout.getTabAt(0).select();
+            toolTipsFinished = true;
         }
     }
 
