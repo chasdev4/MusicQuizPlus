@@ -8,6 +8,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
@@ -75,6 +76,8 @@ public class ParentOfFragments extends AppCompatActivity {
     private ToolTipsManager toolTipsManager;
     private ToolTip.Builder builder;
     private int track;
+    public boolean toolTipsFinished;
+    private int toolTipsNum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -221,16 +224,6 @@ public class ParentOfFragments extends AppCompatActivity {
         });
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-
-        if(user.getSettings().isShowToolTips())
-        {
-            new Handler().postDelayed(this::startToolTips, 2000);
-        }
-    }
-
     private void startToolTips()
     {
         //gridview quizzes
@@ -282,12 +275,38 @@ public class ParentOfFragments extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Fetching the stored data from the SharedPreference
+        SharedPreferences sh = getSharedPreferences("GuestAccount", MODE_PRIVATE);
+        int numOfTimes = sh.getInt("numOfTimes", 0);
+        toolTipsNum = numOfTimes;
+
+        // Setting the fetched data in the EditTexts
+        if(numOfTimes < 3)
+        {
+            Bundle extras = getIntent().getExtras();
+
+            if(user.getSettings().isShowToolTips() && extras == null)
+            {
+                toolTipsFinished = false;
+                new Handler().postDelayed(this::startToolTips, 2500);
+                toolTipsNum++;
+            }
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mediaPlayer.stop();
+
+        // Creating a shared pref object
+        SharedPreferences sharedPreferences = getSharedPreferences("GuestAccount", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        // write all the data entered by the user in SharedPreference and apply
+        myEdit.putInt("numOfTimes", toolTipsNum);
+        myEdit.apply();
     }
 
     @Override
