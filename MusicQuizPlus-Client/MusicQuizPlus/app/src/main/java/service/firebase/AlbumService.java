@@ -1,7 +1,13 @@
 package service.firebase;
 
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,7 +42,9 @@ public class AlbumService {
 
     // When the user "hearts" an album
     public static HeartResponse heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
-                                      SpotifyService spotifyService) {
+                                      SpotifyService spotifyService
+//                                      ,Runnable hidePopup
+    ) {
         LogUtil log = new LogUtil(TAG, "heartAlbum");
 
         // Null check
@@ -134,7 +142,12 @@ public class AlbumService {
         }
 
         user.getArtists().put(album.getArtistId(), artist);
-        db.updateChildren(updates);
+        db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+//                hidePopup.run();
+            }
+        });
         user.addAlbumId(albumKey, album.getId());
         if (result[0]) {
             user.addArtistId(artistKey, artistId);
@@ -235,9 +248,9 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album) {
-
-
+    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album
+//                                        ,Runnable hidePopUp
+    ) {
         LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
         // Null check
@@ -393,7 +406,12 @@ public class AlbumService {
         // Remove the album from the database
         db.child("albums").child(album.getId()).removeValue();
         log.i(String.format("%s removed from /albums", album.getId()));
-        db.updateChildren(updates);
+        db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+//                hidePopUp.run();
+            }
+        });
         updates.clear();
 
         return HeartResponse.OK;

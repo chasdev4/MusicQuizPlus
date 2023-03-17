@@ -12,11 +12,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,6 +54,7 @@ import model.item.Playlist;
 import model.item.Track;
 import model.type.AlbumType;
 import model.type.ExternalLinkType;
+import model.type.HeartResponse;
 import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
@@ -90,6 +94,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ConstraintLayout entireAQV;
     ProgressBar aqvProgressBar;
     Album latest;
+    View savingPopup;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
     boolean isTwitterInstalled;
@@ -115,6 +120,8 @@ public class ArtistQuizView extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_quiz_view);
+
+        savingPopup = findViewById(R.id.aqvSaving);
 
         artistNameTV = findViewById(R.id.aqvArtistName);
         artistBioTV = findViewById(R.id.aqvArtistDescription);
@@ -320,16 +327,47 @@ public class ArtistQuizView extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (user != null) {
-                    if (heartLatest.isChecked()) {
-                        AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
-                    } else {
-                        AlbumService.unheart(user, firebaseUser, reference, latest);
-                    }
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    savingPopup.setVisibility(View.VISIBLE);
+                                }
+                            });
+
+                            HeartResponse response = null;
+                            if (heartLatest.isChecked()) {
+                                response = AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
+                            } else {
+                                response = AlbumService.unheart(user, firebaseUser, reference, latest);
+                            }
+                            if (response != HeartResponse.OK) {
+                                HeartResponse finalResponse = response;
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast toast = null;
+                                        switch (finalResponse) {
+                                            //TODO: Handle Errors
+                                            default:
+                                                toast = Toast.makeText(context, "Encountered an error while hearting, try again later.", Toast.LENGTH_SHORT);
+                                                break;
+                                        }
+                                        toast.show();
+                                    }
+                                });
+                            }
+                        }
+                    }).start();
                 } else {
                     SignUpPopUp signUpPopUp = new SignUpPopUp(getParent(), getBaseContext(), "Get Up And Dance! You Can Save This Album By Joining");
                     signUpPopUp.createAndShow();
                 }
             }
+
         });
     }
 
@@ -469,7 +507,6 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
 
 
-
                 executorService.shutdown();
 
                 try {
@@ -546,6 +583,8 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
             }
         });
+
+
     }
 
     private Artist initArtist() {
