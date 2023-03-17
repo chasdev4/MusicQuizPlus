@@ -203,5 +203,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
+    <include layout="@layout/loading_popup"
+        android:id="@+id/track_result_saving"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

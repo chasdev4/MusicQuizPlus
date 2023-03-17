@@ -146,10 +146,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                     HeartResponse response = null;
                                     if (holder.getToggleButton().isChecked()) {
                                         SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
-                                        response = AlbumService.heart(user, firebaseUser, db, album, spotifyService, hidePopUp);
+                                        response = AlbumService.heart(firebaseUser, db, album, spotifyService, hidePopUp);
                                     }
                                     else {
-                                        response = AlbumService.unheart(user, firebaseUser, db, album, hidePopUp);
+                                        response = AlbumService.unheart(firebaseUser, db, album, hidePopUp);
                                     }
                                     if (response != HeartResponse.OK) {
                                         hidePopUp.run();

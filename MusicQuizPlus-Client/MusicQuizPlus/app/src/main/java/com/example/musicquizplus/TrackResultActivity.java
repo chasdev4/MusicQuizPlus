@@ -45,6 +45,7 @@ public class TrackResultActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RadioGroup radioGroup;
     private ImageButton backToTop;
+    private View loadingPopUp;
 
     private TrackResult trackResult;
     private GoogleSignIn googleSignIn;
@@ -61,6 +62,8 @@ public class TrackResultActivity extends AppCompatActivity {
         googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
+
+        loadingPopUp = findViewById(R.id.track_result_saving);
 
         title = findViewById(R.id.track_result_title);
         subtitle = findViewById(R.id.track_result_subtitle);
@@ -81,12 +84,20 @@ public class TrackResultActivity extends AppCompatActivity {
                 else {
                     trackResultAdapter.setCollection(trackResult.getSuggested());
                 }
-                recyclerView.post(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        trackResultAdapter.notifyDataSetChanged();
+                        User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(),User.class);
+                        trackResultAdapter.setUser(user);
+                        recyclerView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                trackResultAdapter.notifyDataSetChanged();
+                            }
+                        });
                     }
-                });
+                }).start();
+
             }
         });
 
@@ -121,6 +132,31 @@ public class TrackResultActivity extends AppCompatActivity {
         });
     }
 
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.renoving_message
+        );
+    }
+
     private void setupRecyclerView() {
         trackResultAdapter = new TrackResultAdapter(this, this);
         trackResultAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -130,6 +166,10 @@ public class TrackResultActivity extends AppCompatActivity {
                 onDataChange();
             }
         });
+        trackResultAdapter.setHidePopUp(() -> hidePopUp());
+        trackResultAdapter.setShowPopUp(() -> showPopUp());
+        trackResultAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+        trackResultAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);

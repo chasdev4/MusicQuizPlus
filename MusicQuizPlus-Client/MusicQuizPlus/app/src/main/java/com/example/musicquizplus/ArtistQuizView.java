@@ -317,14 +317,13 @@ public class ArtistQuizView extends AppCompatActivity {
                         public void run() {
                             updatePopUpText(heartLatest.isChecked());
                             showPopUp();
-                            User user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
 
                             HeartResponse response = null;
                             if (heartLatest.isChecked()) {
-                                response = AlbumService.heart(user, firebaseUser, reference, latest, spotifyService,
+                                response = AlbumService.heart(firebaseUser, reference, latest, spotifyService,
                                         () -> hidePopUp());
                             } else {
-                                response = AlbumService.unheart(user, firebaseUser, reference, latest, () -> hidePopUp());
+                                response = AlbumService.unheart(firebaseUser, reference, latest, () -> hidePopUp());
                             }
                             if (response != HeartResponse.OK) {
                                 heartLatest.setChecked(false);

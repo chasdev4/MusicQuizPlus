@@ -42,7 +42,7 @@ public class AlbumService {
     private final static String TAG = "AlbumService.java";
 
     // When the user "hearts" an album
-    public static HeartResponse heart(User user1, FirebaseUser firebaseUser, DatabaseReference db, Album album,
+    public static HeartResponse heart(FirebaseUser firebaseUser, DatabaseReference db, Album album,
                                       SpotifyService spotifyService, Runnable hidePopup) {
         LogUtil log = new LogUtil(TAG, "heart");
 
@@ -261,7 +261,7 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public static HeartResponse unheart(User user1, FirebaseUser firebaseUser, DatabaseReference db, Album album, Runnable hidePopUp) {
+    public static HeartResponse unheart(FirebaseUser firebaseUser, DatabaseReference db, Album album, Runnable hidePopUp) {
         LogUtil log = new LogUtil(TAG, "unheart");
 
         // Null check

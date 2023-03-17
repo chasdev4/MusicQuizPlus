@@ -32,6 +32,7 @@ import model.User;
 import model.item.Album;
 import model.item.Track;
 import model.type.HeartResponse;
+import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -270,9 +271,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                         updatePopUpTextFalse.run();
                                     }
                                     showPopUp.run();
+
                                     HeartResponse response = null;
                                     if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService, hidePopUp);
+                                        response = AlbumService.heart(firebaseUser, reference, album, spotifyService, hidePopUp);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
                                               hidePopUp.run();
@@ -283,7 +285,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                           }
 
                                     } else {
-                                        response = AlbumService.unheart(user, firebaseUser, reference, album, hidePopUp);
+                                        response = AlbumService.unheart(firebaseUser, reference, album, hidePopUp);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
                                             hidePopUp.run();

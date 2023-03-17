@@ -22,7 +22,9 @@ import model.SignUpPopUp;
 import model.TrackResult;
 import model.User;
 import model.item.Album;
+import model.type.HeartResponse;
 import model.type.Role;
+import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -32,6 +34,11 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
     private Activity activity;
     private User user;
     private List<Album> collection;
+    private Runnable showPopUp;
+    private Runnable hidePopUp;
+    private Runnable updatePopUpTextTrue;
+    private Runnable updatePopUpTextFalse;
+
 
     public TrackResultAdapter(Context context, Activity activity) {
         this.context = context;
@@ -72,9 +79,27 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
                         @Override
                         public void run() {
                             if (holder.getToggleButton().isChecked()) {
-                                AlbumService.heart(user, firebaseUser, db, album, spotifyService, null);
+                                updatePopUpTextTrue.run();
                             } else {
-                                AlbumService.unheart(user, firebaseUser, db, album, null);
+                                updatePopUpTextFalse.run();
+                            }
+                            showPopUp.run();
+
+                            HeartResponse response = null;
+                            if (holder.getToggleButton().isChecked()) {
+                                response = AlbumService.heart(firebaseUser, db, album, spotifyService, hidePopUp);
+                            } else {
+                                response = AlbumService.unheart(firebaseUser, db, album, hidePopUp);
+                            }
+                            if (response != HeartResponse.OK) {
+                                hidePopUp.run();
+                                HeartResponse finalResponse = response;
+                                ((SearchActivity) context).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        AlbumService.showError(finalResponse, context);
+                                    }
+                                });
                             }
                         }
                     }).start();
@@ -100,5 +125,21 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
 
     public void setCollection(List<Album> collection) {
         this.collection = collection;
+    }
+
+    public void setShowPopUp(Runnable showPopUp) {
+        this.showPopUp = showPopUp;
+    }
+
+    public void setHidePopUp(Runnable hidePopUp) {
+        this.hidePopUp = hidePopUp;
+    }
+
+    public void setUpdatePopUpTextTrue(Runnable updatePopUpTextTrue) {
+        this.updatePopUpTextTrue = updatePopUpTextTrue;
+    }
+
+    public void setUpdatePopUpTextFalse(Runnable updatePopUpTextFalse) {
+        this.updatePopUpTextFalse = updatePopUpTextFalse;
     }
 }
