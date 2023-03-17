@@ -340,9 +340,10 @@ public class ArtistQuizView extends AppCompatActivity {
 
                             HeartResponse response = null;
                             if (heartLatest.isChecked()) {
-                                response = AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
+                                response = AlbumService.heart(user, firebaseUser, reference, latest, spotifyService,
+                                        () -> hidePopUp());
                             } else {
-                                response = AlbumService.unheart(user, firebaseUser, reference, latest);
+                                response = AlbumService.unheart(user, firebaseUser, reference, latest, () -> hidePopUp());
                             }
                             if (response != HeartResponse.OK) {
                                 HeartResponse finalResponse = response;
@@ -368,6 +369,15 @@ public class ArtistQuizView extends AppCompatActivity {
                 }
             }
 
+        });
+    }
+
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                savingPopup.setVisibility(View.GONE);
+            }
         });
     }
 

@@ -7,6 +7,8 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:elevation="30dp"
+        android:outlineAmbientShadowColor="@color/black"
         android:background="@drawable/saving_bg"
         android:gravity="center"
         android:orientation="vertical"

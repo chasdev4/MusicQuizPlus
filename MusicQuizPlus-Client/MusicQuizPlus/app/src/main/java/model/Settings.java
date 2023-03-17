@@ -117,7 +117,7 @@ public class Settings implements Serializable {
             albums.addAll(artist.getValue().getCompilations());
 
             for (Album album : albums) {
-                AlbumService.unheart(user, firebaseUser, db, album);
+                AlbumService.unheart(user, firebaseUser, db, album, null);
                 album.setTrackIds(new ArrayList<>());
                 album.setTracks(new ArrayList<>());
             }

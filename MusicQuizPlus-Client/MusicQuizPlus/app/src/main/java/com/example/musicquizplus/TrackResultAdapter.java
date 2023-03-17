@@ -72,9 +72,9 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
                         @Override
                         public void run() {
                             if (holder.getToggleButton().isChecked()) {
-                                AlbumService.heart(user, firebaseUser, db, album, spotifyService);
+                                AlbumService.heart(user, firebaseUser, db, album, spotifyService, null);
                             } else {
-                                AlbumService.unheart(user, firebaseUser, db, album);
+                                AlbumService.unheart(user, firebaseUser, db, album, null);
                             }
                         }
                     }).start();

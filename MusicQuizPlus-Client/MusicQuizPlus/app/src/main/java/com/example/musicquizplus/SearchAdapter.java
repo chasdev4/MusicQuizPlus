@@ -133,10 +133,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                 public void run() {
                                     if (holder.getToggleButton().isChecked()) {
                                         SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
-                                        AlbumService.heart(user, firebaseUser, db, album, spotifyService);
+                                        AlbumService.heart(user, firebaseUser, db, album, spotifyService, null);
                                     }
                                     else {
-                                        AlbumService.unheart(user, firebaseUser, db, album);
+                                        AlbumService.unheart(user, firebaseUser, db, album, null);
                                     }
                                 }
                             }).start();

@@ -42,8 +42,7 @@ public class AlbumService {
 
     // When the user "hearts" an album
     public static HeartResponse heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album,
-                                      SpotifyService spotifyService
-//                                      ,Runnable hidePopup
+                                      SpotifyService spotifyService,Runnable hidePopup
     ) {
         LogUtil log = new LogUtil(TAG, "heartAlbum");
 
@@ -88,8 +87,7 @@ public class AlbumService {
         User dbUser = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
         if (dbUser.getArtistIds().size() > user.getArtistIds().size()) {
             result[0] = !dbUser.getArtistIds().containsValue(album.getArtistId());
-        }
-        else {
+        } else {
             result[0] = !user.getArtistIds().containsValue(album.getArtistId());
         }
         if (result[0]) {
@@ -145,7 +143,7 @@ public class AlbumService {
         db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-//                hidePopup.run();
+                hidePopup.run();
             }
         });
         user.addAlbumId(albumKey, album.getId());
@@ -248,8 +246,7 @@ public class AlbumService {
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
     }
 
-    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album
-//                                        ,Runnable hidePopUp
+    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Album album, Runnable hidePopUp
     ) {
         LogUtil log = new LogUtil(TAG, "unheartAlbum");
 
@@ -409,7 +406,7 @@ public class AlbumService {
         db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-//                hidePopUp.run();
+                hidePopUp.run();
             }
         });
         updates.clear();

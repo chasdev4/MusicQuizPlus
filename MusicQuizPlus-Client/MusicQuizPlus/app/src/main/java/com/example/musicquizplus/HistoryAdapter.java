@@ -261,7 +261,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                 public void run() {
                                     HeartResponse response = null;
                                     if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService);
+                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService, null);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
                                               // TODO: Handle errors
@@ -272,7 +272,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                           }
 
                                     } else {
-                                        response = AlbumService.unheart(user, firebaseUser, reference, album);
+                                        response = AlbumService.unheart(user, firebaseUser, reference, album, null);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
                                             // TODO: Handle errors
