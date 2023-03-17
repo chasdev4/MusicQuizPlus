@@ -26,12 +26,21 @@
         app:layout_constraintTop_toTopOf="@id/guideline" />
 
     <ImageView
-        android:id="@+id/invisibleImage"
+        android:id="@+id/invisibleImageRight"
         android:layout_width="1dp"
         android:layout_height="1dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/invisibleImageLeft"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.tabs.TabLayout
