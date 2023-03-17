@@ -117,6 +117,9 @@ public class Artist implements Serializable {
         int newest = 0;
         if (albums != null) {
             for (Album a : albums) {
+                if (a == null) {
+                    Log.d(TAG, "setLatest: ");
+                }
                 int year = Integer.parseInt(a.getYear());
                 if (year > newest) {
                     newest = year;

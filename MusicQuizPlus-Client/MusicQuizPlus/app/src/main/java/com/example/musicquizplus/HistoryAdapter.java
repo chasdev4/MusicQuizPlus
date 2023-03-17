@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import androidx.core.content.ContextCompat;
@@ -274,7 +275,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                         response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService, hidePopUp);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
-                                              // TODO: Handle errors
+                                              hidePopUp.run();
                                           }
                                           else {
                                               viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
@@ -285,12 +286,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                         response = AlbumService.unheart(user, firebaseUser, reference, album, hidePopUp);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
-                                            // TODO: Handle errors
+                                            hidePopUp.run();
                                         }
                                         else {
                                             viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
 
                                         }
+                                    }
+
+                                    if (response != null && response != HeartResponse.OK){
+                                        HeartResponse finalResponse = response;
+                                        ((Activity)context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                AlbumService.showError(finalResponse, context);
+                                            }
+                                        });
                                     }
                                 }
                             }).start();

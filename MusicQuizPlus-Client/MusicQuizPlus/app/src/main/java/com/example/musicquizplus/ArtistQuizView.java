@@ -148,7 +148,7 @@ public class ArtistQuizView extends AppCompatActivity {
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
         }
-        Context context = this;
+        Activity context = this;
 
         spotify.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -327,22 +327,18 @@ public class ArtistQuizView extends AppCompatActivity {
                                 response = AlbumService.unheart(user, firebaseUser, reference, latest, () -> hidePopUp());
                             }
                             if (response != HeartResponse.OK) {
+                                heartLatest.setChecked(false);
                                 hidePopUp();
                                 HeartResponse finalResponse = response;
-                                runOnUiThread(new Runnable() {
+                                context.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast toast = null;
-                                        switch (finalResponse) {
-                                            //TODO: Handle Errors
-                                            default:
-                                                toast = Toast.makeText(context, "Encountered an error while hearting, try again later.", Toast.LENGTH_SHORT);
-                                                break;
-                                        }
-                                        toast.show();
+                                        AlbumService.showError(finalResponse, context);
                                     }
                                 });
                             }
+
+
                         }
                     }).start();
                 } else {
@@ -385,10 +381,12 @@ public class ArtistQuizView extends AppCompatActivity {
         SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         CountDownLatch cdl = new CountDownLatch(2);
         Activity activity = this;
+        Context context = this;
         new Thread(new Runnable() {
             public void run() {
 
                 if (source != Source.SEARCH) {
+
                     artist.initCollections(reference, user);
                     cdl.countDown();
                     artist.initTracks(reference, user);
@@ -446,7 +444,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), getBaseContext(), 2);
+                            singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), context, 2);
                             singleAdapter.setHidePopUp(() -> hidePopUp());
                             singleAdapter.setShowPopUp(() -> showPopUp());
                             singleAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
@@ -474,7 +472,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), getBaseContext(), 2);
+                            compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), context, 2);
                             compilationAdapter.setHidePopUp(() -> hidePopUp());
                             compilationAdapter.setShowPopUp(() -> showPopUp());
                             compilationAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
@@ -502,7 +500,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), getBaseContext(), 2);
+                            albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), context, 2);
                             albumAdapter.setHidePopUp(() -> hidePopUp());
                             albumAdapter.setShowPopUp(() -> showPopUp());
                             albumAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
@@ -543,8 +541,6 @@ public class ArtistQuizView extends AppCompatActivity {
                 });
             }
         }).start();
-
-        Context context = this;
 
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override

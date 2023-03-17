@@ -34,6 +34,7 @@ import model.item.Album;
 import model.item.Artist;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.HeartResponse;
 import model.type.Role;
 import model.type.SearchFilter;
 import model.type.Source;
@@ -47,6 +48,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
     private SearchActivity activity;
     private List<SearchResult> searchResults;
     private User user;
+    private Runnable showPopUp;
+    private Runnable hidePopUp;
+    private Runnable updatePopUpTextTrue;
+    private Runnable updatePopUpTextFalse;
 
     public SearchAdapter(Context context, SearchActivity activity, List<SearchResult> searchResults) {
         this.context = context;
@@ -132,11 +137,29 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                 @Override
                                 public void run() {
                                     if (holder.getToggleButton().isChecked()) {
-                                        SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
-                                        AlbumService.heart(user, firebaseUser, db, album, spotifyService, null);
+                                        updatePopUpTextTrue.run();
                                     }
                                     else {
-                                        AlbumService.unheart(user, firebaseUser, db, album, null);
+                                        updatePopUpTextFalse.run();
+                                    }
+                                    showPopUp.run();
+                                    HeartResponse response = null;
+                                    if (holder.getToggleButton().isChecked()) {
+                                        SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
+                                        response = AlbumService.heart(user, firebaseUser, db, album, spotifyService, hidePopUp);
+                                    }
+                                    else {
+                                        response = AlbumService.unheart(user, firebaseUser, db, album, hidePopUp);
+                                    }
+                                    if (response != HeartResponse.OK) {
+                                        hidePopUp.run();
+                                        HeartResponse finalResponse = response;
+                                        ((SearchActivity) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                AlbumService.showError(finalResponse, context);
+                                            }
+                                        });
                                     }
                                 }
                             }).start();
@@ -237,5 +260,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     public User getUser() {
         return user;
+    }
+
+    public void setShowPopUp(Runnable showPopUp) {
+        this.showPopUp = showPopUp;
+    }
+
+    public void setHidePopUp(Runnable hidePopUp) {
+        this.hidePopUp = hidePopUp;
+    }
+
+    public void setUpdatePopUpTextTrue(Runnable updatePopUpTextTrue) {
+        this.updatePopUpTextTrue = updatePopUpTextTrue;
+    }
+
+    public void setUpdatePopUpTextFalse(Runnable updatePopUpTextFalse) {
+        this.updatePopUpTextFalse = updatePopUpTextFalse;
     }
 }

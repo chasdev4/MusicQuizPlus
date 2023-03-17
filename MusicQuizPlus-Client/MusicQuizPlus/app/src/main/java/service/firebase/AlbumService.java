@@ -3,6 +3,7 @@ package service.firebase;
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -88,8 +89,7 @@ public class AlbumService {
         if (!user.getArtistIds().containsValue(album.getArtistId())) {
             // Generate a new key
             artistKey = db.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-        }
-        else {
+        } else {
             for (Map.Entry<String, String> artistId : user.getArtistIds().entrySet()) {
                 if (album.getArtistId().equals(artistId.getValue())) {
                     artistKey = artistId.getKey();
@@ -479,5 +479,16 @@ public class AlbumService {
         return HeartResponse.OK;
     }
 
+    public static void showError(HeartResponse response, Context context) {
+        Toast toast = null;
+        switch (response) {
+            //TODO: Handle Errors
+            default:
+                toast = Toast.makeText(context, "Encountered an error while hearting, try again later.", Toast.LENGTH_LONG);
+                break;
+        }
+        toast.show();
+
+    }
 
 }

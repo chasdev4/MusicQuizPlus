@@ -51,6 +51,7 @@ public class SearchActivity extends AppCompatActivity {
     private TextView emptySearchText;
     private ProgressBar progressBar;
     private ImageButton homeButton;
+    private View loadingPopUp;
 
     private Search search;
     private FirebaseUser firebaseUser;
@@ -71,8 +72,8 @@ public class SearchActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search);
         context = this;
 
+        loadingPopUp = findViewById(R.id.search_saving);
         homeButton = findViewById(R.id.home_button);
-
 
         searchStarted = false;
         doingSearch = false;
@@ -459,6 +460,10 @@ public class SearchActivity extends AppCompatActivity {
                 onDataChange();
             }
         });
+        searchAdapter.setHidePopUp(() -> hidePopUp());
+        searchAdapter.setShowPopUp(() -> showPopUp());
+        searchAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+        searchAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
@@ -479,6 +484,31 @@ public class SearchActivity extends AppCompatActivity {
                 emptySearchText.setVisibility(View.INVISIBLE);
             }
         }
+    }
+
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.renoving_message
+        );
     }
 
     public FirebaseUser getFirebaseUser() {
