@@ -1,6 +1,5 @@
 package com.example.musicquizplus;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,31 +11,21 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-import org.checkerframework.checker.units.qual.C;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -50,9 +39,6 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
-import model.item.Track;
-import model.type.AlbumType;
 import model.type.ExternalLinkType;
 import model.type.HeartResponse;
 import model.type.Source;
@@ -60,7 +46,6 @@ import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
-import service.firebase.PlaylistService;
 import utils.LogUtil;
 
 public class ArtistQuizView extends AppCompatActivity {
@@ -94,7 +79,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ConstraintLayout entireAQV;
     ProgressBar aqvProgressBar;
     Album latest;
-    View savingPopup;
+    private View loadingPopUp;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
     boolean isTwitterInstalled;
@@ -121,7 +106,7 @@ public class ArtistQuizView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_quiz_view);
 
-        savingPopup = findViewById(R.id.aqvSaving);
+        loadingPopUp = findViewById(R.id.aqvSaving);
 
         artistNameTV = findViewById(R.id.aqvArtistName);
         artistBioTV = findViewById(R.id.aqvArtistDescription);
@@ -330,13 +315,9 @@ public class ArtistQuizView extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    savingPopup.setVisibility(View.VISIBLE);
-                                }
-                            });
+                            updatePopUpText(heartLatest.isChecked());
+                            showPopUp();
+                            User user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
 
                             HeartResponse response = null;
                             if (heartLatest.isChecked()) {
@@ -346,6 +327,7 @@ public class ArtistQuizView extends AppCompatActivity {
                                 response = AlbumService.unheart(user, firebaseUser, reference, latest, () -> hidePopUp());
                             }
                             if (response != HeartResponse.OK) {
+                                hidePopUp();
                                 HeartResponse finalResponse = response;
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -376,9 +358,25 @@ public class ArtistQuizView extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                savingPopup.setVisibility(View.GONE);
+                loadingPopUp.setVisibility(View.GONE);
             }
         });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.renoving_message
+        );
     }
 
     @Override
@@ -449,6 +447,10 @@ public class ArtistQuizView extends AppCompatActivity {
                         @Override
                         public void run() {
                             singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), getBaseContext(), 2);
+                            singleAdapter.setHidePopUp(() -> hidePopUp());
+                            singleAdapter.setShowPopUp(() -> showPopUp());
+                            singleAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            singleAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -473,6 +475,10 @@ public class ArtistQuizView extends AppCompatActivity {
                         @Override
                         public void run() {
                             compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), getBaseContext(), 2);
+                            compilationAdapter.setHidePopUp(() -> hidePopUp());
+                            compilationAdapter.setShowPopUp(() -> showPopUp());
+                            compilationAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            compilationAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -497,6 +503,10 @@ public class ArtistQuizView extends AppCompatActivity {
                         @Override
                         public void run() {
                             albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), getBaseContext(), 2);
+                            albumAdapter.setHidePopUp(() -> hidePopUp());
+                            albumAdapter.setShowPopUp(() -> showPopUp());
+                            albumAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            albumAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {

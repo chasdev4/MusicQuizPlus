@@ -7,5 +7,5 @@ public enum HeartResponse {
     ARTIST_NOT_FOUND,
     ALBUM_EXISTS,
     ALBUM_ARTIST_DO_NOT_MATCH,
-    ALBUM_LOCKED
+    NULL_USER
 }

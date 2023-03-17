@@ -254,7 +254,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
-    <include layout="@layout/saving_popup"
+    <include layout="@layout/loading_popup"
         android:id="@+id/aqvSaving"
         android:visibility="gone"/>
 

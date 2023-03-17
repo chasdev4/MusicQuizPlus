@@ -31,7 +31,6 @@ import model.User;
 import model.item.Album;
 import model.item.Track;
 import model.type.HeartResponse;
-import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -50,6 +49,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     int old;
     User user;
     private Track currentTrack;
+    private Runnable showPopUp;
+    private Runnable hidePopUp;
+    private Runnable updatePopUpTextTrue;
+    private Runnable updatePopUpTextFalse;
 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
@@ -259,9 +262,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    if (viewHolder.aqvHeartAlbum.isChecked()) {
+                                        updatePopUpTextTrue.run();
+                                    }
+                                    else {
+                                        updatePopUpTextFalse.run();
+                                    }
+                                    showPopUp.run();
                                     HeartResponse response = null;
                                     if (viewHolder.aqvHeartAlbum.isChecked()) {
-                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService, null);
+                                        response = AlbumService.heart(user, firebaseUser, reference, album, spotifyService, hidePopUp);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
                                               // TODO: Handle errors
@@ -272,7 +282,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                           }
 
                                     } else {
-                                        response = AlbumService.unheart(user, firebaseUser, reference, album, null);
+                                        response = AlbumService.unheart(user, firebaseUser, reference, album, hidePopUp);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
                                             // TODO: Handle errors
@@ -328,6 +338,21 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
         return mediaPlayer;
     }
 
+    public void setHidePopUp(Runnable hidePopUp) {
+        this.hidePopUp = hidePopUp;
+    }
+
+    public void setShowPopUp(Runnable showPopUp) {
+        this.showPopUp = showPopUp;
+    }
+
+    public void setUpdatePopUpTextTrue(Runnable updatePopUpTextTrue) {
+        this.updatePopUpTextTrue = updatePopUpTextTrue;
+    }
+
+    public void setUpdatePopUpTextFalse(Runnable updatePopUpTextFalse) {
+        this.updatePopUpTextFalse = updatePopUpTextFalse;
+    }
 }
 
 
