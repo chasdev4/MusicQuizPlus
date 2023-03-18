@@ -111,19 +111,6 @@ public class PlaylistFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-
-        if(user != null && user.getSettings().isShowToolTips() && main.toolTipsFinished)
-        {
-            //send playlist to PQV for tooltips there
-            Intent intent = new Intent(getContext(), PlaylistQuizView.class);
-            intent.putExtra("toolTipsPlaylist", (Playlist) gridView.getAdapter().getItem(0));
-            startActivity(intent);
-        }
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
 
