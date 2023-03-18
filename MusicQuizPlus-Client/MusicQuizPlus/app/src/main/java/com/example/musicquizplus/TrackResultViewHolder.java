@@ -28,6 +28,11 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
         this.banner = itemView.findViewById(R.id.item_result_banner);
     }
 
+    public TextView getTitle() {return title;
+    }
+    public TextView getSubtitle() {
+        return subtitle;
+    }
     public void setTitle(String title) {
         this.title.setText(title);
     }

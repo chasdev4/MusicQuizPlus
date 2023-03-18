@@ -35,5 +35,8 @@
     <color name="mqPurpleRed">#551668</color>
     <color name="mqPurpleRedBackground">#461256</color>
     <color name="mqPurpleBlue">#2b328a</color>
+    <color name="disabled">#CF808080</color>
+    <color name="disabledForeground">#CFCFCFCF</color>
+    <color name="disabledPurple">#564e76</color>
 
 </resources>

@@ -133,7 +133,10 @@ public class AlbumService {
 
         if (!album1.isTrackIdsKnown()) {
             // Save the hearted album's tracks to the database
-            saveAlbumTracks(album, db, spotifyService);
+            HeartResponse response = saveAlbumTracks(album, db, spotifyService);
+            if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                return HeartResponse.NO_ALBUM_TRACKS;
+            }
             log.i(String.format("Tracks from %s saved to database child \"tracks\"", album.getId()));
         } else {
             log.i(String.format("Tracks from %s have previously been saved to database", album.getId()));
@@ -195,7 +198,7 @@ public class AlbumService {
                 albums.size(), albumType));
     }
 
-    private static void saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
+    private static HeartResponse saveAlbumTracks(Album album, DatabaseReference db, SpotifyService spotifyService) {
         JsonObject jsonObject = spotifyService.albumTracks(album.getId());
         JsonArray jsonArray = jsonObject
                 .getAsJsonObject("data")
@@ -211,6 +214,9 @@ public class AlbumService {
         trackIds = trackIds.substring(0, trackIds.length() - 3);
         Map<String, String> previewUrls = new HashMap<>();
         JsonArray tracks = spotifyService.getTracks(trackIds);
+        if (tracks == null || tracks.isJsonNull() || tracks.isEmpty()) {
+            return HeartResponse.NO_ALBUM_TRACKS;
+        }
         for (int i = 0; i < tracks.size(); i++) {
             JsonObject track = tracks.get(i).getAsJsonObject();
             if (track.get("is_playable").getAsBoolean()) {
@@ -253,6 +259,7 @@ public class AlbumService {
         album.setTrackIdsKnown(true);
         db.child("albums").child(album.getId()).child("trackIdsKnown").setValue(true);
         db.child("albums").child(album.getId()).child("trackIds").setValue(album.getTrackIds());
+        return HeartResponse.OK;
     }
 
     public static HeartResponse unheart(FirebaseUser firebaseUser, DatabaseReference db, Album album, Runnable hidePopUp) {
@@ -278,7 +285,7 @@ public class AlbumService {
         String albumKey = null;
         if (user.getAlbumIds().containsValue(album.getId())) {
             for (Map.Entry<String, String> albumId : user.getAlbumIds().entrySet()) {
-                if (albumId.getValue().equals(albumId.getValue())) {
+                if (albumId.getValue().equals(album.getId())) {
                     albumKey = albumId.getKey();
                     break;
                 }
@@ -477,6 +484,9 @@ public class AlbumService {
         Toast toast = null;
         switch (response) {
             //TODO: Handle Errors
+            case NO_ALBUM_TRACKS:
+                toast = Toast.makeText(context, "This album is currently unavailable.", Toast.LENGTH_LONG);
+                break;
             default:
                 toast = Toast.makeText(context, "Encountered an error while hearting, try again later.", Toast.LENGTH_LONG);
                 break;

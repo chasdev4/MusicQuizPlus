@@ -153,6 +153,30 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                     }
                                     if (response != HeartResponse.OK) {
                                         hidePopUp.run();
+
+                                        if (response == HeartResponse.ITEM_EXISTS) {
+                                            holder.getToggleButton().setChecked(true);
+                                            holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+
+                                        }
+                                        else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                            ((SearchActivity)context).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    holder.getBanner().setVisibility(View.GONE);
+                                                    holder.getToggleButton().setChecked(false);
+                                                    holder.getToggleButton().setEnabled(false);
+                                                    holder.getToggleButton().setVisibility(View.GONE);
+                                                    holder.getImage().setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                                                    holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                                                    holder.getTitle().setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                                    holder.getSubtitle().setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                                    holder.setSubtitle("Unavailable");
+                                                }
+                                            });
+
+                                        }
+
                                         HeartResponse finalResponse = response;
                                         ((SearchActivity) context).runOnUiThread(new Runnable() {
                                             @Override

@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -306,6 +307,7 @@ public class ArtistQuizView extends AppCompatActivity {
             }
         });
 
+
         heartLatest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -313,6 +315,7 @@ public class ArtistQuizView extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+
                             updatePopUpText(heartLatest.isChecked());
                             showPopUp();
 
@@ -323,9 +326,35 @@ public class ArtistQuizView extends AppCompatActivity {
                             } else {
                                 response = AlbumService.unheart(firebaseUser, reference, latest, () -> hidePopUp());
                             }
+
                             if (response != HeartResponse.OK) {
                                 heartLatest.setChecked(false);
                                 hidePopUp();
+
+                                if (response == HeartResponse.ITEM_EXISTS) {
+                                    heartLatest.setChecked(true);
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+                                    updateLatestInRV();
+
+                                }
+                                else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                    ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            heartLatest.setEnabled(false);
+                                            heartLatest.setVisibility(View.GONE);
+                                            latestImage.setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                                            latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                                            latestTitle.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                            latestType.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                            latestType.setText("Unavailable");
+                                            latestYear.setVisibility(View.GONE);
+                                            disableLatestInRV();
+                                        }
+                                    });
+
+                                }
+
                                 HeartResponse finalResponse = response;
                                 context.runOnUiThread(new Runnable() {
                                     @Override
@@ -333,6 +362,16 @@ public class ArtistQuizView extends AppCompatActivity {
                                         AlbumService.showError(finalResponse, context);
                                     }
                                 });
+                            }
+                            else {
+                                if (heartLatest.isChecked()) {
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+
+                                } else {
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                }
+
+                                updateLatestInRV();
                             }
 
 
@@ -345,6 +384,94 @@ public class ArtistQuizView extends AppCompatActivity {
             }
 
         });
+    }
+
+    private void disableLatestInRV() {
+        Context context = this;
+        switch (latest.getType()) {
+            case ALBUM:
+            case UNINITIALIZED:
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+
+
+                View v = albumsRV.getLayoutManager().findViewByPosition(0);
+                ((ToggleButton) v.findViewById(R.id.album_heart))
+                        .setChecked(false);
+                        v.findViewById(R.id.album_heart).setEnabled(false);
+                        v.findViewById(R.id.album_heart).setVisibility(View.GONE);
+                v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+
+                        ((ImageView)v.findViewById(R.id.aqvTrackImage)).setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                v.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                        ((TextView)v.findViewById(R.id.aqvTrackTitle)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                        ((TextView)v.findViewById(R.id.aqvTrackAlbum)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                        ((TextView)v.findViewById(R.id.aqvTrackAlbum)).setText("Unavailable");
+                        v.findViewById(R.id.aqvTrackYear).setVisibility(View.GONE); }
+                });
+
+                break;
+            case COMPILATION:
+                ((ToggleButton) compilationsRV.getLayoutManager()
+                        .findViewByPosition(0).findViewById(R.id.album_heart))
+                        .setChecked(heartLatest.isChecked());
+                compilationsRV.getLayoutManager()
+                        .findViewByPosition(0)
+                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+                break;
+            case SINGLE:
+                ((ToggleButton) singlesRV.getLayoutManager()
+                        .findViewByPosition(0).findViewById(R.id.album_heart))
+                        .setChecked(heartLatest.isChecked());
+                singlesRV.getLayoutManager()
+                        .findViewByPosition(0)
+                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+                break;
+        }
+    }
+
+    private void updateLatestInRV() {
+        Context context = this;
+        switch (latest.getType()) {
+            case ALBUM:
+            case UNINITIALIZED:
+                ((ToggleButton) albumsRV.getLayoutManager()
+                        .findViewByPosition(0).findViewById(R.id.album_heart))
+                        .setChecked(heartLatest.isChecked());
+                albumsRV.getLayoutManager()
+                        .findViewByPosition(0)
+                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+                break;
+            case COMPILATION:
+                ((ToggleButton) compilationsRV.getLayoutManager()
+                        .findViewByPosition(0).findViewById(R.id.album_heart))
+                        .setChecked(heartLatest.isChecked());
+                compilationsRV.getLayoutManager()
+                        .findViewByPosition(0)
+                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+                break;
+            case SINGLE:
+                ((ToggleButton) singlesRV.getLayoutManager()
+                        .findViewByPosition(0).findViewById(R.id.album_heart))
+                        .setChecked(heartLatest.isChecked());
+                singlesRV.getLayoutManager()
+                        .findViewByPosition(0)
+                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                                ? R.color.mqPurpleRed
+                                : R.color.mqPurple2));
+                break;
+        }
     }
 
     private void hidePopUp() {
@@ -412,6 +539,13 @@ public class ArtistQuizView extends AppCompatActivity {
                 });
 
                 latest = artist.getLatest();
+                if (user != null && user.getAlbumIds() != null) {
+                    heartLatest.setChecked(user.getAlbumIds().containsValue(latest.getId()));
+
+                    latestRelease.setBackgroundColor(ContextCompat.getColor(context,
+                            user.getAlbumIds().containsValue(latest.getId())
+                    ? R.color.mqPurpleRed : R.color.mqPurple2));
+                }
                 if (latest != null) {
                     activity.runOnUiThread(new Runnable() {
                         @Override
@@ -446,6 +580,10 @@ public class ArtistQuizView extends AppCompatActivity {
                             singleAdapter.setShowPopUp(() -> showPopUp());
                             singleAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
                             singleAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            singleAdapter.setLatestId(latest.getId());
+                            singleAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            singleAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            singleAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -474,6 +612,10 @@ public class ArtistQuizView extends AppCompatActivity {
                             compilationAdapter.setShowPopUp(() -> showPopUp());
                             compilationAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
                             compilationAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            compilationAdapter.setLatestId(latest.getId());
+                            compilationAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            compilationAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            compilationAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -502,6 +644,10 @@ public class ArtistQuizView extends AppCompatActivity {
                             albumAdapter.setShowPopUp(() -> showPopUp());
                             albumAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
                             albumAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            albumAdapter.setLatestId(latest.getId());
+                            albumAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            albumAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            albumAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -529,6 +675,7 @@ public class ArtistQuizView extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     log.e(e.getMessage());
                 }
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -597,6 +744,34 @@ public class ArtistQuizView extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    private void updateLatest(boolean b) {
+        heartLatest.setChecked(b);
+        if (b) {
+            latestRelease.setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurpleRed));
+        }
+        else {
+            latestRelease.setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurple2));
+        }
+    }
+
+    private void disableLatest() {
+        Context context = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                heartLatest.setEnabled(false);
+                heartLatest.setVisibility(View.GONE);
+                latestImage.setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                latestTitle.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                latestType.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                latestType.setText("Unavailable");
+                latestYear.setVisibility(View.GONE);
+            }
+        });
 
     }
 

@@ -55,11 +55,15 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
     private Runnable hidePopUp;
     private Runnable updatePopUpTextTrue;
     private Runnable updatePopUpTextFalse;
+    private String latestId;
+    private Runnable updateLatestTrue;
+    private Runnable updateLatestFalse;
+    private Runnable disableLatest;
+    private boolean latestChecked;
 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-    private boolean lastChoice;
 
     public HistoryAdapter(User user, List<Track> trackList, List<Album> albumList, Context context, int switchOn) {
         this.user = user;
@@ -238,14 +242,22 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
             case 2:
                 //if switchOn is 2, its for artist quiz preview
                 Album album = albumList.get(viewHolder.getAdapterPosition());
+
                 SpotifyService spotifyService = new SpotifyService(context.getString(R.string.SPOTIFY_KEY));
 
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
                 viewHolder.aqvAlbumTitle.setText(album.getName());
                 viewHolder.aqvAlbumType.setText(album.getType().toString());
                 viewHolder.aqvAlbumYear.setText(album.getYear());
+                boolean lastChoice = false;
                 if (user != null) {
-                    lastChoice = user.getAlbumIds().containsValue(album.getId());
+                    if (album.getId().equals(latestId)) {
+                        lastChoice = latestChecked;
+                    }
+                    else {
+                        lastChoice = user.getAlbumIds().containsValue(album.getId());
+                    }
+
                     viewHolder.aqvHeartAlbum.setChecked(lastChoice);
                     if (lastChoice) {
                         viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
@@ -254,7 +266,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                         viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
                     }
                 } else {
-                    lastChoice = false;
                     viewHolder.aqvHeartAlbum.setChecked(false);
                 }
                 viewHolder.aqvHeartAlbum.setOnClickListener(new View.OnClickListener() {
@@ -277,26 +288,58 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
                                         response = AlbumService.heart(firebaseUser, reference, album, spotifyService, hidePopUp);
                                           if (response != HeartResponse.OK) {
                                               viewHolder.aqvHeartAlbum.setChecked(false);
-                                              hidePopUp.run();
                                           }
                                           else {
                                               viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
-
+                                              if (album.getId().equals(latestId)) {
+                                                  updateLatestTrue.run();
+                                              }
                                           }
 
                                     } else {
                                         response = AlbumService.unheart(firebaseUser, reference, album, hidePopUp);
                                         if (response != HeartResponse.OK) {
                                             viewHolder.aqvHeartAlbum.setChecked(true);
-                                            hidePopUp.run();
                                         }
                                         else {
                                             viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                            if (album.getId().equals(latestId)) {
+                                                updateLatestFalse.run();
+                                            }
+                                        }
+                                    }
+
+                                    if (response != HeartResponse.OK) {
+                                        hidePopUp.run();
+                                        if (response == HeartResponse.ITEM_EXISTS) {
+                                            viewHolder.aqvHeartAlbum.setChecked(true);
+                                            viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+                                            if (album.getId().equals(latestId)) {
+                                                updateLatestTrue.run();
+                                            }
+                                        }
+                                        else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                            ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    viewHolder.aqvHeartAlbum.setEnabled(false);
+                                                    viewHolder.aqvHeartAlbum.setVisibility(View.GONE);
+                                                    viewHolder.aqvPreviewImage.setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                                                    viewHolder.view.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                                                    viewHolder.aqvAlbumTitle.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                                    viewHolder.aqvAlbumType.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                                    viewHolder.aqvAlbumType.setText("Unavailable");
+                                                    viewHolder.aqvAlbumYear.setVisibility(View.GONE);
+                                                    if (album.getId().equals(latestId)) {
+                                                        disableLatest.run();
+                                                    }
+                                                }
+                                            });
 
                                         }
                                     }
 
-                                    if (response != null && response != HeartResponse.OK){
+                                    if (response != null && response != HeartResponse.OK && response != HeartResponse.ITEM_EXISTS){
                                         HeartResponse finalResponse = response;
                                         ((Activity)context).runOnUiThread(new Runnable() {
                                             @Override
@@ -365,6 +408,26 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
     public void setUpdatePopUpTextFalse(Runnable updatePopUpTextFalse) {
         this.updatePopUpTextFalse = updatePopUpTextFalse;
+    }
+
+    public void setLatestId(String latestId) {
+        this.latestId = latestId;
+    }
+
+    public void setUpdateLatestTrue(Runnable updateLatestTrue) {
+        this.updateLatestTrue = updateLatestTrue;
+    }
+
+    public void setUpdateLatestFalse(Runnable updateLatestFalse) {
+        this.updateLatestFalse = updateLatestFalse;
+    }
+
+    public void setLatestChecked(boolean b) {
+        latestChecked = b;
+    }
+
+    public void setDisableLatest(Runnable disableLatest) {
+        this.disableLatest = disableLatest;
     }
 }
 
