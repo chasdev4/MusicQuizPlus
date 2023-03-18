@@ -44,7 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/mqBlue"
-            android:visibility="gone"
+            android:visibility="visible"
             android:background="@drawable/saved_banner_bg"
             android:paddingVertical="5dp"
             android:ellipsize="none"
