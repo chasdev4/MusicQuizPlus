@@ -117,31 +117,35 @@ public class Artist implements Serializable {
         int newest = 0;
         if (albums != null) {
             for (Album a : albums) {
-                if (a == null) {
+                if (a != null) {
                     Log.d(TAG, "setLatest: ");
-                }
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a;
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
         if (singles != null) {
             for (Album a : singles) {
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a;
+                if (a != null) {
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
         if (compilations != null) {
             for (Album a : compilations) {
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a;
+                if (a != null) {
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
