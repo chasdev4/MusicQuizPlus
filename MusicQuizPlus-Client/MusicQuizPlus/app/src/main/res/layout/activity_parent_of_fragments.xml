@@ -40,7 +40,7 @@
         android:layout_height="1dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.tabs.TabLayout
@@ -172,6 +172,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="30dp"
             android:layout_marginBottom="5dp"/>
+
+    <ToggleButton
+        android:id="@+id/toolTipsToggleButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
+        android:layout_marginStart="15dp"
+        android:checked="true"
+        android:minWidth="50dp"
+        android:minHeight="50dp"
+        android:button="@drawable/toggle_tool_tips"
+        android:background="@android:color/transparent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 
