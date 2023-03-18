@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -60,6 +61,10 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
         Album album = collection.get(position);
         holder.setTitle(album.getName());
         holder.setSubtitle("Album");
+        holder.getItemView().setBackgroundColor(user.getAlbumIds().containsValue(album.getId())
+                ? ContextCompat.getColor(context, R.color.mqPurpleBlue)
+                : ContextCompat.getColor(context, R.color.mqPurple2));
+        holder.getBanner().setVisibility(user.getAlbumIds().containsValue(album.getId()) ? View.VISIBLE : View.GONE);
         holder.setChecked(user.getAlbumIds().containsValue(album.getId()));
         Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl()))
                 .placeholder(R.drawable.placeholder).into(holder.getImage());
@@ -98,6 +103,21 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
                                     @Override
                                     public void run() {
                                         AlbumService.showError(finalResponse, context);
+                                    }
+                                });
+                            }
+                            else {
+                                if (holder.getToggleButton().isChecked()) {
+                                    holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleBlue));
+
+                                }
+                                else {
+                                    holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                }
+                                ((TrackResultActivity) context).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        holder.getBanner().setVisibility(holder.getToggleButton().isChecked() ? View.VISIBLE : View.GONE);
                                     }
                                 });
                             }

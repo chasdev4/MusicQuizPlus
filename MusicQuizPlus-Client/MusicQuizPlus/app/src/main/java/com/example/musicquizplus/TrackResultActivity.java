@@ -77,18 +77,21 @@ public class TrackResultActivity extends AppCompatActivity {
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                trackResult.changeTab();
-                if (i == R.id.title_match_tab) {
-                    trackResultAdapter.setCollection(trackResult.getTitleMatch());
-                }
-                else {
-                    trackResultAdapter.setCollection(trackResult.getSuggested());
-                }
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(),User.class);
+                        trackResult.changeTab();
+                        User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+
                         trackResultAdapter.setUser(user);
+
+                        if (i == R.id.title_match_tab) {
+                            trackResultAdapter.setCollection(trackResult.getTitleMatch());
+                        } else {
+                            trackResultAdapter.setCollection(trackResult.getSuggested());
+                        }
+
+
                         recyclerView.post(new Runnable() {
                             @Override
                             public void run() {
@@ -151,7 +154,7 @@ public class TrackResultActivity extends AppCompatActivity {
     }
 
     private void updatePopUpText(boolean b) {
-        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
                         : R.string.renoving_message
         );
@@ -183,8 +186,7 @@ public class TrackResultActivity extends AppCompatActivity {
             recyclerView.setVisibility(View.GONE);
             noResults.setVisibility(View.VISIBLE);
             noResultsText.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             recyclerView.setVisibility(View.VISIBLE);
             noResults.setVisibility(View.GONE);
             noResultsText.setVisibility(View.GONE);
@@ -221,29 +223,29 @@ public class TrackResultActivity extends AppCompatActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
                 && !event.isCanceled()) {
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
-                        String albumKey = null;
-                        String albumValue = null;
-                        for (Map.Entry<String, String> albumId : user.getAlbumIds().entrySet()) {
-                            if (albumId.getValue().equals(trackResult.getAlbumId())) {
-                                albumKey = albumId.getKey();
-                                albumValue = albumId.getValue();
-                            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    String albumKey = null;
+                    String albumValue = null;
+                    for (Map.Entry<String, String> albumId : user.getAlbumIds().entrySet()) {
+                        if (albumId.getValue().equals(trackResult.getAlbumId())) {
+                            albumKey = albumId.getKey();
+                            albumValue = albumId.getValue();
                         }
+                    }
 
 //                String artistKey = reference.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
-                        Intent intent = getIntent();
+                    Intent intent = getIntent();
 
-                        intent.putExtra("albumKey", albumKey);
-                        intent.putExtra("albumValue", albumValue);
-                        intent.putExtra("user", user);
-                        setResult(RESULT_OK, intent);
-                        finish();
-                    }
-                }).start();
+                    intent.putExtra("albumKey", albumKey);
+                    intent.putExtra("albumValue", albumValue);
+                    intent.putExtra("user", user);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            }).start();
 
             return true;
         }
