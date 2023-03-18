@@ -242,9 +242,12 @@ public class Artist implements Serializable {
     @Exclude
     public int getTrackPoolSize() {
         int count = 0;
-
+        int size = 0;
+        if (singleIds != null) {
+            size = singleIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -255,11 +258,15 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (albumIds != null) {
+            size = albumIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         if (albums != null) {
             for (Album album : albums) {
                 if (album != null && album.getTracks() != null) {
@@ -267,8 +274,11 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (compilationIds != null) {
+            size = compilationIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

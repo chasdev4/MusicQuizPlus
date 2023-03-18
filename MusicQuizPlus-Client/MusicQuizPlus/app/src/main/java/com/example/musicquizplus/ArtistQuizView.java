@@ -663,18 +663,28 @@ public class ArtistQuizView extends AppCompatActivity {
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                runOnUiThread(new Runnable() {
+
+                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startQuiz.setEnabled(false);
+                    }
+                });
+                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
                         toast.show();
                     }
                 });
+
+
                 if (source == Source.SEARCH) {
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+
                             Artist artist = initArtist();
 
                             int size = artist.getTrackPoolSize();
@@ -689,7 +699,14 @@ public class ArtistQuizView extends AppCompatActivity {
                                         toast.show();
                                     }
                                 });
+
                             }
+                            ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startQuiz.setEnabled(true);
+                                }
+                            });
                         }
                     }).start();
 
@@ -697,24 +714,29 @@ public class ArtistQuizView extends AppCompatActivity {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-
                             Artist artist = initArtist();
                             int size = artist.getTrackPoolSize();
                             if (size >= 15 && !artist.isInitializing()) {
                                 goToQuiz(view.getContext());
                             } else {
-
-                                runOnUiThread(new Runnable() {
+                                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
+                                        Toast toast = Toast.makeText(getBaseContext(), "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
                                         toast.show();
                                     }
                                 });
                             }
+                            ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startQuiz.setEnabled(true);
+                                }
+                            });
                         }
                     }).start();
                 }
+
             }
         });
 
