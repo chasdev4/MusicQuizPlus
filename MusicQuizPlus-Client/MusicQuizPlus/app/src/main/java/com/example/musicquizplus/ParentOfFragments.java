@@ -29,6 +29,9 @@ import com.squareup.picasso.Picasso;
 import com.tomergoldst.tooltips.ToolTip;
 import com.tomergoldst.tooltips.ToolTipsManager;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -79,11 +82,16 @@ public class ParentOfFragments extends AppCompatActivity {
     private int playlistTrack, artistTrack, historyTrack;
     public boolean toolTipsFinished;
     public int playlistFragToolTips, artistFragToolTips, historyFragToolTips;
+    private String currentDate, playlistFragToolTipsDate, artistFragToolTipsDate, historyFragToolTipsDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parent_of_fragments);
+
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        currentDate = df.format(c);
 
         playlistTrack = 0;
         artistTrack = 0;
@@ -201,10 +209,11 @@ public class ParentOfFragments extends AppCompatActivity {
                             backToTop.setOnClickListener(artistsBackToTopListener);
                         }
 
-                        if(user.getSettings().isShowToolTips())
+                        if(user.getSettings().isShowToolTips() && !currentDate.equals(artistFragToolTipsDate))
                         {
                             startArtistFragmentToolTips();
-                            //artistFragToolTips++;
+                            artistFragToolTips++;
+                            artistFragToolTipsDate = currentDate;
                         }
                         break;
                     case 2:
@@ -212,10 +221,11 @@ public class ParentOfFragments extends AppCompatActivity {
                             backToTop.setOnClickListener(historyBackToTopListener);
                         }
 
-                        if(user.getSettings().isShowToolTips())
+                        if(user.getSettings().isShowToolTips() && !currentDate.equals(historyFragToolTipsDate))
                         {
                             startHistoryFragmentToolTips();
-                            //historyFragToolTips++;
+                            historyFragToolTips++;
+                            historyFragToolTipsDate = currentDate;
                         }
                         break;
                 }
@@ -252,16 +262,22 @@ public class ParentOfFragments extends AppCompatActivity {
                     {
                         playlistTrack = 0;
                         startPlaylistFragmentToolTips();
+                        playlistFragToolTips++;
+                        playlistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 1)
                     {
                         artistTrack = 0;
                         startArtistFragmentToolTips();
+                        artistFragToolTips++;
+                        artistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 2)
                     {
                         historyTrack = 0;
                         startHistoryFragmentToolTips();
+                        historyFragToolTips++;
+                        historyFragToolTipsDate = currentDate;
                     }
                 }
                 else
@@ -278,7 +294,13 @@ public class ParentOfFragments extends AppCompatActivity {
     {
         toolTipsManager.dismissAll();
 
-        if(tabLayout.getSelectedTabPosition() == 0 && toolTipsToggleButton.isChecked() && playlistFragToolTips < 300)
+        if(muteButton.getVisibility() != View.VISIBLE && settingsButton.getVisibility() != View.VISIBLE)
+        {
+            muteButton.setVisibility(View.VISIBLE);
+            settingsButton.setVisibility(View.VISIBLE);
+        }
+
+        if(tabLayout.getSelectedTabPosition() == 0 && toolTipsToggleButton.isChecked() && playlistFragToolTips < 3)
         {
             if(playlistTrack == 0)
             {
@@ -333,8 +355,10 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(playlistTrack == 4)
             {
-                builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_RIGHT_TO);
-                builder.setAlign(ToolTip.ALIGN_CENTER);
+                muteButton.setVisibility(View.INVISIBLE);
+                settingsButton.setVisibility(View.INVISIBLE);
+                builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_LEFT_TO);
+                builder.setAlign(ToolTip.ALIGN_LEFT);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
@@ -348,7 +372,7 @@ public class ParentOfFragments extends AppCompatActivity {
     {
         toolTipsManager.dismissAll();
 
-        if(tabLayout.getSelectedTabPosition() == 1 && artistFragToolTips < 3)
+        if(tabLayout.getSelectedTabPosition() == 1 && toolTipsToggleButton.isChecked() && artistFragToolTips < 3)
         {
             if(artistTrack == 0)
             {
@@ -395,7 +419,7 @@ public class ParentOfFragments extends AppCompatActivity {
     {
         toolTipsManager.dismissAll();
 
-        if(tabLayout.getSelectedTabPosition() == 2 && historyFragToolTips < 3)
+        if(tabLayout.getSelectedTabPosition() == 2 && toolTipsToggleButton.isChecked() && historyFragToolTips < 3)
         {
             if(historyTrack == 0)
             {
@@ -429,15 +453,22 @@ public class ParentOfFragments extends AppCompatActivity {
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
         artistFragToolTips = sh.getInt("artistFragToolTips", 0);
         historyFragToolTips = sh.getInt("historyFragToolTips", 0);
+        playlistFragToolTipsDate = sh.getString("playlistFragToolTipsDate", "");
+        artistFragToolTipsDate = sh.getString("artistFragToolTipsDate", "");
+        historyFragToolTipsDate = sh.getString("historyFragToolTipsDate", "");
 
         //waiting for user to be initialized
         while(user == null){}
 
         if(user.getSettings().isShowToolTips())
         {
-            toolTipsToggleButton.setChecked(true);
-            new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
-            playlistFragToolTips++;
+            if(!currentDate.equals(playlistFragToolTipsDate))
+            {
+                toolTipsToggleButton.setChecked(true);
+                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
+                playlistFragToolTips++;
+                playlistFragToolTipsDate = currentDate;
+            }
         }
         else
         {
@@ -458,7 +489,9 @@ public class ParentOfFragments extends AppCompatActivity {
         myEdit.putInt("playlistFragToolTips", playlistFragToolTips);
         myEdit.putInt("artistFragToolTips", artistFragToolTips);
         myEdit.putInt("historyFragToolTips", historyFragToolTips);
-        //myEdit.putBoolean("displayPlaylistToolTips", )
+        myEdit.putString("playlistFragToolTipsDate", playlistFragToolTipsDate);
+        myEdit.putString("artistFragToolTipsDate", artistFragToolTipsDate);
+        myEdit.putString("historyFragToolTipsDate", historyFragToolTipsDate);
         myEdit.apply();
     }
 
