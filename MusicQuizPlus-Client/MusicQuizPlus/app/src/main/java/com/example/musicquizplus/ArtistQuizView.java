@@ -390,90 +390,63 @@ public class ArtistQuizView extends AppCompatActivity {
 
     private void disableLatestInRV() {
         Context context = this;
+                View v = null;
         switch (latest.getType()) {
             case ALBUM:
             case UNINITIALIZED:
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
 
-
-                View v = albumsRV.getLayoutManager().findViewByPosition(0);
-                ((ToggleButton) v.findViewById(R.id.album_heart))
-                        .setChecked(false);
-                        v.findViewById(R.id.album_heart).setEnabled(false);
-                        v.findViewById(R.id.album_heart).setVisibility(View.GONE);
-                v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
-
-                        ((ImageView)v.findViewById(R.id.aqvTrackImage)).setColorFilter(ContextCompat.getColor(context, R.color.disabled));
-                v.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
-                        ((TextView)v.findViewById(R.id.aqvTrackTitle)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
-                        ((TextView)v.findViewById(R.id.aqvTrackAlbum)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
-                        ((TextView)v.findViewById(R.id.aqvTrackAlbum)).setText("Unavailable");
-                        v.findViewById(R.id.aqvTrackYear).setVisibility(View.GONE); }
-                });
+                v = albumsRV.getLayoutManager().findViewByPosition(0);
 
                 break;
             case COMPILATION:
-                ((ToggleButton) compilationsRV.getLayoutManager()
-                        .findViewByPosition(0).findViewById(R.id.album_heart))
-                        .setChecked(heartLatest.isChecked());
-                compilationsRV.getLayoutManager()
-                        .findViewByPosition(0)
-                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
+                v = compilationsRV.getLayoutManager().findViewByPosition(0);
                 break;
             case SINGLE:
-                ((ToggleButton) singlesRV.getLayoutManager()
-                        .findViewByPosition(0).findViewById(R.id.album_heart))
-                        .setChecked(heartLatest.isChecked());
-                singlesRV.getLayoutManager()
-                        .findViewByPosition(0)
-                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
+                v = singlesRV.getLayoutManager().findViewByPosition(0);
                 break;
         }
+
+
+                ((ToggleButton) v.findViewById(R.id.album_heart))
+                        .setChecked(false);
+                v.findViewById(R.id.album_heart).setEnabled(false);
+                v.findViewById(R.id.album_heart).setVisibility(View.GONE);
+                v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                        ? R.color.mqPurpleRed
+                        : R.color.mqPurple2));
+
+                ((ImageView) v.findViewById(R.id.aqvTrackImage)).setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                v.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                ((TextView) v.findViewById(R.id.aqvTrackTitle)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                ((TextView) v.findViewById(R.id.aqvTrackAlbum)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                ((TextView) v.findViewById(R.id.aqvTrackAlbum)).setText("Unavailable");
+                v.findViewById(R.id.aqvTrackYear).setVisibility(View.GONE);
     }
 
     private void updateLatestInRV() {
         Context context = this;
+        View v = null;
         switch (latest.getType()) {
             case ALBUM:
             case UNINITIALIZED:
-                ((ToggleButton) albumsRV.getLayoutManager()
-                        .findViewByPosition(0).findViewById(R.id.album_heart))
-                        .setChecked(heartLatest.isChecked());
-                albumsRV.getLayoutManager()
-                        .findViewByPosition(0)
-                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
+                v = albumsRV.getLayoutManager()
+                        .findViewByPosition(0);
                 break;
             case COMPILATION:
-                ((ToggleButton) compilationsRV.getLayoutManager()
-                        .findViewByPosition(0).findViewById(R.id.album_heart))
-                        .setChecked(heartLatest.isChecked());
-                compilationsRV.getLayoutManager()
-                        .findViewByPosition(0)
-                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
+                v = compilationsRV.getLayoutManager()
+                        .findViewByPosition(0);
                 break;
             case SINGLE:
-                ((ToggleButton) singlesRV.getLayoutManager()
-                        .findViewByPosition(0).findViewById(R.id.album_heart))
-                        .setChecked(heartLatest.isChecked());
-                singlesRV.getLayoutManager()
-                        .findViewByPosition(0)
-                        .setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
-                                ? R.color.mqPurpleRed
-                                : R.color.mqPurple2));
+                v = singlesRV.getLayoutManager()
+                        .findViewByPosition(0);
                 break;
         }
+        ((ToggleButton) v.findViewById(R.id.album_heart))
+                .setChecked(heartLatest.isChecked());
+       v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                        ? R.color.mqPurpleRed
+                        : R.color.mqPurple2));
+
     }
 
     private void hidePopUp() {
@@ -497,7 +470,7 @@ public class ArtistQuizView extends AppCompatActivity {
     private void updatePopUpText(boolean b) {
         ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
-                        : R.string.renoving_message
+                        : R.string.removing_message
         );
     }
 

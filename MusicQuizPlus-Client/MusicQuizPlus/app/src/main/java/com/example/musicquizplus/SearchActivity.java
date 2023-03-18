@@ -30,14 +30,10 @@ import java.util.List;
 import model.GoogleSignIn;
 import model.Search;
 import model.SearchResult;
-import model.SignUpPopUp;
 import model.TrackResult;
 import model.User;
-import model.item.Artist;
 import model.item.Track;
-import model.type.Role;
 import model.type.SearchFilter;
-import service.FirebaseService;
 import service.SpotifyService;
 
 public class SearchActivity extends AppCompatActivity {
@@ -507,7 +503,7 @@ public class SearchActivity extends AppCompatActivity {
     private void updatePopUpText(boolean b) {
         ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
-                        : R.string.renoving_message
+                        : R.string.removing_message
         );
     }
 

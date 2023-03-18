@@ -27,11 +27,8 @@ import java.util.Map;
 import model.GoogleSignIn;
 import model.TrackResult;
 import model.User;
-import model.type.Role;
-import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
-import service.SpotifyService;
 
 public class TrackResultActivity extends AppCompatActivity {
 
@@ -156,7 +153,7 @@ public class TrackResultActivity extends AppCompatActivity {
     private void updatePopUpText(boolean b) {
         ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
-                        : R.string.renoving_message
+                        : R.string.removing_message
         );
     }
 

@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -32,8 +31,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Serializable;
-import java.net.ContentHandler;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -410,7 +407,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private void updatePopUpText(boolean b) {
         ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
-                        : R.string.renoving_message
+                        : R.string.removing_message
         );
     }
 

@@ -71,5 +71,5 @@
     <string name="saved_label">Saved</string>
     <string name="save_label">Save</string>
     <string name="saving_message">Saving...</string>
-    <string name="renoving_message">Removing...</string>
+    <string name="removing_message">Removing...</string>
 </resources>
