@@ -383,6 +383,7 @@ public class PlaylistService {
                 log.i(String.format("%s follower count has decremented.", playlist.getId()));
             }
         }
+        hidePopup.run();
         return HeartResponse.OK;
 
     }
