@@ -8,5 +8,6 @@ public enum HeartResponse {
     ITEM_EXISTS,
     ALBUM_ARTIST_DO_NOT_MATCH,
     NULL_USER,
-    NO_ALBUM_TRACKS
+    NO_ALBUM_TRACKS,
+    DATABASE_ERROR
 }

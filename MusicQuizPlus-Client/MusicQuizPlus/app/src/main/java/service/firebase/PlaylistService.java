@@ -279,7 +279,7 @@ public class PlaylistService {
         // Increment the follower count
         db.child("playlists").child(playlist.getId()).child("followers").setValue(ServerValue.increment(1));
         if (!playlist.isFollowersKnown()) {
-            updates.put("playlists/" + playlist.getId() + "/followersKnown", true);
+            db.child("playlists").child(playlist.getId()).child("followersKnown").setValue(true);
         }
 
 
@@ -296,6 +296,7 @@ public class PlaylistService {
         }
         catch (DatabaseException e) {
             log.e(e.getMessage());
+            return HeartResponse.DATABASE_ERROR;
         }
         return HeartResponse.OK;
 
@@ -377,14 +378,8 @@ public class PlaylistService {
             // Else the playlist has enough followers to live
             else {
                 // Decrement the follower count
-                Map<String, Object> updates = new HashMap<>();
                 db.child("playlists").child(playlist.getId()).child("followers").setValue(ServerValue.increment(-1));
-                db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        hidePopup.run();
-                    }
-                });;
+                hidePopup.run();
                 log.i(String.format("%s follower count has decremented.", playlist.getId()));
             }
         }
