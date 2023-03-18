@@ -505,8 +505,7 @@ public class ArtistQuizView extends AppCompatActivity {
                         artistNameTV.setText(artist.getName());
                         artistBioTV.setText(artist.getBio());
 
-
-                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).placeholder(R.drawable.placeholder).into(artistPreviewImage);
                         if (artist.getExternalLinks() != null) {
                             initializeExternalLinkButtons();
                         }
@@ -814,12 +813,6 @@ public class ArtistQuizView extends AppCompatActivity {
 //           return true;
         }
         return super.onKeyUp(keyCode, event);
-    }
-
-    @Override
-    public void onBackPressed() {
-
-
     }
 
     private void initializeExternalLinkButtons() {
