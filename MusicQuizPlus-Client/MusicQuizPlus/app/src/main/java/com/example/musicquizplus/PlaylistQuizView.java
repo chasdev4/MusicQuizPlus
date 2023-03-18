@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,7 +32,10 @@ import com.tomergoldst.tooltips.ToolTipsManager;
 import java.io.Serializable;
 import java.net.ContentHandler;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
@@ -52,7 +56,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     TextView owner;
     RecyclerView listView;
     Button startQuiz;
-    Playlist playlist, playlistForToolTips;
+    Playlist playlist;
     HistoryAdapter adapter;
     Handler mainHandler = new Handler();
     ImageButton backToTop;
@@ -72,7 +76,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private ToolTip.Builder builder;
     ConstraintLayout root;
     int track = 0;
-
+    String pqvToolTipsDate, currentDate;
+    int pqvToolTips;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +101,10 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         root = findViewById(R.id.pqvRoot);
         toolTipsManager = new ToolTipsManager();
 
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        currentDate = df.format(c);
+
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
         PackageManager pm = getPackageManager();
@@ -105,12 +114,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         {
             user = (User) extras.getSerializable("currentUser");
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
-            playlistForToolTips = (Playlist) extras.getSerializable("toolTipsPlaylist");
-        }
-
-        if(playlistForToolTips != null)
-        {
-            playlist = playlistForToolTips;
         }
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -129,7 +132,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             }
         });
-
 
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,87 +180,119 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_TEXT, getPlaylistIdAsUrl(playlist.getId()));
                 shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Playlist");
-                //TODO: Add MQP logo to share menu when available.
-                // Below we're passing a content URI to an image to be displayed
-                //sendIntent.setData(mqpLogoUri);
-                //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setType("text/*");
                 startActivity(Intent.createChooser(shareIntent, null));
             }
         });
+/*
+        toolTipsToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(toolTipsToggleButton.isChecked())
+                {
+                    pqvToolTips = 0;
+
+                    user.getSettings().setShowToolTips(true);
+                    Toast.makeText(getBaseContext(), "Helping Hints Turned On", Toast.LENGTH_SHORT).show();
+
+                    track = 0;
+                    showNext();
+                    pqvToolTips++;
+                    pqvToolTipsDate = currentDate;
+                }
+                else
+                {
+                    toolTipsManager.dismissAll();
+                    user.getSettings().setShowToolTips(false);
+                    Toast.makeText(getBaseContext(), "Helping Hints Turned Off", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+ */
     }
 
     @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
+    protected void onResume() {
+        super.onResume();
 
-        if(playlistForToolTips != null && hasFocus)
+        // Fetching the stored data from the SharedPreference
+        SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        pqvToolTips = sh.getInt("pqvToolTips", 0);
+        pqvToolTipsDate = sh.getString("pqvToolTipsDate", "");
+
+
+        if(user.getSettings().isShowToolTips())
         {
-            new Handler().postDelayed(this::startToolTips, 2500);
+            if(!currentDate.equals(pqvToolTipsDate))
+            {
+                new Handler().postDelayed(this::showNext, 2500);
+                pqvToolTips++;
+                pqvToolTipsDate = currentDate;
+            }
         }
     }
 
-    private void startToolTips()
-    {
-        //gridview quizzes
-        builder = new ToolTip.Builder(this, heartButton, root, "Heart A Playlist To\nAdd It To Your Collection", ToolTip.POSITION_LEFT_TO);
-        builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-        builder.setTextAppearance(R.style.TooltipTextAppearance);
-        toolTipsManager.show(builder.build());
-        track++;
-        new Handler().postDelayed(this::showNext, 3000);
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Creating a shared pref object
+        SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        // write all the data entered by the user in SharedPreference and apply
+        myEdit.putInt("pqvToolTips", pqvToolTips);
+        myEdit.putString("pqvToolTipsDate", pqvToolTipsDate);
+        myEdit.apply();
     }
 
     private void showNext()
     {
         toolTipsManager.dismissAll();
 
-        if(track == 1)
+        if(pqvToolTips < 3)
         {
-            //show tool tip for spotify button
-            toolTipsManager.findAndDismiss(heartButton);
-            builder = new ToolTip.Builder(this, spotifyButton, root, "Click Here To View\nThis Playlist On Spotify", ToolTip.POSITION_BELOW);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            track++;
-            new Handler().postDelayed(this::showNext, 3000);
+            if(track == 0)
+            {
+                builder = new ToolTip.Builder(this, heartButton, root, "Click Here To Heart A Playlist\nTo Add It To Your Collection", ToolTip.POSITION_LEFT_TO);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 1)
+            {
+                //show tool tip for spotify button
+                builder = new ToolTip.Builder(this, spotifyButton, root, "Click Here To View\nThis Playlist On Spotify", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 2)
+            {
+                //show tool tip for share button
+                builder = new ToolTip.Builder(this, shareButton, root, "Click Here To Share\nThis Spotify Playlist", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 3)
+            {
+                //show tool tip for start quiz button
+                builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Playlist", ToolTip.POSITION_ABOVE);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
         }
-        else if(track == 2)
-        {
-            //show tool tip for share button
-            toolTipsManager.findAndDismiss(spotifyButton);
-            builder = new ToolTip.Builder(this, shareButton, root, "Click Here To Share\nThis Spotify Playlist", ToolTip.POSITION_BELOW);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            track++;
-            new Handler().postDelayed(this::showNext, 3000);
-        }
-        else if(track == 3)
-        {
-            //show tool tip for start quiz button
-            toolTipsManager.findAndDismiss(shareButton);
-            builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Playlist", ToolTip.POSITION_ABOVE);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            track++;
-            new Handler().postDelayed(this::showNext, 3000);
-        }
-        else
-        {
-            clearToolTip();
-            Intent intent = new Intent(getBaseContext(), ParentOfFragments.class);
-            intent.putExtra("stopToolTips", true);
-            startActivity(intent);
-        }
-    }
-
-    private void clearToolTip()
-    {
-        toolTipsManager.dismissAll();
-        track = 0;
     }
 
     @Override
@@ -282,13 +316,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             heartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    GoogleSignIn googleSignIn = new GoogleSignIn();
-                    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
                     DatabaseReference db = FirebaseDatabase.getInstance().getReference();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            if(user != null)
+                            if(firebaseUser != null)
                             {
                                 if (heartButton.isChecked()) {
                                     SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
