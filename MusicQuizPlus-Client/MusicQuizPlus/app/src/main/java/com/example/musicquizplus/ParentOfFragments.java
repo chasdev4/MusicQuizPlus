@@ -256,8 +256,13 @@ public class ParentOfFragments extends AppCompatActivity {
             public void onClick(View view) {
                 if(toolTipsToggleButton.isChecked())
                 {
+                    playlistFragToolTips = 0;
+                    artistFragToolTips = 0;
+                    historyFragToolTips = 0;
+
                     user.getSettings().setShowToolTips(true);
                     Toast.makeText(getBaseContext(), "Helping Hints Turned On", Toast.LENGTH_SHORT).show();
+
                     if(tabLayout.getSelectedTabPosition() == 0)
                     {
                         playlistTrack = 0;
