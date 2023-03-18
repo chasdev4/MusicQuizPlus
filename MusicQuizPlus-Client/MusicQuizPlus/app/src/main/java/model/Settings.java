@@ -88,6 +88,8 @@ public class Settings implements Serializable {
         this.difficulty = difficulty;
     }
 
+    public void setShowToolTips(boolean showToolTips) { this.showToolTips = showToolTips; }
+
     public void clickIgnorePlaylistDifficulty() {
         if (ignoreArtistDifficulty && !ignorePlaylistDifficulty) {
             ignoreArtistDifficulty = false;
