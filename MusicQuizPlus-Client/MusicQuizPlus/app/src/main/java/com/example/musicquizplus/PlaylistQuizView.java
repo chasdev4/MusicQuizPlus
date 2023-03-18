@@ -45,9 +45,11 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.HeartResponse;
 import model.type.Source;
 import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
@@ -72,6 +74,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private ToggleButton heartButton;
     private User user;
     private ProgressBar progressBar;
+    private View loadingPopUp;
 
 
     @Override
@@ -79,6 +82,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
 
+        loadingPopUp = findViewById(R.id.pqvSaving);
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
         title.setSelected(true);
@@ -211,33 +215,56 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+                            updatePopUpText(heartButton.isChecked());
+                            showPopUp();
                             if(user != null && firebaseUser != null)
                             {
+                                updatePopUpText(heartButton.isChecked());
+                                updatePopUpColor(!heartButton.isChecked());
+                                showPopUp();
+
+                                HeartResponse response = null;
                                 if (heartButton.isChecked()) {
                                     SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
-                                    PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService);
+                                    response = PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService, () -> hidePopUp());
                                 } else {
-                                    PlaylistService.unheart(user, firebaseUser, db, playlist);
+                                    response = PlaylistService.unheart(user, firebaseUser, db, playlist, () -> hidePopUp());
                                 }
-                                listView.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (heartButton.isChecked()) {
-                                            Window window = getWindow();
-                                            window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
-                                            window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
-                                            ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
-                                                    .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreenBackground));
-                                        } else {
-                                            Window window = getWindow();
-                                            window.setStatusBarColor(getResources().getColor(R.color.mqPurple3));
-                                            window.setNavigationBarColor(getResources().getColor(R.color.mqPurple3));
-                                            ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
-                                                    .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple3));
+                                if (response != HeartResponse.OK) {
+                                    heartButton.setChecked(false);
+                                    hidePopUp();
+                                    HeartResponse finalResponse = response;
+                                    ((PlaylistQuizView)context).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            AlbumService.showError(finalResponse, context);
                                         }
-                                        adapter.notifyDataSetChanged();
-                                    }
-                                });
+                                    });
+                                }
+                                else {
+                                    updatePopUpColor(heartButton.isChecked());
+                                            if (heartButton.isChecked()) {
+                                                Window window = getWindow();
+                                                window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                                window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                        .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreenBackground));
+                                            } else {
+                                                Window window = getWindow();
+                                                window.setStatusBarColor(getResources().getColor(R.color.mqPurple3));
+                                                window.setNavigationBarColor(getResources().getColor(R.color.mqPurple3));
+                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                        .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple3));
+                                            }
+                                            if (adapter != null) {
+                                                listView.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                });
+                                            }
+                                }
                             }
                             else
                             {
@@ -340,6 +367,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
     }
 
+    private void updatePopUpColor(boolean alternate) {
+        loadingPopUp.findViewById(R.id.popup_background).setBackgroundColor(ContextCompat.getColor(this,
+                alternate ? R.color.mqPurpleGreen : R.color.mqPurple2));
+    }
+
     private void onDataChange() {
         if (adapter.getItemCount() == 0) {
             listView.setVisibility(View.INVISIBLE);
@@ -353,6 +385,31 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     public String getPlaylistIdAsUrl(String playlistID) {
         String id = playlistID.substring(17);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
+    }
+
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.renoving_message
+        );
     }
 
     @Override

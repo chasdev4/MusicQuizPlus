@@ -1,8 +1,6 @@
 package service.firebase;
 
-import android.app.Activity;
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -10,11 +8,8 @@ import androidx.annotation.NonNull;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -23,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 
 import model.User;
 import model.ValidationObject;
@@ -72,7 +66,7 @@ public class AlbumService {
         // If the album already exists
         if (user.getAlbumIds().containsValue(album.getId())) {
             log.w(String.format("%s already exists in albumIds list.", album.getId()));
-            return HeartResponse.ALBUM_EXISTS;
+            return HeartResponse.ITEM_EXISTS;
         }
 
         // Add albumId to db user
@@ -296,7 +290,7 @@ public class AlbumService {
             }
         } else {
             log.e("Album not previously saved to user. Aborting...");
-            return HeartResponse.ALBUM_NOT_FOUND;
+            return HeartResponse.ITEM_NOT_FOUND;
         }
 
         Map<String, Object> updates = new HashMap<>();

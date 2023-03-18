@@ -164,10 +164,6 @@ public class Playlist implements Serializable {
                         }
 
                     }
-
-                    for (String trackId : removeQueue) {
-                        trackIds.remove(trackId);
-                    }
                 }
             });
 
@@ -177,6 +173,9 @@ public class Playlist implements Serializable {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             log.e(e.getMessage());
+        }
+        for (String trackId : removeQueue) {
+            trackIds.remove(trackId);
         }
         isInitializing = false;
     }

@@ -7,6 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#33000000">
     <LinearLayout
+        android:id="@+id/popup_background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:elevation="30dp"

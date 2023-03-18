@@ -102,7 +102,12 @@ public class Settings implements Serializable {
     //#region Methods
     public void unheartAllPlaylists(FirebaseUser firebaseUser, DatabaseReference db) {
         for (Map.Entry<String, Playlist> playlist : user.getPlaylists().entrySet()) {
-            PlaylistService.unheart(user, firebaseUser, db, playlist.getValue());
+            PlaylistService.unheart(user, firebaseUser, db, playlist.getValue(), new Runnable() {
+                @Override
+                public void run() {
+                    return;
+                }
+            });
         }
         user.setPlaylists(new HashMap<>());
         user.setPlaylistIds(new HashMap<>());
@@ -120,7 +125,7 @@ public class Settings implements Serializable {
                 AlbumService.unheart(firebaseUser, db, album, new Runnable() {
                     @Override
                     public void run() {
-
+                        return;
                     }
                 });
                 album.setTrackIds(new ArrayList<>());

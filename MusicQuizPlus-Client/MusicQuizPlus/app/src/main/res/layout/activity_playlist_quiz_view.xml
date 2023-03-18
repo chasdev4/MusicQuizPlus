@@ -191,4 +191,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/pqvRecyclerView" />
+
+    <include layout="@layout/loading_popup"
+        android:id="@+id/pqvSaving"
+        android:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

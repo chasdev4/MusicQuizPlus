@@ -97,8 +97,6 @@ public class ArtistQuizView extends AppCompatActivity {
     HistoryAdapter compilationAdapter;
     SpotifyService spotifyService;
     private Source source;
-    private int trackPoolSize;
-    private boolean updateSearch;
 
 
     @Override
