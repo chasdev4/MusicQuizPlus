@@ -80,7 +80,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private ToolTipsManager toolTipsManager;
     private ToolTip.Builder builder;
     private int playlistTrack, artistTrack, historyTrack;
-    public boolean toolTipsFinished;
+    public boolean restart;
     public int playlistFragToolTips, artistFragToolTips, historyFragToolTips;
     private String currentDate, playlistFragToolTipsDate, artistFragToolTipsDate, historyFragToolTipsDate;
 
@@ -256,6 +256,7 @@ public class ParentOfFragments extends AppCompatActivity {
             public void onClick(View view) {
                 if(toolTipsToggleButton.isChecked())
                 {
+                    restart = true;
                     playlistFragToolTips = 0;
                     artistFragToolTips = 0;
                     historyFragToolTips = 0;
@@ -453,6 +454,8 @@ public class ParentOfFragments extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        restart = false;
+
         // Fetching the stored data from the SharedPreference
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
@@ -461,15 +464,21 @@ public class ParentOfFragments extends AppCompatActivity {
         playlistFragToolTipsDate = sh.getString("playlistFragToolTipsDate", "");
         artistFragToolTipsDate = sh.getString("artistFragToolTipsDate", "");
         historyFragToolTipsDate = sh.getString("historyFragToolTipsDate", "");
+        int pqvNum = sh.getInt("pqvToolTips", 0);
 
         //waiting for user to be initialized
         while(user == null){}
 
+        if(playlistFragToolTips == 3 && artistFragToolTips == 3 && historyFragToolTips == 3 && pqvNum == 3)
+        {
+            user.getSettings().setShowToolTips(false);
+        }
+
         if(user.getSettings().isShowToolTips())
         {
+            toolTipsToggleButton.setChecked(true);
             if(!currentDate.equals(playlistFragToolTipsDate))
             {
-                toolTipsToggleButton.setChecked(true);
                 new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
                 playlistFragToolTips++;
                 playlistFragToolTipsDate = currentDate;
@@ -489,6 +498,22 @@ public class ParentOfFragments extends AppCompatActivity {
         // Creating a shared pref object
         SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        if(restart)
+        {
+            if(playlistFragToolTips == 1)
+            {
+                playlistFragToolTipsDate = currentDate;
+            }
+            else
+            {
+                playlistFragToolTipsDate = "";
+            }
+            artistFragToolTipsDate = "";
+            historyFragToolTipsDate = "";
+            myEdit.putInt("pqvToolTips", 0);
+            myEdit.putString("pqvToolTipsDate", "");
+        }
 
         // write all the data entered by the user in SharedPreference and apply
         myEdit.putInt("playlistFragToolTips", playlistFragToolTips);
