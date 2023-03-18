@@ -53,7 +53,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager2 viewPager2;
     private MediaPlayer mediaPlayer;
-    private ToggleButton muteButton;
+    private ToggleButton muteButton, toolTipsToggleButton;
     private TextView userLevel;
     private ImageView userCustomAvatar, invisibleImageRight, invisibleGridView;
     private ImageButton backToTop;
@@ -90,6 +90,7 @@ public class ParentOfFragments extends AppCompatActivity {
         invisibleImageRight = findViewById(R.id.invisibleImageRight);
         root = findViewById(R.id.parentOfFragsRoot);
         invisibleGridView = findViewById(R.id.invisibleGridView);
+        toolTipsToggleButton = findViewById(R.id.toolTipsToggleButton);
 
         Context context = this;
         ImageButton helpButton = findViewById(R.id.embeddedHelp);
@@ -220,6 +221,38 @@ public class ParentOfFragments extends AppCompatActivity {
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
                 tabLayout.getTabAt(position).select();
+            }
+        });
+
+        toolTipsToggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(toolTipsToggleButton.isChecked())
+                {
+                    user.getSettings().setShowToolTips(true);
+                    Toast.makeText(getBaseContext(), "Helping Hints Turned On", Toast.LENGTH_SHORT).show();
+                    if(tabLayout.getSelectedTabPosition() == 0)
+                    {
+                        playlistTrack = 0;
+                        startPlaylistFragmentToolTips();
+                    }
+                    else if(tabLayout.getSelectedTabPosition() == 1)
+                    {
+                        artistTrack = 0;
+                        startArtistFragmentToolTips();
+                    }
+                    else if(tabLayout.getSelectedTabPosition() == 2)
+                    {
+                        historyTrack = 0;
+                        startHistoryFragmentToolTips();
+                    }
+                }
+                else
+                {
+                    toolTipsManager.dismissAll();
+                    user.getSettings().setShowToolTips(false);
+                    Toast.makeText(getBaseContext(), "Helping Hints Turned Off", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
