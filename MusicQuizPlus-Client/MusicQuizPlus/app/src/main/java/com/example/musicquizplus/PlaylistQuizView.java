@@ -233,13 +233,15 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                                 if (response != HeartResponse.OK) {
                                     heartButton.setChecked(false);
                                     hidePopUp();
-                                    HeartResponse finalResponse = response;
-                                    ((PlaylistQuizView)context).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            AlbumService.showError(finalResponse, context);
-                                        }
-                                    });
+                                    if (response != HeartResponse.ITEM_EXISTS) {
+                                        HeartResponse finalResponse = response;
+                                        ((PlaylistQuizView) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                AlbumService.showError(finalResponse, context);
+                                            }
+                                        });
+                                    }
                                 }
                                 else {
                                     updatePopUpColor(heartButton.isChecked());

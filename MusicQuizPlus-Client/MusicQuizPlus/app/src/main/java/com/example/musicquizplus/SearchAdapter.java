@@ -177,13 +177,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
                                         }
 
-                                        HeartResponse finalResponse = response;
-                                        ((SearchActivity) context).runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                AlbumService.showError(finalResponse, context);
-                                            }
-                                        });
+                                        if (response != HeartResponse.ITEM_EXISTS) {
+                                            HeartResponse finalResponse = response;
+                                            ((SearchActivity) context).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    AlbumService.showError(finalResponse, context);
+                                                }
+                                            });
+                                        }
                                     }
                                 }
                             }).start();

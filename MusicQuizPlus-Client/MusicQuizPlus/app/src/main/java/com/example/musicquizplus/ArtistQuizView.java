@@ -355,13 +355,15 @@ public class ArtistQuizView extends AppCompatActivity {
 
                                 }
 
-                                HeartResponse finalResponse = response;
-                                context.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AlbumService.showError(finalResponse, context);
-                                    }
-                                });
+                                if (response != HeartResponse.ITEM_EXISTS) {
+                                    HeartResponse finalResponse = response;
+                                    context.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            AlbumService.showError(finalResponse, context);
+                                        }
+                                    });
+                                }
                             }
                             else {
                                 if (heartLatest.isChecked()) {

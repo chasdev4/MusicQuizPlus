@@ -103,9 +103,8 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
                                     holder.getToggleButton().setChecked(true);
                                     holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
 
-                                }
-                                else if (response == HeartResponse.NO_ALBUM_TRACKS) {
-                                    ((TrackResultActivity)context).runOnUiThread(new Runnable() {
+                                } else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                    ((TrackResultActivity) context).runOnUiThread(new Runnable() {
                                         @Override
                                         public void run() {
                                             holder.getToggleButton().setChecked(false);
@@ -122,21 +121,22 @@ public class TrackResultAdapter extends RecyclerView.Adapter<TrackResultViewHold
                                             holder.setSubtitle("Unavailable");
                                         }
                                     });
+                                    if (response != HeartResponse.ITEM_EXISTS) {
 
-                                HeartResponse finalResponse = response;
-                                ((TrackResultActivity) context).runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        AlbumService.showError(finalResponse, context);
+                                        HeartResponse finalResponse = response;
+                                        ((TrackResultActivity) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                AlbumService.showError(finalResponse, context);
+                                            }
+                                        });
                                     }
-                                });
-                            }}
-                            else {
+                                }
+                            } else {
                                 if (holder.getToggleButton().isChecked()) {
                                     holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleBlue));
 
-                                }
-                                else {
+                                } else {
                                     holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
                                 }
                                 ((TrackResultActivity) context).runOnUiThread(new Runnable() {
