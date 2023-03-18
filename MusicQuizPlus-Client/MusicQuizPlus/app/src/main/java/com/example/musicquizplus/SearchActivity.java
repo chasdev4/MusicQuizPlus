@@ -325,8 +325,8 @@ public class SearchActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        doSearch(searchView.getQuery().toString());
                         setFilterOnPosition(i);
+                        doSearch(searchView.getQuery().toString());
                     }
                 }).start();
             }
