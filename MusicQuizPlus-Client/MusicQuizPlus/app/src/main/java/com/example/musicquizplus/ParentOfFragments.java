@@ -420,117 +420,28 @@ public class ParentOfFragments extends AppCompatActivity {
         }
     }
 
-    private void showNext()
-    {
-        toolTipsManager.dismissAll();
-
-        if(playlistTrack == 1)
-        {
-
-        }
-        else if(playlistTrack == 2)
-        {
-            //swipe from right to left
-            //toolTipsManager.findAndDismiss(userCustomAvatar);
-
-        }
-        else if(playlistTrack == 3)
-        {
-            //search button
-            //toolTipsManager.findAndDismiss(invisibleImage);
-
-        }
-        else if(playlistTrack == 4)
-        {
-            //switch to artists view
-            tabLayout.getTabAt(1).select();
-            //toolTipsManager.findAndDismiss(invisibleImage);
-            builder = new ToolTip.Builder(this, invisibleGridView, root, "See Your Saved Artists Here", ToolTip.POSITION_ABOVE);
-            builder.setAlign(ToolTip.ALIGN_CENTER);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            //track++;
-            new Handler().postDelayed(this::showNext, 3000);
-        }
-        else if(playlistTrack == 5)
-        {
-            //toolTipsManager.findAndDismiss(searchButton);
-            builder = new ToolTip.Builder(this, invisibleImageRight, root, "Swipe From Right To Left For History View", ToolTip.POSITION_LEFT_TO);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            //track++;
-            new Handler().postDelayed(this::showNext, 3000);
-        }
-        else if(playlistTrack == 6)
-        {
-            //toolTipsManager.findAndDismiss(invisibleGridView);
-            builder = new ToolTip.Builder(this, searchButton, root, "Search For An Artist\nTo Save For Quizzing", ToolTip.POSITION_LEFT_TO);
-            builder.setAlign(ToolTip.ALIGN_CENTER);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            //track++;
-            new Handler().postDelayed(this::showNext, 3000);
-        }
-        else if(playlistFragToolTips == 7)
-        {
-            //switch to history view
-            tabLayout.getTabAt(2).select();
-            //give tooltip about artists view
-            //toolTipsManager.findAndDismiss(searchButton);
-            builder = new ToolTip.Builder(this, invisibleGridView, root, "See Your Track History From\nPrevious Quizzes Here", ToolTip.POSITION_ABOVE);
-            builder.setAlign(ToolTip.ALIGN_CENTER);
-            builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-            builder.setTextAppearance(R.style.TooltipTextAppearance);
-            toolTipsManager.show(builder.build());
-            //track++;
-            new Handler().postDelayed(this::showNext, 3250);
-        }
-        else
-        {
-            //Go back to playlist view and clear all tool tips
-            clearToolTip();
-            tabLayout.getTabAt(0).select();
-            toolTipsFinished = true;
-        }
-    }
-
-    private void clearToolTip()
-    {
-        toolTipsManager.dismissAll();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
 
         // Fetching the stored data from the SharedPreference
-        SharedPreferences sh = getSharedPreferences("GuestAccount", MODE_PRIVATE);
+        SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
+        artistFragToolTips = sh.getInt("artistFragToolTips", 0);
+        historyFragToolTips = sh.getInt("historyFragToolTips", 0);
 
-        // Setting the fetched data in the EditTexts
-        if(playlistFragToolTips < 3000)
+        //waiting for user to be initialized
+        while(user == null){}
+
+        if(user.getSettings().isShowToolTips())
         {
-            Bundle extras = getIntent().getExtras();
-
-            //Waiting for user to be initialized
-            int num = 0;
-            while(user==null)
-            {
-                num++;
-            }
-
-            if(tabLayout.getSelectedTabPosition() == 0)
-            {
-                if(user.getSettings().isShowToolTips() && extras == null)
-                {
-                    toolTipsFinished = false;
-                    new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
-                    playlistFragToolTips++;
-                }
-            }
+            toolTipsToggleButton.setChecked(true);
+            new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
+            playlistFragToolTips++;
+        }
+        else
+        {
+            toolTipsToggleButton.setChecked(false);
         }
     }
 
@@ -540,12 +451,14 @@ public class ParentOfFragments extends AppCompatActivity {
         mediaPlayer.stop();
 
         // Creating a shared pref object
-        SharedPreferences sharedPreferences = getSharedPreferences("GuestAccount", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
         // write all the data entered by the user in SharedPreference and apply
         myEdit.putInt("playlistFragToolTips", playlistFragToolTips);
-
+        myEdit.putInt("artistFragToolTips", artistFragToolTips);
+        myEdit.putInt("historyFragToolTips", historyFragToolTips);
+        //myEdit.putBoolean("displayPlaylistToolTips", )
         myEdit.apply();
     }
 
