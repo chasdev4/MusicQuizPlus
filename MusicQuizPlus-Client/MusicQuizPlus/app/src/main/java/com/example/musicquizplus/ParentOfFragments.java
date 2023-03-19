@@ -65,6 +65,7 @@ public class ParentOfFragments extends AppCompatActivity {
     private ImageButton searchButton;
     private ConstraintLayout root;
     View userAvatar;
+    Boolean showToolTipsBool;
 
     private View.OnClickListener playlistsBackToTopListener;
     private View.OnClickListener artistsBackToTopListener;
@@ -202,14 +203,16 @@ public class ParentOfFragments extends AppCompatActivity {
                         if (playlistsBackToTopListener != null) {
                             backToTop.setOnClickListener(playlistsBackToTopListener);
                         }
+                        toolTipsManager.dismissAll();
 
                         break;
                     case 1:
                         if (artistsBackToTopListener != null) {
                             backToTop.setOnClickListener(artistsBackToTopListener);
                         }
+                        toolTipsManager.dismissAll();
 
-                        if(user.getSettings().isShowToolTips() && !currentDate.equals(artistFragToolTipsDate))
+                        if(showToolTipsBool && !currentDate.equals(artistFragToolTipsDate))
                         {
                             startArtistFragmentToolTips();
                             artistFragToolTips++;
@@ -220,8 +223,9 @@ public class ParentOfFragments extends AppCompatActivity {
                         if (historyBackToTopListener != null) {
                             backToTop.setOnClickListener(historyBackToTopListener);
                         }
+                        toolTipsManager.dismissAll();
 
-                        if(user.getSettings().isShowToolTips() && !currentDate.equals(historyFragToolTipsDate))
+                        if(showToolTipsBool && !currentDate.equals(historyFragToolTipsDate))
                         {
                             startHistoryFragmentToolTips();
                             historyFragToolTips++;
@@ -261,7 +265,7 @@ public class ParentOfFragments extends AppCompatActivity {
                     artistFragToolTips = 0;
                     historyFragToolTips = 0;
 
-                    user.getSettings().setShowToolTips(true);
+                    showToolTipsBool = true;
                     Toast.makeText(getBaseContext(), "Helping Hints Turned On", Toast.LENGTH_SHORT).show();
 
                     if(tabLayout.getSelectedTabPosition() == 0)
@@ -289,7 +293,7 @@ public class ParentOfFragments extends AppCompatActivity {
                 else
                 {
                     toolTipsManager.dismissAll();
-                    user.getSettings().setShowToolTips(false);
+                    showToolTipsBool = false;
                     Toast.makeText(getBaseContext(), "Helping Hints Turned Off", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -312,7 +316,7 @@ public class ParentOfFragments extends AppCompatActivity {
             {
                 if(firebaseUser != null)
                 {
-                    builder = new ToolTip.Builder(this, userAvatar, root, "Click Here To\nView Your Profile", ToolTip.POSITION_BELOW);
+                    builder = new ToolTip.Builder(this, userCustomAvatar, root, "Click Here To\nView Your Profile", ToolTip.POSITION_BELOW);
                     builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                     builder.setAlign(ToolTip.ALIGN_RIGHT);
                     builder.setTextAppearance(R.style.TooltipTextAppearance);
@@ -322,7 +326,7 @@ public class ParentOfFragments extends AppCompatActivity {
                 }
                 else
                 {
-                    builder = new ToolTip.Builder(this, userAvatar, root, "Click Here To\nCreate An Account", ToolTip.POSITION_BELOW);
+                    builder = new ToolTip.Builder(this, userCustomAvatar, root, "Click Here To\nCreate An Account", ToolTip.POSITION_BELOW);
                     builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                     builder.setAlign(ToolTip.ALIGN_RIGHT);
                     builder.setTextAppearance(R.style.TooltipTextAppearance);
@@ -458,6 +462,7 @@ public class ParentOfFragments extends AppCompatActivity {
 
         // Fetching the stored data from the SharedPreference
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
         artistFragToolTips = sh.getInt("artistFragToolTips", 0);
         historyFragToolTips = sh.getInt("historyFragToolTips", 0);
@@ -465,16 +470,15 @@ public class ParentOfFragments extends AppCompatActivity {
         artistFragToolTipsDate = sh.getString("artistFragToolTipsDate", "");
         historyFragToolTipsDate = sh.getString("historyFragToolTipsDate", "");
         int pqvNum = sh.getInt("pqvToolTips", 0);
+        int aqvNum = sh.getInt("aqvToolTips", 0);
+        int searchNum = sh.getInt("searchToolTips", 0);
 
-        //waiting for user to be initialized
-        while(user == null){}
-
-        if(playlistFragToolTips == 3 && artistFragToolTips == 3 && historyFragToolTips == 3 && pqvNum == 3)
+        if(playlistFragToolTips == 3 && artistFragToolTips == 3 && historyFragToolTips == 3 && pqvNum == 3 && aqvNum == 3 && searchNum == 3)
         {
-            user.getSettings().setShowToolTips(false);
+            showToolTipsBool = false;
         }
 
-        if(user.getSettings().isShowToolTips())
+        if(showToolTipsBool)
         {
             toolTipsToggleButton.setChecked(true);
             if(!currentDate.equals(playlistFragToolTipsDate))
@@ -513,6 +517,10 @@ public class ParentOfFragments extends AppCompatActivity {
             historyFragToolTipsDate = "";
             myEdit.putInt("pqvToolTips", 0);
             myEdit.putString("pqvToolTipsDate", "");
+            myEdit.putInt("aqvToolTips", 0);
+            myEdit.putString("aqvToolTipsDate", "");
+            myEdit.putInt("searchToolTips", 0);
+            myEdit.putString("searchToolTipsDate", "");
         }
 
         // write all the data entered by the user in SharedPreference and apply
@@ -522,6 +530,7 @@ public class ParentOfFragments extends AppCompatActivity {
         myEdit.putString("playlistFragToolTipsDate", playlistFragToolTipsDate);
         myEdit.putString("artistFragToolTipsDate", artistFragToolTipsDate);
         myEdit.putString("historyFragToolTipsDate", historyFragToolTipsDate);
+        myEdit.putBoolean("showToolTipsBool", showToolTipsBool);
         myEdit.apply();
     }
 
