@@ -78,6 +78,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     int track = 0;
     String pqvToolTipsDate, currentDate;
     int pqvToolTips;
+    boolean showToolTipsBool;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,32 +185,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 startActivity(Intent.createChooser(shareIntent, null));
             }
         });
-/*
-        toolTipsToggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(toolTipsToggleButton.isChecked())
-                {
-                    pqvToolTips = 0;
-
-                    user.getSettings().setShowToolTips(true);
-                    Toast.makeText(getBaseContext(), "Helping Hints Turned On", Toast.LENGTH_SHORT).show();
-
-                    track = 0;
-                    showNext();
-                    pqvToolTips++;
-                    pqvToolTipsDate = currentDate;
-                }
-                else
-                {
-                    toolTipsManager.dismissAll();
-                    user.getSettings().setShowToolTips(false);
-                    Toast.makeText(getBaseContext(), "Helping Hints Turned Off", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
- */
     }
 
     @Override
@@ -220,9 +195,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         pqvToolTips = sh.getInt("pqvToolTips", 0);
         pqvToolTipsDate = sh.getString("pqvToolTipsDate", "");
+        showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
 
-
-        if(user.getSettings().isShowToolTips())
+        if(showToolTipsBool)
         {
             if(!currentDate.equals(pqvToolTipsDate))
             {
