@@ -2,11 +2,21 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/aqvRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ArtistQuizView"
     android:background="@color/mqPurple3"
     android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/invisibleHeartButtonToolTip"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_marginEnd="35dp"
+        android:layout_marginTop="60dp"
+        app:layout_constraintEnd_toEndOf="@+id/scrollView"
+        app:layout_constraintTop_toTopOf="@+id/scrollView" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
