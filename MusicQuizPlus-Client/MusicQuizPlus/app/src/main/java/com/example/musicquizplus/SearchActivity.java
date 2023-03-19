@@ -3,6 +3,7 @@ package com.example.musicquizplus;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,10 +13,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,9 +26,15 @@ import android.widget.Toast;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.tomergoldst.tooltips.ToolTip;
+import com.tomergoldst.tooltips.ToolTipsManager;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import model.GoogleSignIn;
 import model.Search;
@@ -50,6 +59,7 @@ public class SearchActivity extends AppCompatActivity {
     private TextView emptySearchText;
     private ProgressBar progressBar;
     private ImageButton homeButton;
+    private RadioButton artist, album, song, playlist;
 
     private Search search;
     private FirebaseUser firebaseUser;
@@ -63,6 +73,13 @@ public class SearchActivity extends AppCompatActivity {
     private boolean searchStarted;
     private boolean doingSearch;
     private boolean searchLimitReached;
+    private ToolTipsManager toolTipsManager;
+    private ToolTip.Builder builder;
+    ConstraintLayout root;
+    int track = 0;
+    String searchToolTipsDate, currentDate;
+    int searchToolTips;
+    boolean showToolTipsBool;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +88,14 @@ public class SearchActivity extends AppCompatActivity {
         context = this;
 
         homeButton = findViewById(R.id.home_button);
-
+        artist = findViewById(R.id.search_filter_artist);
+        album = findViewById(R.id.search_filter_album);
+        song = findViewById(R.id.search_filter_song);
+        playlist = findViewById(R.id.search_filter_playlist);
+        toolTipsManager = new ToolTipsManager();
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        currentDate = df.format(c);
 
         searchStarted = false;
         doingSearch = false;
@@ -82,6 +106,7 @@ public class SearchActivity extends AppCompatActivity {
         GoogleSignIn googleSignIn = new GoogleSignIn();
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
+        root = findViewById(R.id.searchRoot);
 
         search = new Search();
         searchView = findViewById(R.id.search_bar);
@@ -164,6 +189,93 @@ public class SearchActivity extends AppCompatActivity {
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         offset = 0;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Fetching the stored data from the SharedPreference
+        SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        searchToolTips = sh.getInt("searchToolTips", 0);
+        searchToolTipsDate = sh.getString("searchToolTipsDate", "");
+        showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
+
+        if(showToolTipsBool)
+        {
+            if(!currentDate.equals(searchToolTipsDate))
+            {
+                new Handler().postDelayed(this::showToolTips, 1500);
+                searchToolTips++;
+                searchToolTipsDate = currentDate;
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Creating a shared pref object
+        SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        // write all the data entered by the user in SharedPreference and apply
+        myEdit.putInt("searchToolTips", searchToolTips);
+        myEdit.putString("searchToolTipsDate", searchToolTipsDate);
+        myEdit.apply();
+    }
+
+    private void showToolTips()
+    {
+        toolTipsManager.dismissAll();
+
+        if(searchToolTips < 3) {
+            if (track == 0) {
+                builder = new ToolTip.Builder(this, artist, root, "Click To Filter Search\nResults By Artists", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 1)
+            {
+                builder = new ToolTip.Builder(this, album, root, "Click To Filter Search\nResults By Albums", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 2)
+            {
+                builder = new ToolTip.Builder(this, song, root, "Click To Filter Search\nResults By Songs", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 3)
+            {
+                builder = new ToolTip.Builder(this, playlist, root, "Click To Filter Search\nResults By Playlists", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 4)
+            {
+                builder = new ToolTip.Builder(this, homeButton, root, "Click Here To Return Home", ToolTip.POSITION_LEFT_TO);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+        }
     }
 
     private <T> void doSearch(String query) {
