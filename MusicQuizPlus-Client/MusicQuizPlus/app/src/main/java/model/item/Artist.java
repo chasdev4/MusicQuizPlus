@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
@@ -446,14 +447,19 @@ public class Artist implements Serializable {
         id = jsonArtist.get("uri").getAsString();
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
 
-        // Remove HTML from bio
-        bio = FormatUtil.removeHtml(jsonArtist.getAsJsonObject()
+        JsonElement bioRaw = jsonArtist.getAsJsonObject()
                 .get("profile")
                 .getAsJsonObject()
                 .get("biography")
                 .getAsJsonObject()
-                .get("text")
-                .getAsString());
+                .get("text");
+        if (!bioRaw.isJsonNull() && bioRaw != null) {
+
+
+            // Remove HTML from bio
+            bio = FormatUtil.removeHtml(bioRaw
+                    .getAsString());
+        }
 
         if (bio.length() > 250) {
             bio = bio.substring(0, 250);

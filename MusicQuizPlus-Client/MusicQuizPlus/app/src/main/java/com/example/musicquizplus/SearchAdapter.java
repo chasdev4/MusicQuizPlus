@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -187,10 +188,55 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                             });
                                         }
                                     }
+                                    else {
+                                        ((SearchActivity) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast toast = null;
+                                                if (holder.getToggleButton().isChecked()) {
+                                                    toast = Toast.makeText(context,
+                                                            String.format("\"%s\" was saved.",
+                                                                    album.getName()), Toast.LENGTH_LONG);
+                                                } else {
+                                                    toast = Toast.makeText(context,
+                                                            String.format("\"%s\" was removed.",
+                                                                    album.getName()), Toast.LENGTH_LONG);
+                                                }
+                                                toast.show();
+
+                                            }
+                                        });
+
+                                    }
                                 }
                             }).start();
-
                         }
+                    });
+                    holder.getItemView().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+
+
+                            Artist currentArtist = null;
+                            if (holder.getToggleButton().isChecked() && user.getArtistIds().containsValue(album.getArtistId())) {
+                                currentArtist = user.getArtist(album.getArtistId());
+                            }
+                            if (!holder.getToggleButton().isChecked() || currentArtist == null) {
+                                SpotifyService spotifyService = new SpotifyService(((SearchActivity)context).getString(R.string.SPOTIFY_KEY));
+                                currentArtist = spotifyService.artistOverview(album.getArtistId());
+                            }
+                            Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
+                            intent.putExtra("currentArtist", currentArtist);
+                            intent.putExtra("source", Source.SEARCH);
+                            intent.putExtra("currentUser", user);
+                            intent.putExtra("pos", holder.getAdapterPosition());
+                            ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
+                                }
+                            }).start();
+                                }
                     });
                 }
                 else {
