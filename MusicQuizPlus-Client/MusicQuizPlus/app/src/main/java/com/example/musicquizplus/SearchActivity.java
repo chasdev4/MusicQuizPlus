@@ -46,7 +46,6 @@ public class SearchActivity extends AppCompatActivity {
     private ImageView emptySearchImage;
     private TextView emptySearchText;
     private ProgressBar progressBar;
-    private ImageButton homeButton;
     private View loadingPopUp;
 
     private Search search;
@@ -69,7 +68,6 @@ public class SearchActivity extends AppCompatActivity {
         context = this;
 
         loadingPopUp = findViewById(R.id.search_saving);
-        homeButton = findViewById(R.id.home_button);
 
         searchStarted = false;
         doingSearch = false;
@@ -380,18 +378,7 @@ public class SearchActivity extends AppCompatActivity {
             }
         }
 
-        Activity activity = this;
-        homeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Intent intent = new Intent(view.getContext(), SearchActivity.class);
-//                view.getContext().startActivity(intent);
-                Intent intent = getIntent();
-                intent.putExtra("user", user);
-                setResult(RESULT_OK, intent);
-                activity.finish();
-            }
-        });
+
     }
 
     @Override

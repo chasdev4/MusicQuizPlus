@@ -14,6 +14,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.4" />
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVert75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
@@ -117,19 +123,6 @@
         app:layout_constraintStart_toStartOf="parent"/>
 
     <ImageButton
-        android:id="@+id/home_button"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"
-        android:background="@drawable/round_button_no_stroke"
-        android:elevation="8dp"
-        android:src="@drawable/home_icon"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="@string/home_button_content_description"/>
-
-    <ImageButton
         android:id="@+id/backToTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -137,8 +130,9 @@
         android:elevation="8dp"
         android:src="@drawable/up_chevron"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/home_button"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert75"
         android:layout_marginEnd="30dp"
         android:layout_marginBottom="5dp"
         android:contentDescription="@string/back_to_top_content_description"/>
