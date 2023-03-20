@@ -454,15 +454,14 @@ public class Artist implements Serializable {
                 .getAsJsonObject()
                 .get("text");
         if (!bioRaw.isJsonNull() && bioRaw != null) {
-
-
             // Remove HTML from bio
             bio = FormatUtil.removeHtml(bioRaw
                     .getAsString());
-        }
 
-        if (bio.length() > 250) {
-            bio = bio.substring(0, 250);
+
+            if (bio.length() > 250) {
+                bio = bio.substring(0, 250);
+            }
         }
 
 
