@@ -215,11 +215,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                     holder.getItemView().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            holder.getItemView().setClickable(false);
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-
-
                             Artist currentArtist = null;
                             if (holder.getToggleButton().isChecked() && user.getArtistIds().containsValue(album.getArtistId())) {
                                 currentArtist = user.getArtist(album.getArtistId());
