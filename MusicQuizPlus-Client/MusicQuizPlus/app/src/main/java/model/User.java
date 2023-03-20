@@ -33,6 +33,7 @@ import model.item.Track;
 import model.type.AlbumType;
 import model.type.BadgeType;
 import model.type.Difficulty;
+import model.type.QuizType;
 import model.type.Role;
 import service.BadgeService;
 import service.FirebaseService;
@@ -477,32 +478,34 @@ public class User implements Serializable {
     //#endregion
 
     //#region Update History
-    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks, String sourceId) {
-        LinkedList<String> historyIds = new LinkedList<>();
+    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks, String sourceId, QuizType quizType) {
+        LinkedList<HistoryEntry> historyEntries = new LinkedList<>();
 
         for (HistoryEntry id : this.historyIds) {
-            if(historyIds.size() == 50)
+            if(historyEntries.size() == 50)
             {
                 break;
             }
-            historyIds.addLast(id.getId());
+            historyEntries.addLast(new HistoryEntry(id.getId(), id.getSource()));
         }
 
         for (int i = 0; i < tracks.size(); i++) {
             if (this.historyIds.contains(tracks.get(i).getId())) {
-                historyIds.remove(tracks.get(i).getId());
+                historyEntries.remove(tracks.get(i).getId());
             }
-            if (historyIds.size() == HISTORY_LIMIT) {
-                historyIds.removeLast();
+            if (historyEntries.size() == HISTORY_LIMIT) {
+                historyEntries.removeLast();
             }
             history.addFirst(tracks.get(i));
-            historyIds.addFirst(tracks.get(i).getId());
+            historyEntries.addFirst(new HistoryEntry(tracks.get(i).getId(),
+                    (quizType == QuizType.PLAYLIST) ? sourceId : tracks.get(i).getAlbumId()));
         }
 
         this.historyIds = new ArrayList<>();
-        for (String id : historyIds) {
-            this.historyIds.add(new HistoryEntry(id, sourceId));
-        }
+            for (HistoryEntry id : historyEntries) {
+                this.historyIds.add(new HistoryEntry(id.getId(), id.getSource()));
+            }
+
         db.child("users").child(uId).child("historyIds").setValue(this.historyIds);
     }
 

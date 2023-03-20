@@ -20,4 +20,8 @@ public class HistoryEntry implements Serializable {
     public String getId() {
         return id;
     }
+
+    public void setSource(String albumId) {
+        this.source = albumId;
+    }
 }

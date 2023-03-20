@@ -984,11 +984,11 @@ public class Quiz implements Serializable {
             user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), playlist.getId(), quizId);
         }
         if (this.type == QuizType.PLAYLIST) {
-            user.updateHistoryIds(db, firebaseUser.getUid(), history,playlist.getId());
+            user.updateHistoryIds(db, firebaseUser.getUid(), history,playlist.getId(), type);
 
         }
         else {
-            user.updateHistoryIds(db, firebaseUser.getUid(), history,artist.getId());
+            user.updateHistoryIds(db, firebaseUser.getUid(), history,artist.getId(), type);
 
         }
         for (Track track : wrong) {
