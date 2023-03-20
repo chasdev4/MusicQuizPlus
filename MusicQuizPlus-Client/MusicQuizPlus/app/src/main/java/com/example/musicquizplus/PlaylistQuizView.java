@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -55,7 +56,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     TextView title;
     TextView owner;
     RecyclerView listView;
-    Button startQuiz;
+    AppCompatButton startQuiz;
     Playlist playlist;
     HistoryAdapter adapter;
     Handler mainHandler = new Handler();

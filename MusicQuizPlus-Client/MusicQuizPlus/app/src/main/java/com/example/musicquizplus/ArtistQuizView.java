@@ -1,6 +1,7 @@
 package com.example.musicquizplus;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -63,7 +64,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ImageButton instagram;
     ImageButton share;
     ToggleButton heartLatest;
-    Button startQuiz;
+    AppCompatButton startQuiz;
     ImageView latestImage;
     TextView latestTitle;
     TextView latestType;

@@ -265,16 +265,20 @@
         android:id="@+id/aqvSaving"
         android:visibility="gone"/>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/aqvStartButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
+        android:background="@drawable/avatar_level_background"
         android:backgroundTint="@color/mqRed"
         android:text="@string/start_quiz"
+        android:paddingHorizontal="15dp"
+        android:textColor="@color/mqWhite"
+        android:textAllCaps="false"
         android:paddingVertical="15dp"
         android:fontFamily="@font/concert_one"
-        android:textSize="22sp"
+        android:textSize="26sp"
         android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
