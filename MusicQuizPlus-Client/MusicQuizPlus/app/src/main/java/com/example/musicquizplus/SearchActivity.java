@@ -2,11 +2,16 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -26,14 +31,17 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
 import model.Search;
 import model.SearchResult;
 import model.TrackResult;
 import model.User;
+import model.item.Artist;
 import model.item.Track;
 import model.type.SearchFilter;
+import service.FirebaseService;
 import service.SpotifyService;
 
 public class SearchActivity extends AppCompatActivity {
@@ -47,6 +55,11 @@ public class SearchActivity extends AppCompatActivity {
     private TextView emptySearchText;
     private ProgressBar progressBar;
     private View loadingPopUp;
+    private View playAlbumBanner;
+    private ProgressBar playAlbumProgressBar;
+    private AppCompatButton playAlbumYesButton;
+    private AppCompatButton playAlbumNoButton;
+    private AppCompatCheckBox playAlbumCheckbox;
 
     private Search search;
     private FirebaseUser firebaseUser;
@@ -60,12 +73,21 @@ public class SearchActivity extends AppCompatActivity {
     private boolean searchStarted;
     private boolean doingSearch;
     private boolean searchLimitReached;
+    private String playNowArtistId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         context = this;
+
+        playAlbumBanner = findViewById(R.id.play_album_banner);
+        playAlbumProgressBar = findViewById(R.id.play_album_progressbar);
+        playAlbumProgressBar.setProgress(100);
+        playAlbumYesButton = findViewById(R.id.play_album_yes);
+        playAlbumNoButton = findViewById(R.id.play_album_no);
+
+        playAlbumCheckbox = findViewById(R.id.play_album_checkbox);
 
         loadingPopUp = findViewById(R.id.search_saving);
 
@@ -87,7 +109,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (v.getId() == R.id.search_bar) {
-                        searchView.onActionViewExpanded();
+                    searchView.onActionViewExpanded();
                 }
             }
         });
@@ -109,9 +131,9 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
         ImageView searchIcon = searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
-        searchIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.search));
+        searchIcon.setImageDrawable(ContextCompat.getDrawable((Activity) this, R.drawable.search));
         ImageView searchCloseIcon = searchView.findViewById(androidx.appcompat.R.id.search_close_btn);
-        searchCloseIcon.setImageDrawable(ContextCompat.getDrawable((Activity)this,R.drawable.close));
+        searchCloseIcon.setImageDrawable(ContextCompat.getDrawable((Activity) this, R.drawable.close));
 
         lastQuery = searchView.getQuery().toString();
 
@@ -163,7 +185,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private <T> void doSearch(String query) {
-        SharedPreferences sharedPref = ((Activity)this).getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = ((Activity) this).getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
 //        if (searchLimitReached || firebaseUser == null
 //                && user.isSearchLimitReached(firebaseUser, Role.GUEST, this)) {
@@ -195,7 +217,6 @@ public class SearchActivity extends AppCompatActivity {
 //
 //            finish();
 //        }
-
 
 
         doingSearch = true;
@@ -324,10 +345,9 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 }).start();
             }
+        } else {
+            setFilterOnPosition(i);
         }
-            else {
-                setFilterOnPosition(i);
-            }
     }
 
     private void setSearchResults(List<SearchResult> results) {
@@ -362,19 +382,120 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        hidePopUp();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+//            SharedPreferences.Editor editor1 = sharedPref.edit();
+//            editor1.putBoolean(getString(R.string.playNowHidden), false);
+//            editor1.apply();
             user = (User) extras.getSerializable("user");
-            if(user != null)
-            {
+            if (user != null) {
                 user.setSearchCount(sharedPref.getInt(getString(R.string.searchCount), 0));
+                user.getSettings().setPlayNowBannerHidden(sharedPref.getBoolean(getString(R.string.playNowHidden), false));
                 if (searchAdapter.getUser() == null) {
                     searchAdapter.setUser(user);
                 }
+
+                playAlbumNoButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        ((SearchActivity)context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (playAlbumCheckbox.isChecked()) {
+                                    SharedPreferences.Editor editor = sharedPref.edit();
+                                    editor.putBoolean(getString(R.string.playNowHidden), true);
+                                    editor.apply();
+                                    user.getSettings().setPlayNowBannerHidden(true);
+                                }
+                                else {
+                                    playAlbumProgressBar.setProgress(100);
+                                }
+                                playAlbumBanner.setVisibility(View.GONE);
+                            }
+                        });
+                    }
+                });
+                playAlbumYesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                playAlbumBanner.setVisibility(View.GONE);
+                                updateToLoadingPopUpText();
+                                showPopUp();
+                            }
+                        });
+                        if (getPlayNowArtistId() == null) {
+                            return;
+                        }
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Artist artist = null;
+                                User user = null;
+                                while (artist == null) {
+                                    user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                                    if (user.getArtistIds().containsValue(playNowArtistId)) {
+                                        user.initArtists(db, firebaseUser, false);
+                                    }
+                                    artist = user.getArtist(getPlayNowArtistId());
+                                }
+
+                                CountDownLatch countDownLatch = new CountDownLatch(1);
+                                artist.initCollections(db, user);
+                                countDownLatch.countDown();
+                                try {
+                                    countDownLatch.await();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                countDownLatch = new CountDownLatch(1);
+                                artist.initTracks(db, user);
+                                countDownLatch.countDown();
+                                try {
+                                    countDownLatch.await();
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+
+                                int size = artist.getTrackPoolSize();
+
+                                if (size >= 15) {
+                                    Intent intent = new Intent(context, ActiveQuiz.class);
+                                    intent.putExtra("currentArtist", artist);
+                                    intent.putExtra("currentUser", user);
+                                    startActivity(intent);
+                                }
+                                else {
+                                    hidePopUp();
+                                    Artist finalArtist = artist;
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast toast = Toast.makeText(context,
+                                                    String.format("Not enough data to start quiz. Heart more albums by %s and try again.",
+                                                            finalArtist.getName()), Toast.LENGTH_LONG);
+                                            toast.show();
+                                        }
+                                    });
+                                }
+                            }
+                        }).start();
+
+
+                    }
+                });
             }
         }
 
@@ -383,7 +504,7 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
+        super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && data != null) {
             Bundle extras = data.getExtras();
@@ -402,14 +523,12 @@ public class SearchActivity extends AppCompatActivity {
                 }
                 updateApater = true;
 //                searchAdapter.notifyDataSetChanged();
-            }
-            else if (albumKey != null && albumValue != null && pos >= 0 && user != null) {
+            } else if (albumKey != null && albumValue != null && pos >= 0 && user != null) {
                 if (!user.getAlbumIds().containsValue(albumValue)) {
                     user.addAlbumId(albumKey, albumValue);
                 }
                 updateApater = true;
-            }
-            else if (playlistKey != null && playlistValue != null && pos >= 0 && user != null) {
+            } else if (playlistKey != null && playlistValue != null && pos >= 0 && user != null) {
                 if (!user.getPlaylistIds().containsValue(playlistValue)) {
                     user.addPlaylistId(playlistKey, playlistValue);
                 }
@@ -426,9 +545,51 @@ public class SearchActivity extends AppCompatActivity {
     }
 
 
-    private void updateArtistItem() {
+    private void showPlayNow() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                playAlbumProgressBar.setProgress(100);
+                playAlbumBanner.setVisibility(View.VISIBLE);
 
+                if (backToTop.getVisibility() == View.VISIBLE) {
+                    backToTop.setVisibility(View.GONE);
+                }
+            }
+        });
+        ValueAnimator valueAnimator = ValueAnimator.ofInt(100, 0);
+        valueAnimator.setDuration(10000);
+        valueAnimator.setStartDelay(0);
+        valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                playAlbumProgressBar.setProgress((Integer) animation.getAnimatedValue());
+            }
+        });
+        valueAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                playAlbumBanner.setVisibility(View.GONE);
+            }
+        });
+
+        valueAnimator.start();
     }
+
+    private void hidePlayNow() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                playAlbumBanner.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void resetPlayNow() {
+        playAlbumProgressBar.setProgress(100);
+    }
+
 
     public TrackResult getTrackResult(Track track) {
         return search.getTrackResult(track);
@@ -445,8 +606,10 @@ public class SearchActivity extends AppCompatActivity {
         });
         searchAdapter.setHidePopUp(() -> hidePopUp());
         searchAdapter.setShowPopUp(() -> showPopUp());
-        searchAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
-        searchAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+        searchAdapter.setHidePlayNow(() -> hidePlayNow());
+        searchAdapter.setShowPlayNow(() -> showPlayNow());
+        searchAdapter.setUpdatePopUpTextFalse(() -> updateSavingPopUpText(false));
+        searchAdapter.setUpdatePopUpTextTrue(() -> updateSavingPopUpText(true));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
@@ -487,28 +650,57 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    private void updatePopUpText(boolean b) {
-        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+    private void updateSavingPopUpText(boolean b) {
+        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(
                 b ? R.string.saving_message
                         : R.string.removing_message
         );
+    }
+    private void updateToLoadingPopUpText() {
+        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(getString(R.string.loading_message));
     }
 
     public FirebaseUser getFirebaseUser() {
         return firebaseUser;
     }
 
-    public DatabaseReference getDb() { return db;}
+    public DatabaseReference getDb() {
+        return db;
+    }
 
-    public SpotifyService getSpotifyService() { return spotifyService; }
+    public SpotifyService getSpotifyService() {
+        return spotifyService;
+    }
 
     public Search getSearch() {
         return search;
     }
 
-    public void setUser(User user) {this.user = user;}
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public User getUser() {
         return user;
+    }
+
+    public View getPlayAlbumBanner() {
+        return playAlbumBanner;
+    }
+
+    public ProgressBar getPlayAlbumProgressBar() {
+        return playAlbumProgressBar;
+    }
+
+    public AppCompatButton getPlayAlbumYesButton() {
+        return playAlbumYesButton;
+    }
+
+    public void setPlayNowArtistId(String artistId) {
+        this.playNowArtistId = artistId;
+    }
+
+    public String getPlayNowArtistId() {
+        return playNowArtistId;
     }
 }

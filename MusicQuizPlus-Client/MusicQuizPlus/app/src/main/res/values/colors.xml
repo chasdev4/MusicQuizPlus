@@ -38,5 +38,7 @@
     <color name="disabled">#CF808080</color>
     <color name="disabledForeground">#CFCFCFCF</color>
     <color name="disabledPurple">#564e76</color>
+    <color name="charcoal">#414141</color>
+    <color name="translucentGreen">#bb1ED760</color>
 
 </resources>

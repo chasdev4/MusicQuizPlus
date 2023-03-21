@@ -3,4 +3,5 @@
     <string name="difficulty">0</string>
     <string name="searchCount">0</string>
     <string name="limitReached">-1</string>
+    <string name="playNowHidden">false</string>
 </resources>

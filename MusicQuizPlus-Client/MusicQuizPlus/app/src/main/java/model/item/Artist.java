@@ -206,41 +206,6 @@ public class Artist implements Serializable {
     }
 
     @Exclude
-    public List<String> getAllTrackIds() {
-        List<String> trackIds = new ArrayList<>();
-
-        if (singles != null) {
-            for (Album album : singles) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-        if (albums != null) {
-            for (Album album : albums) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-        if (compilations != null) {
-            for (Album album : compilations) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-
-        return trackIds;
-    }
-
-    @Exclude
     public int getTrackPoolSize() {
         int count = 0;
         int size = 0;
@@ -297,7 +262,15 @@ public class Artist implements Serializable {
     @Exclude
     private List<Track> getAllTracks() {
         List<Track> tracks = new ArrayList<>();
-
+        int size = 0;
+        if (singleIds != null) {
+            size = singleIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (singles != null) {
             for (Album album : singles) {
                 if (album.isTrackIdsKnown() && album.getTracks() != null) {
@@ -305,12 +278,28 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (albumIds != null) {
+            size = albumIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (albums != null) {
             for (Album album : albums) {
                 if (album.isTrackIdsKnown() && album.getTracks() != null && album.getTracks().size() > 0) {
                     tracks.addAll(album.getTracks());
                 }
             }
+        }
+        if (compilationIds != null) {
+            size = compilationIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         if (compilations != null) {
             for (Album album : compilations) {
@@ -665,7 +654,7 @@ public class Artist implements Serializable {
     public void initTracks(DatabaseReference db, User user) {
         LogUtil log = new LogUtil(TAG, "initTracks");
         List<Album> albumsToInit = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -732,14 +721,22 @@ public class Artist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        CountDownLatch cdl = new CountDownLatch(1);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 for (Album album : albumsToInit) {
                     album.initCollection(db);
                 }
+                log.i("Albums initialized.");
+                cdl.countDown();
             }
         }).start();
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 

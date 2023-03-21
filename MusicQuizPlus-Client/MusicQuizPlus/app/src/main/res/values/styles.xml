@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="PlayAlbumNowStyle" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/mqWhite</item>
+        <item name="android:checked">false</item>
+        <item name="fontFamily">@font/concert_one</item>
+        <item name="colorAccent">@color/mqRed</item>
+    </style>
     <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/mqWhite</item>
         <item name="android:textColorPrimary">@color/mqWhite</item>
         <item name="android:editTextColor">@color/mqWhite</item>
         <item name="android:textColorHint">@color/nonSearchHint</item>
@@ -51,5 +57,4 @@
         <item name="android:layout_margin">0dp</item>
         <item name="android:textAlignment">center</item>
     </style>
-
 </resources>

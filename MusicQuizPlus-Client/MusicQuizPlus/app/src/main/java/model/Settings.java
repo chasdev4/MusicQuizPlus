@@ -21,7 +21,6 @@ import model.item.Playlist;
 import model.type.Difficulty;
 import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
-import service.firebase.UserService;
 
 public class Settings implements Serializable {
     //#region Members
@@ -31,6 +30,9 @@ public class Settings implements Serializable {
 
     private User user;
     //#endregion
+
+    // Excluded from database
+    private boolean playNowBannerHidden;
 
     //#region Constructors
     public Settings(Difficulty difficulty,
@@ -180,6 +182,15 @@ public class Settings implements Serializable {
         if (updates.size() > 0) {
             db.updateChildren(updates);
         }
+    }
+
+    @Exclude
+    public boolean isPlayNowBannerHidden() {
+        return playNowBannerHidden;
+    }
+
+    public void setPlayNowBannerHidden(boolean playNowBannerHidden) {
+        this.playNowBannerHidden = playNowBannerHidden;
     }
     //#endregion
 }

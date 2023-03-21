@@ -590,6 +590,9 @@ public class User implements Serializable {
     }
 
     public void updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+        if (tracks == null || tracks.size() == 0) {
+            return;
+        }
         // Increment the artist quiz count at the very least
         artistQuizCount++;
         BadgeType badgeType = null;

@@ -3,6 +3,7 @@ package com.example.musicquizplus;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +40,7 @@ import model.type.HeartResponse;
 import model.type.Role;
 import model.type.SearchFilter;
 import model.type.Source;
+import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
@@ -53,6 +55,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
     private Runnable hidePopUp;
     private Runnable updatePopUpTextTrue;
     private Runnable updatePopUpTextFalse;
+    private Runnable showPlayNow;
+    private Runnable hidePlayNow;
 
     public SearchAdapter(Context context, SearchActivity activity, List<SearchResult> searchResults) {
         this.context = context;
@@ -60,7 +64,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
         this.searchResults = searchResults;
     }
 
-    public void setSearchResults(List<SearchResult> searchResults) { this.searchResults = searchResults; }
+    public void setSearchResults(List<SearchResult> searchResults) {
+        this.searchResults = searchResults;
+    }
 
     @NonNull
     @Override
@@ -84,7 +90,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
-        FirebaseUser firebaseUser = ((SearchActivity)context).getFirebaseUser();
+        FirebaseUser firebaseUser = ((SearchActivity) context).getFirebaseUser();
         switch (searchResults.get(position).getType()) {
             case ARTIST:
                 Artist artist = searchResults.get(position).getArtist();
@@ -107,7 +113,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         intent.putExtra("source", Source.SEARCH);
                         intent.putExtra("currentUser", user);
                         intent.putExtra("pos", holder.getAdapterPosition());
-                        ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
+                        ((SearchActivity) view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
 
@@ -117,7 +123,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.setTitle(album.getName());
                 holder.setSubtitle(ItemService.formatAlbumSubtitle(album.getArtistsMap().get(album.getArtistId()), album.getYear()));
                 if (firebaseUser != null) {
-                    DatabaseReference db = ((SearchActivity)context).getDb();
+                    DatabaseReference db = ((SearchActivity) context).getDb();
                     holder.getItemView().setBackgroundColor(user.getAlbumIds().containsValue(album.getId())
                             ? ContextCompat.getColor(context, R.color.mqPurpleBlue)
                             : ContextCompat.getColor(context, R.color.mqPurple2));
@@ -129,8 +135,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                             if (holder.getToggleButton().isChecked()) {
                                 holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleBlue));
                                 holder.getBanner().setVisibility(View.VISIBLE);
-                            }
-                            else {
+                            } else {
                                 holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
                                 holder.getBanner().setVisibility(View.GONE);
                             }
@@ -139,17 +144,19 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                 public void run() {
                                     if (holder.getToggleButton().isChecked()) {
                                         updatePopUpTextTrue.run();
-                                    }
-                                    else {
+                                    } else {
                                         updatePopUpTextFalse.run();
                                     }
                                     showPopUp.run();
+                                    SharedPreferences sharedPref = ((SearchActivity) context).getPreferences(Context.MODE_PRIVATE);
+                                    boolean playNowEnabled = !sharedPref
+                                            .getBoolean(((SearchActivity) context)
+                                                    .getString(R.string.playNowHidden), false);
                                     HeartResponse response = null;
                                     if (holder.getToggleButton().isChecked()) {
-                                        SpotifyService spotifyService = ((SearchActivity)context).getSpotifyService();
+                                        SpotifyService spotifyService = ((SearchActivity) context).getSpotifyService();
                                         response = AlbumService.heart(firebaseUser, db, album, spotifyService, hidePopUp);
-                                    }
-                                    else {
+                                    } else {
                                         response = AlbumService.unheart(firebaseUser, db, album, hidePopUp);
                                     }
                                     if (response != HeartResponse.OK) {
@@ -159,9 +166,8 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                             holder.getToggleButton().setChecked(true);
                                             holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
 
-                                        }
-                                        else if (response == HeartResponse.NO_ALBUM_TRACKS) {
-                                            ((SearchActivity)context).runOnUiThread(new Runnable() {
+                                        } else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                            ((SearchActivity) context).runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     holder.getBanner().setVisibility(View.GONE);
@@ -177,6 +183,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                             });
 
                                         }
+                                        else {
+                                            holder.getToggleButton().setChecked(!holder.getToggleButton().isChecked());
+                                            if holder.getToggleButton().i
+                                        }
 
                                         if (response != HeartResponse.ITEM_EXISTS) {
                                             HeartResponse finalResponse = response;
@@ -187,22 +197,35 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                                 }
                                             });
                                         }
-                                    }
-                                    else {
+                                    } else {
+                                        final Album finalAlbum = album;
                                         ((SearchActivity) context).runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Toast toast = null;
-                                                if (holder.getToggleButton().isChecked()) {
-                                                    toast = Toast.makeText(context,
-                                                            String.format("\"%s\" was saved.",
-                                                                    album.getName()), Toast.LENGTH_LONG);
+//                                                if (size < 15) {
+//                                                    User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);                                                    Artist tempArtist = user.getArtist(album.getArtistId());
+//                                                    tempArtist.initCollections(db, user);
+//                                                    tempArtist.initTracks(db, user);
+//                                                    size = tempArtist.getTrackPoolSize();
+//                                                }
+                                                if (holder.getToggleButton().isChecked()
+                                                        && playNowEnabled) {
+                                                    showPlayNow.run();
+                                                    ((SearchActivity) context).
+                                                            setPlayNowArtistId(album.getArtistId());
                                                 } else {
-                                                    toast = Toast.makeText(context,
-                                                            String.format("\"%s\" was removed.",
-                                                                    album.getName()), Toast.LENGTH_LONG);
+                                                    Toast toast = null;
+                                                    if (holder.getToggleButton().isChecked()) {
+                                                        toast = Toast.makeText(context,
+                                                                String.format("\"%s\" was saved.",
+                                                                        album.getName()), Toast.LENGTH_LONG);
+                                                    } else {
+                                                        toast = Toast.makeText(context,
+                                                                String.format("\"%s\" was removed.",
+                                                                        album.getName()), Toast.LENGTH_LONG);
+                                                    }
+                                                    toast.show();
                                                 }
-                                                toast.show();
 
                                             }
                                         });
@@ -219,26 +242,25 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                            Artist currentArtist = null;
-                            if (holder.getToggleButton().isChecked() && user.getArtistIds().containsValue(album.getArtistId())) {
-                                currentArtist = user.getArtist(album.getArtistId());
-                            }
-                            if (!holder.getToggleButton().isChecked() || currentArtist == null) {
-                                SpotifyService spotifyService = new SpotifyService(((SearchActivity)context).getString(R.string.SPOTIFY_KEY));
-                                currentArtist = spotifyService.artistOverview(album.getArtistId());
-                            }
-                            Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
-                            intent.putExtra("currentArtist", currentArtist);
-                            intent.putExtra("source", Source.SEARCH);
-                            intent.putExtra("currentUser", user);
-                            intent.putExtra("pos", holder.getAdapterPosition());
-                            ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
+                                    Artist currentArtist = null;
+                                    if (holder.getToggleButton().isChecked() && user.getArtistIds().containsValue(album.getArtistId())) {
+                                        currentArtist = user.getArtist(album.getArtistId());
+                                    }
+                                    if (!holder.getToggleButton().isChecked() || currentArtist == null) {
+                                        SpotifyService spotifyService = new SpotifyService(((SearchActivity) context).getString(R.string.SPOTIFY_KEY));
+                                        currentArtist = spotifyService.artistOverview(album.getArtistId());
+                                    }
+                                    Intent intent = new Intent(view.getContext(), ArtistQuizView.class);
+                                    intent.putExtra("currentArtist", currentArtist);
+                                    intent.putExtra("source", Source.SEARCH);
+                                    intent.putExtra("currentUser", user);
+                                    intent.putExtra("pos", holder.getAdapterPosition());
+                                    ((SearchActivity) view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                                 }
                             }).start();
-                                }
+                        }
                     });
-                }
-                else {
+                } else {
                     holder.getToggleButton().setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -268,14 +290,14 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                 holder.getItemView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        TrackResult trackResult = ((SearchActivity)context).getTrackResult(track);
+                        TrackResult trackResult = ((SearchActivity) context).getTrackResult(track);
                         Intent intent = new Intent(view.getContext(), TrackResultActivity.class);
                         Gson gson = new Gson();
                         String jsonTrack = gson.toJson(trackResult);
                         intent.putExtra("track", jsonTrack);
                         intent.putExtra("user", user);
                         intent.putExtra("pos", holder.getAdapterPosition());
-                        ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
+                        ((SearchActivity) view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
                 break;
@@ -299,7 +321,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                         intent.putExtra("currentUser", user);
                         intent.putExtra("source", Source.SEARCH);
                         intent.putExtra("pos", holder.getAdapterPosition());
-                        ((SearchActivity)view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
+                        ((SearchActivity) view.getContext()).startActivityForResult(intent, Activity.RESULT_FIRST_USER);
                     }
                 });
                 break;
@@ -348,4 +370,22 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
     public void setUpdatePopUpTextFalse(Runnable updatePopUpTextFalse) {
         this.updatePopUpTextFalse = updatePopUpTextFalse;
     }
+
+    public Runnable getShowPlayNow() {
+        return showPlayNow;
+    }
+
+    public void setShowPlayNow(Runnable showPlayNow) {
+        this.showPlayNow = showPlayNow;
+    }
+
+    public Runnable getHidePlayNow() {
+        return hidePlayNow;
+    }
+
+    public void setHidePlayNow(Runnable hidePlayNow) {
+        this.hidePlayNow = hidePlayNow;
+    }
+
+
 }
