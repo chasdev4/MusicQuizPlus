@@ -230,8 +230,10 @@ public class SearchActivity extends AppCompatActivity {
     {
         toolTipsManager.dismissAll();
 
-        if(searchToolTips < 3) {
-            if (track == 0) {
+        if(searchToolTips < 3)
+        {
+            if (track == 0)
+            {
                 builder = new ToolTip.Builder(this, artist, root, "Click To Filter Search\nResults By Artists", ToolTip.POSITION_BELOW);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
@@ -260,15 +262,6 @@ public class SearchActivity extends AppCompatActivity {
             else if(track == 3)
             {
                 builder = new ToolTip.Builder(this, playlist, root, "Click To Filter Search\nResults By Playlists", ToolTip.POSITION_BELOW);
-                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                builder.setTextAppearance(R.style.TooltipTextAppearance);
-                toolTipsManager.show(builder.build());
-                track++;
-                new Handler().postDelayed(this::showToolTips, 3000);
-            }
-            else if(track == 4)
-            {
-                builder = new ToolTip.Builder(this, homeButton, root, "Click Here To Return Home", ToolTip.POSITION_LEFT_TO);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
