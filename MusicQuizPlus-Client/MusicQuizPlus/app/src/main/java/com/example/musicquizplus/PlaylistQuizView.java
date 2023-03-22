@@ -2,15 +2,20 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,9 +35,18 @@ import android.widget.ToggleButton;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.tomergoldst.tooltips.ToolTip;
+import com.tomergoldst.tooltips.ToolTipsManager;
 
 import java.io.Serializable;
+
+import java.net.ContentHandler;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -72,7 +86,17 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private ToggleButton heartButton;
     private User user;
     private ProgressBar progressBar;
+
+    private ToolTipsManager toolTipsManager;
+    private ToolTip.Builder builder;
+    ConstraintLayout root;
+    int track = 0;
+    String pqvToolTipsDate, currentDate;
+    int pqvToolTips;
+    boolean showToolTipsBool;
+
     private View loadingPopUp;
+
 
 
     @Override
@@ -94,6 +118,12 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
         progressBar = findViewById(R.id.playlist_quiz_view_progress_bar);
+        root = findViewById(R.id.pqvRoot);
+        toolTipsManager = new ToolTipsManager();
+
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        currentDate = df.format(c);
 
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
@@ -105,7 +135,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             user = (User) extras.getSerializable("currentUser");
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
         }
-
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -123,7 +152,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             }
         });
-
 
         backToTop.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -167,16 +195,94 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_TEXT, getPlaylistIdAsUrl(playlist.getId()));
                 shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Playlist");
-                //TODO: Add MQP logo to share menu when available.
-                // Below we're passing a content URI to an image to be displayed
-                //sendIntent.setData(mqpLogoUri);
-                //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setType("text/*");
                 startActivity(Intent.createChooser(shareIntent, null));
             }
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Fetching the stored data from the SharedPreference
+        SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        pqvToolTips = sh.getInt("pqvToolTips", 0);
+        pqvToolTipsDate = sh.getString("pqvToolTipsDate", "");
+        showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
+
+        if(showToolTipsBool)
+        {
+            if(!currentDate.equals(pqvToolTipsDate))
+            {
+                new Handler().postDelayed(this::showNext, 2500);
+                pqvToolTips++;
+                pqvToolTipsDate = currentDate;
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Creating a shared pref object
+        SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        // write all the data entered by the user in SharedPreference and apply
+        myEdit.putInt("pqvToolTips", pqvToolTips);
+        myEdit.putString("pqvToolTipsDate", pqvToolTipsDate);
+        myEdit.apply();
+    }
+
+    private void showNext()
+    {
+        toolTipsManager.dismissAll();
+
+        if(pqvToolTips < 3)
+        {
+            if(track == 0)
+            {
+                builder = new ToolTip.Builder(this, heartButton, root, "Click Here To Heart A Playlist\nTo Add It To Your Collection", ToolTip.POSITION_LEFT_TO);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 1)
+            {
+                //show tool tip for spotify button
+                builder = new ToolTip.Builder(this, spotifyButton, root, "Click Here To View\nThis Playlist On Spotify", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 2)
+            {
+                //show tool tip for share button
+                builder = new ToolTip.Builder(this, shareButton, root, "Click Here To Share\nThis Spotify Playlist", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 3)
+            {
+                //show tool tip for start quiz button
+                builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Playlist", ToolTip.POSITION_ABOVE);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showNext, 3000);
+            }
+        }
+    }
 
     @Override
     public void onStart() {
@@ -185,7 +291,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         Bundle extras = getIntent().getExtras();
         if (extras != null)
         {
-            playlist = (Playlist) extras.getSerializable("currentPlaylist");
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
 
@@ -207,12 +312,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             heartButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    GoogleSignIn googleSignIn = new GoogleSignIn();
-                    FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
                     DatabaseReference db = FirebaseDatabase.getInstance().getReference();
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+
                             updatePopUpText(heartButton.isChecked());
                             showPopUp();
                             if(user != null && firebaseUser != null)

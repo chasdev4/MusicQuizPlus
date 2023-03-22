@@ -10,14 +10,20 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+
+import android.os.Handler;
+
 import android.view.KeyEvent;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +33,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
+import com.tomergoldst.tooltips.ToolTip;
+import com.tomergoldst.tooltips.ToolTipsManager;
+
+
+import org.checkerframework.checker.units.qual.C;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 import java.util.Locale;
 import java.util.Map;
@@ -56,7 +73,9 @@ public class ArtistQuizView extends AppCompatActivity {
     Artist artist;
     TextView artistNameTV;
     TextView artistBioTV;
-    ImageView artistPreviewImage;
+    ImageView artistPreviewImage, invisHeart;
+    ImageButton backButton;
+
     ImageButton spotify;
     ImageButton facebook;
     ImageButton twitter;
@@ -99,6 +118,15 @@ public class ArtistQuizView extends AppCompatActivity {
     HistoryAdapter compilationAdapter;
     SpotifyService spotifyService;
     private Source source;
+    
+    private ToolTipsManager toolTipsManager;
+    private ToolTip.Builder builder;
+    ConstraintLayout root;
+    int track = 0;
+    String aqvToolTipsDate, currentDate;
+    int aqvToolTips;
+    boolean showToolTipsBool;
+    LinearLayout externalLinks;
 
 
     @Override
@@ -139,6 +167,14 @@ public class ArtistQuizView extends AppCompatActivity {
         albumsTextView = findViewById(R.id.albumsTextView);
         entireAQV = findViewById(R.id.entireAQVConstraintLayout);
         aqvProgressBar = findViewById(R.id.aqvProgressBar);
+        root = findViewById(R.id.aqvRoot);
+        invisHeart = findViewById(R.id.invisibleHeartButtonToolTip);
+        externalLinks = findViewById(R.id.linearLayout);
+        toolTipsManager = new ToolTipsManager();
+
+        Date c = Calendar.getInstance().getTime();
+        SimpleDateFormat df = new SimpleDateFormat("dd-MMM-yyyy", Locale.getDefault());
+        currentDate = df.format(c);
 
         PackageManager pm = getPackageManager();
 
@@ -299,10 +335,6 @@ public class ArtistQuizView extends AppCompatActivity {
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_TEXT, getArtistIdAsSpotifyUrl(artist.getId()));
                 shareIntent.putExtra(Intent.EXTRA_TITLE, "Share Spotify Artist");
-                //TODO: Add MQP logo to share menu when available.
-                // Below we're passing a content URI to an image to be displayed
-                //sendIntent.setData(mqpLogoUri);
-                //sendIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setType("text/*");
                 startActivity(Intent.createChooser(shareIntent, null));
             }
@@ -473,6 +505,84 @@ public class ArtistQuizView extends AppCompatActivity {
                 b ? R.string.saving_message
                         : R.string.removing_message
         );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Fetching the stored data from the SharedPreference
+        SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        aqvToolTips = sh.getInt("aqvToolTips", 0);
+        aqvToolTipsDate = sh.getString("aqvToolTipsDate", "");
+        showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
+
+        if(showToolTipsBool)
+        {
+            if(!currentDate.equals(aqvToolTipsDate))
+            {
+                new Handler().postDelayed(this::showToolTips, 3000);
+                aqvToolTips++;
+                aqvToolTipsDate = currentDate;
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Creating a shared pref object
+        SharedPreferences sharedPreferences = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        // write all the data entered by the user in SharedPreference and apply
+        myEdit.putInt("aqvToolTips", aqvToolTips);
+        myEdit.putString("aqvToolTipsDate", aqvToolTipsDate);
+        myEdit.apply();
+    }
+
+    private void showToolTips()
+    {
+        toolTipsManager.dismissAll();
+
+        if(aqvToolTips < 3) {
+            if (track == 0) {
+                builder = new ToolTip.Builder(this, externalLinks, root, "Click Any Logo Above To View\nThis Artists Social Media Page", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3500);
+            }
+            else if(track == 1)
+            {
+                builder = new ToolTip.Builder(this, share, root, "Click To\nShare\nSpotify\nArtist", ToolTip.POSITION_BELOW);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 2)
+            {
+                builder = new ToolTip.Builder(this, invisHeart, root, "Click A Heart To Add\nItem To Your Collection", ToolTip.POSITION_LEFT_TO);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 3)
+            {
+                builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Artist", ToolTip.POSITION_ABOVE);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                track++;
+                new Handler().postDelayed(this::showToolTips, 3000);
+            }
+        }
     }
 
     @Override

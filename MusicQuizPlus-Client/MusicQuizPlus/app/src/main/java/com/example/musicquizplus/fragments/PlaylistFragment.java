@@ -52,6 +52,7 @@ public class PlaylistFragment extends Fragment {
     private List<String> defaultPlaylistIDs = new ArrayList<>();
     private User user;
     private ProgressBar pgb;
+    ParentOfFragments main;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,6 +65,7 @@ public class PlaylistFragment extends Fragment {
         backToTop = ((ParentOfFragments)getActivity()).findViewById(R.id.backToTop);
         reference = FirebaseDatabase.getInstance().getReference();
         pgb = view.findViewById(R.id.playlistProgressBar);
+        main = ((ParentOfFragments)getActivity());
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -102,7 +104,6 @@ public class PlaylistFragment extends Fragment {
             }
         });
         createBackToTopListener();
-        ParentOfFragments main = ((ParentOfFragments)getActivity());
 
         main.setPlaylistsBackToTopListener(backToTopListener);
         if (!main.isBackToTopListenerSet()) {
