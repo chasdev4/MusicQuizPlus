@@ -674,8 +674,8 @@ public class ArtistQuizView extends AppCompatActivity {
                 ((ArtistQuizView)context).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
-                        toast.show();
+                        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(getString(R.string.loading_message));
+                        loadingPopUp.setVisibility(View.VISIBLE);
                     }
                 });
 
@@ -732,6 +732,7 @@ public class ArtistQuizView extends AppCompatActivity {
                                 @Override
                                 public void run() {
                                     startQuiz.setEnabled(true);
+                                    hidePopUp();
                                 }
                             });
                         }

@@ -205,16 +205,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
                                             });
                                         }
                                     } else {
-                                        final Album finalAlbum = album;
                                         ((SearchActivity) context).runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
-//                                                if (size < 15) {
-//                                                    User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);                                                    Artist tempArtist = user.getArtist(album.getArtistId());
-//                                                    tempArtist.initCollections(db, user);
-//                                                    tempArtist.initTracks(db, user);
-//                                                    size = tempArtist.getTrackPoolSize();
-//                                                }
+//
                                                 if (holder.getToggleButton().isChecked()
                                                         && playNowEnabled) {
                                                     showPlayNow.run();

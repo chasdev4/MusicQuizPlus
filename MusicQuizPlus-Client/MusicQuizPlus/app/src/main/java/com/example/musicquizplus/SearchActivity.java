@@ -586,11 +586,6 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    private void resetPlayNow() {
-        playAlbumProgressBar.setProgress(100);
-    }
-
-
     public TrackResult getTrackResult(Track track) {
         return search.getTrackResult(track);
     }
