@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.Exclude;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
@@ -58,7 +59,7 @@ public class Artist implements Serializable {
     private List<Album> compilations;
     private List<Integer> sortedDecades;
     private Map<Integer, Integer> decadesMap;
-    private String latest;
+    private Album latest;
     private boolean isInitializing;
 
     private static String TAG = "Artist.java";
@@ -113,37 +114,46 @@ public class Artist implements Serializable {
         return externalLinks;
     }
 
-    @Exclude
-    public String getLatest() {
-        String latest = null;
+    private void setLatest() {
         int newest = 0;
         if (albums != null) {
             for (Album a : albums) {
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a.getId();
+                if (a != null) {
+                    Log.d(TAG, "setLatest: ");
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
         if (singles != null) {
             for (Album a : singles) {
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a.getId();
+                if (a != null) {
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
         if (compilations != null) {
             for (Album a : compilations) {
-                int year = Integer.parseInt(a.getYear());
-                if (year > newest) {
-                    newest = year;
-                    latest = a.getId();
+                if (a != null) {
+                    int year = Integer.parseInt(a.getYear());
+                    if (year > newest) {
+                        newest = year;
+                        latest = a;
+                    }
                 }
             }
         }
+    }
+
+    @Exclude
+    public Album getLatest() {
         return latest;
     }
 
@@ -196,46 +206,14 @@ public class Artist implements Serializable {
     }
 
     @Exclude
-    public List<String> getAllTrackIds() {
-        List<String> trackIds = new ArrayList<>();
-
-        if (singles != null) {
-            for (Album album : singles) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-        if (albums != null) {
-            for (Album album : albums) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-        if (compilations != null) {
-            for (Album album : compilations) {
-                if (album != null) {
-                    if (album.isTrackIdsKnown() || album.getTracks() != null) {
-                        trackIds.addAll(album.getTrackIds());
-                    }
-                }
-            }
-        }
-
-        return trackIds;
-    }
-
-    @Exclude
     public int getTrackPoolSize() {
         int count = 0;
-
+        int size = 0;
+        if (singleIds != null) {
+            size = singleIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -246,11 +224,15 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (albumIds != null) {
+            size = albumIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         if (albums != null) {
             for (Album album : albums) {
                 if (album != null && album.getTracks() != null) {
@@ -258,8 +240,11 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (compilationIds != null) {
+            size = compilationIds.size();
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100 * size);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -277,7 +262,15 @@ public class Artist implements Serializable {
     @Exclude
     private List<Track> getAllTracks() {
         List<Track> tracks = new ArrayList<>();
-
+        int size = 0;
+        if (singleIds != null) {
+            size = singleIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (singles != null) {
             for (Album album : singles) {
                 if (album.isTrackIdsKnown() && album.getTracks() != null) {
@@ -285,12 +278,28 @@ public class Artist implements Serializable {
                 }
             }
         }
+        if (albumIds != null) {
+            size = albumIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (albums != null) {
             for (Album album : albums) {
                 if (album.isTrackIdsKnown() && album.getTracks() != null && album.getTracks().size() > 0) {
                     tracks.addAll(album.getTracks());
                 }
             }
+        }
+        if (compilationIds != null) {
+            size = compilationIds.size();
+        }
+        try {
+            Thread.sleep(100 * size);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         if (compilations != null) {
             for (Album album : compilations) {
@@ -427,17 +436,21 @@ public class Artist implements Serializable {
         id = jsonArtist.get("uri").getAsString();
         name = jsonArtist.getAsJsonObject().get("profile").getAsJsonObject().get("name").getAsString();
 
-        // Remove HTML from bio
-        bio = FormatUtil.removeHtml(jsonArtist.getAsJsonObject()
+        JsonElement bioRaw = jsonArtist.getAsJsonObject()
                 .get("profile")
                 .getAsJsonObject()
                 .get("biography")
                 .getAsJsonObject()
-                .get("text")
-                .getAsString());
+                .get("text");
+        if (!bioRaw.isJsonNull() && bioRaw != null) {
+            // Remove HTML from bio
+            bio = FormatUtil.removeHtml(bioRaw
+                    .getAsString());
 
-        if (bio.length() > 250) {
-            bio = bio.substring(0, 250);
+
+            if (bio.length() > 250) {
+                bio = bio.substring(0, 250);
+            }
         }
 
 
@@ -490,7 +503,7 @@ public class Artist implements Serializable {
         jsonArray = retrieveArtistAlbums(AlbumType.SINGLE, spotifyService);
         addReleases(jsonArray);
 
-        latest = getLatest();
+        setLatest();
 
         decades = new ArrayList<>();
         for (Map.Entry<Integer, Integer> d : decadesMap.entrySet()) {
@@ -632,13 +645,16 @@ public class Artist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        if (latest == null) {
+            setLatest();
+        }
         isInitializing = false;
     }
 
     public void initTracks(DatabaseReference db, User user) {
         LogUtil log = new LogUtil(TAG, "initTracks");
         List<Album> albumsToInit = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
         executorService.execute(new Runnable() {
             @Override
             public void run() {
@@ -705,14 +721,22 @@ public class Artist implements Serializable {
         } catch (InterruptedException e) {
             log.e(e.getMessage());
         }
+        CountDownLatch cdl = new CountDownLatch(1);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 for (Album album : albumsToInit) {
                     album.initCollection(db);
                 }
+                log.i("Albums initialized.");
+                cdl.countDown();
             }
         }).start();
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 

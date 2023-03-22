@@ -1,5 +1,6 @@
 package com.example.musicquizplus.fragments;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,10 +93,12 @@ public class PlaylistFragment extends Fragment {
 
                 Adapter playlistAdapter = adapterView.getAdapter();
                 Playlist clickedOnPlaylist = (Playlist) playlistAdapter.getItem(i);
-                Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
-                intent.putExtra("currentPlaylist", clickedOnPlaylist);
-                intent.putExtra("currentUser", ((ParentOfFragments) getActivity()).getUser());
-                startActivity(intent);
+                if (clickedOnPlaylist.getId() != null) {
+                    Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
+                    intent.putExtra("currentPlaylist", clickedOnPlaylist);
+                    intent.putExtra("currentUser", ((ParentOfFragments) getActivity()).getUser());
+                    startActivity(intent);
+                }
             }
         });
         createBackToTopListener();
@@ -113,17 +117,23 @@ public class PlaylistFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        CountDownLatch latch = new CountDownLatch(1);
 
+        Context context = getContext();
+        Activity activity = getActivity();
+        if (user != null) {
+            gridView.setAdapter(new PlaylistsAdapter(getContext(), R.layout.gridview_contents, new ArrayList<>()));
+        }
         new Thread(new Runnable() {
             public void run() {
                 if(firebaseUser != null)
                 {
-                    //user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
-                    while(user == null)
-                    {
-                        user = ((ParentOfFragments) getActivity()).getUser();
-                    }
+                    user = (User) FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                    DatabaseReference userRef = reference.child("users").child(firebaseUser.getUid());
+                    user.initPlaylists(reference, userRef);
+//                    while(user == null)
+//                    {
+//                        user = ((ParentOfFragments) getActivity()).getUser();
+//                    }
                     /*
                     latch.countDown();
 
@@ -149,7 +159,14 @@ public class PlaylistFragment extends Fragment {
                     });
                     if(gridView.getCount() == 0)
                     {
-                        FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, playlistIDs);
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                gridView.setAdapter(new PlaylistsAdapter(context, R.layout.gridview_contents, user.getPlaylistsAsList()));
+                            }
+                        });
+
+//                        FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, playlistIDs);
                     }
                 }
                 else

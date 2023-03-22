@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,7 +53,7 @@ public class PlaylistsAdapter extends ArrayAdapter<Playlist> {
         // get the item using the position param
         Playlist item = playlists.get(position);
 
-        if (item.getPhotoUrl() != null || item.getPhotoUrl().size() > 0) {
+        if (item.getPhotoUrl() != null && item.getPhotoUrl().size() > 0) {
             String url = item.getPhotoUrl().get(0).getUrl();
             String title = item.getName();
 

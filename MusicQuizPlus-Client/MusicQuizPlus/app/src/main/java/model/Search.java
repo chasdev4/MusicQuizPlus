@@ -174,6 +174,7 @@ public class Search {
         return new TrackResult(track.getName(),
                 track.getId(),
                 track.getArtistName(),
+                track.getAlbumId(),
                 titleMatch,
                 suggested,
                 ItemService.getSmallestPhotoUrl(track.getPhotoUrl()));

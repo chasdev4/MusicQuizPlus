@@ -112,6 +112,51 @@
             android:layout_marginEnd="3dp"
             android:layout_marginBottom="5dp"/>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@drawable/avatar_level_background"
+        android:backgroundTint="@color/mqPurple2">
+        <RadioGroup
+            android:id="@+id/dot_navigator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="20dp"
+            android:padding="6dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radio_playlists"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:clickable="false"
+                android:button="@android:color/transparent"
+                android:background="@drawable/navigator_selector"
+                android:checked="true"/>
+            <RadioButton
+                android:id="@+id/radio_artists"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_marginHorizontal="20dp"
+                android:clickable="false"
+                android:button="@android:color/transparent"
+                android:background="@drawable/navigator_selector"
+                android:checked="false"/>
+            <RadioButton
+                android:id="@+id/radio_history"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:button="@android:color/transparent"
+                android:clickable="false"
+                android:background="@drawable/navigator_selector"
+                android:checked="false"/>
+        </RadioGroup>
+    </LinearLayout>
+
         <ImageButton
             android:id="@+id/mainSearchButton"
             android:layout_width="80dp"

@@ -14,6 +14,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.List;
 
 import java.util.concurrent.CountDownLatch;
 
+import model.PhotoUrl;
 import model.Quiz;
 
 import model.item.Playlist;
@@ -240,6 +242,32 @@ public class FirebaseService {
                 gridView.setAdapter(playlistsAdapter[0]);
             }
         });
+    }
+
+    public static List<PhotoUrl> getPhotoUrl(DatabaseReference db, String child, String id) {
+        LogUtil log = new LogUtil("FirebaseService.java","getPhotoUrl");
+        final List<PhotoUrl>[] photoUrl = new List[]{null};
+        GenericTypeIndicator<List<PhotoUrl>> typeIndicator = new GenericTypeIndicator<List<PhotoUrl>>() {};
+        CountDownLatch cdl = new CountDownLatch(1);
+        log.v(String.format("Retrieving photoUrl for %s", id));
+        db.child(child).child(id).child("photoUrl").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                photoUrl[0] = snapshot.getValue(typeIndicator);
+                cdl.countDown();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                log.e(error.getMessage());
+            }
+        });
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return photoUrl[0];
     }
 
     public static void populateGridViewByArtistIDs(DatabaseReference reference, Activity activity, Context context, GridView gridView, List<String> artistIds)

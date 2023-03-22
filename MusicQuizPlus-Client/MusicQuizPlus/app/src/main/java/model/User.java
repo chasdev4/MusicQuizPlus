@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -32,6 +33,7 @@ import model.item.Track;
 import model.type.AlbumType;
 import model.type.BadgeType;
 import model.type.Difficulty;
+import model.type.QuizType;
 import model.type.Role;
 import service.BadgeService;
 import service.FirebaseService;
@@ -49,7 +51,7 @@ public class User implements Serializable {
     private Map<String, String> albumIds;
     private Map<String, String> artistIds;
     private Map<String, String> playlistIds;
-    private List<String> historyIds;
+    private List<HistoryEntry> historyIds;
     private Map<String, Badge> badges;
     private Map<String, TopicHistory> playlistHistory;
     private Map<String, ArtistHistory> artistHistory;
@@ -194,7 +196,7 @@ public class User implements Serializable {
         return playlistIds;
     }
 
-    public List<String> getHistoryIds() {
+    public List<HistoryEntry> getHistoryIds() {
         return historyIds;
     }
 
@@ -356,7 +358,7 @@ public class User implements Serializable {
         this.artistIds = artistIds;
     }
 
-    public void setHistoryIds(List<String> historyIds) {
+    public void setHistoryIds(List<HistoryEntry> historyIds) {
         this.historyIds = historyIds;
     }
 
@@ -476,33 +478,35 @@ public class User implements Serializable {
     //#endregion
 
     //#region Update History
-    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks) {
-        LinkedList<String> historyIds = new LinkedList<>();
+    public void updateHistoryIds(DatabaseReference db, String uId, List<Track> tracks, String sourceId, QuizType quizType) {
+        LinkedList<HistoryEntry> historyEntries = new LinkedList<>();
 
-        for (String id : this.historyIds) {
-            if(historyIds.size() == 50)
+        for (HistoryEntry id : this.historyIds) {
+            if(historyEntries.size() == 50)
             {
                 break;
             }
-            historyIds.addLast(id);
+            historyEntries.addLast(new HistoryEntry(id.getId(), id.getSource()));
         }
 
         for (int i = 0; i < tracks.size(); i++) {
             if (this.historyIds.contains(tracks.get(i).getId())) {
-                historyIds.remove(tracks.get(i).getId());
+                historyEntries.remove(tracks.get(i).getId());
             }
-            if (historyIds.size() == HISTORY_LIMIT) {
-                historyIds.removeLast();
+            if (historyEntries.size() == HISTORY_LIMIT) {
+                historyEntries.removeLast();
             }
             history.addFirst(tracks.get(i));
-            historyIds.addFirst(tracks.get(i).getId());
+            historyEntries.addFirst(new HistoryEntry(tracks.get(i).getId(),
+                    (quizType == QuizType.PLAYLIST) ? sourceId : tracks.get(i).getAlbumId()));
         }
 
         this.historyIds = new ArrayList<>();
-        for (String id : historyIds) {
-            this.historyIds.add(id);
-        }
-        db.child("users").child(uId).child("historyIds").setValue(historyIds);
+            for (HistoryEntry id : historyEntries) {
+                this.historyIds.add(new HistoryEntry(id.getId(), id.getSource()));
+            }
+
+        db.child("users").child(uId).child("historyIds").setValue(this.historyIds);
     }
 
     public void updatePlaylistHistory(DatabaseReference db, String uId, Playlist playlist, List<Track> tracks, int poolCount) {
@@ -586,6 +590,9 @@ public class User implements Serializable {
     }
 
     public void updateArtistHistory(DatabaseReference db, String uId, Artist artist, List<Track> tracks, int poolCount) {
+        if (tracks == null || tracks.size() == 0) {
+            return;
+        }
         // Increment the artist quiz count at the very least
         artistQuizCount++;
         BadgeType badgeType = null;
@@ -791,11 +798,11 @@ public class User implements Serializable {
         }
     }
 
-    public void initCollections(DatabaseReference db, FirebaseUser firebaseUser) {
-        initArtists(db, firebaseUser, true);
-        initPlaylists(db);
-        initHistory(db);
-    }
+//    public void initCollections(DatabaseReference db, FirebaseUser firebaseUser) {
+//        initArtists(db, firebaseUser, true);
+//        initPlaylists(db);
+//        initHistory(db);
+//    }
 
     public void initArtists(DatabaseReference db, FirebaseUser firebaseUser, boolean initCollections) {
         LogUtil log = new LogUtil(TAG, "initArtists");
@@ -817,21 +824,64 @@ public class User implements Serializable {
         log.i("Artists retrieved.");
     }
 
-    private void initPlaylists(DatabaseReference db) {
+    public void initPlaylists(DatabaseReference db, DatabaseReference userRef) {
         LogUtil log = new LogUtil(TAG, "initPlaylists");
         playlists = new HashMap<>();
+        List<String> removeQueue = new ArrayList<>();
         for (Map.Entry<String, String> entry : playlistIds.entrySet()) {
-            playlists.put(entry.getKey(), FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class));
+            Playlist playlist = FirebaseService.checkDatabase(db, "playlists", entry.getValue(), Playlist.class);
+
+            if (playlist != null && playlist.getId() != null) {
+                playlists.put(entry.getKey(), playlist);
+            }
+            else {
+                removeQueue.add(entry.getKey());
+                userRef.child("playlistIds").child(entry.getKey()).removeValue();
+            }
+        }
+        for (String playlistKey : removeQueue) {
+            playlistIds.remove(playlistKey);
+
         }
         log.i("Playlists retrieved.");
     }
 
     public void initHistory(DatabaseReference db) {
-        LogUtil log = new LogUtil(TAG, "initPlaylists");
+        LogUtil log = new LogUtil(TAG, "initHistory");
         history = new LinkedList<>();
+        List<String> removeQueue = new ArrayList<>();
+        Map<String, List<PhotoUrl>> data = new HashMap<>();
+        for (HistoryEntry entry : historyIds) {
+            Track track = FirebaseService.checkDatabase(db, "tracks", entry.getId(), Track.class);
+            if (track != null) {
+                if (!data.containsKey(entry.getSource())) {
+                    String[] entrySource = entry.getSource().split(":");
+                    String child = null;
+                    switch (entrySource[1]) {
+                        case "playlist":
+                            child = "playlists";
+                            break;
+                        case "album":
+                            child = "albums";
+                            break;
+                    }
+                    if (child != null) {
+                        List<PhotoUrl> photoUrl = FirebaseService.getPhotoUrl(db, child, entry.getSource());
+                        if (photoUrl != null) {
+                            data.put(entry.getSource(), photoUrl);
+                        }
+                    }
+                }
+                track.setPhotoUrl(data.get(entry.getSource()));
 
-        for (String trackId : historyIds) {
-            history.add(FirebaseService.checkDatabase(db, "tracks", trackId, Track.class));
+                history.add(track);
+            }
+            else {
+                removeQueue.add(entry.getId());
+            }
+        }
+        for (String trackId : removeQueue) {
+            historyIds.remove(trackId);
         }
 
         if (history.size() > 0) {

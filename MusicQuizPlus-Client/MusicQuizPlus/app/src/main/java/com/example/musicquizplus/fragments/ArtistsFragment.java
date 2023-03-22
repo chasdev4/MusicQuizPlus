@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.example.musicquizplus.ArtistQuizView;
 import com.example.musicquizplus.ParentOfFragments;
+import com.example.musicquizplus.PlaylistsAdapter;
 import com.example.musicquizplus.R;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -122,6 +123,10 @@ public class ArtistsFragment extends Fragment {
         super.onStart();
 
         CountDownLatch latch = new CountDownLatch(1);
+
+        if (user != null) {
+            gridView.setAdapter(new PlaylistsAdapter(getContext(), R.layout.gridview_contents, new ArrayList<>()));
+        }
 
         new Thread(new Runnable() {
             public void run() {

@@ -35,16 +35,6 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.75" />
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/track_result_back"
-        android:background="@null"
-        android:src="@drawable/left_chevron"
-        android:layout_marginStart="3dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/track_result_image"
@@ -53,7 +43,7 @@
         android:layout_marginStart="5dp"
         android:src="@drawable/placeholder"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintStart_toEndOf="@+id/track_result_back"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -213,5 +203,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
+    <include layout="@layout/loading_popup"
+        android:id="@+id/track_result_saving"
+        android:visibility="gone"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

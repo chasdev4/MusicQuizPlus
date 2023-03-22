@@ -1,16 +1,19 @@
 package com.example.musicquizplus;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -21,18 +24,12 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
-import org.checkerframework.checker.units.qual.C;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,16 +41,13 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
-import model.item.Playlist;
-import model.item.Track;
-import model.type.AlbumType;
 import model.type.ExternalLinkType;
+import model.type.HeartResponse;
 import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
 import service.SpotifyService;
 import service.firebase.AlbumService;
-import service.firebase.PlaylistService;
 import utils.LogUtil;
 
 public class ArtistQuizView extends AppCompatActivity {
@@ -63,7 +57,6 @@ public class ArtistQuizView extends AppCompatActivity {
     TextView artistNameTV;
     TextView artistBioTV;
     ImageView artistPreviewImage;
-    ImageButton backButton;
     ImageButton spotify;
     ImageButton facebook;
     ImageButton twitter;
@@ -71,7 +64,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ImageButton instagram;
     ImageButton share;
     ToggleButton heartLatest;
-    Button startQuiz;
+    AppCompatButton startQuiz;
     ImageView latestImage;
     TextView latestTitle;
     TextView latestType;
@@ -88,6 +81,7 @@ public class ArtistQuizView extends AppCompatActivity {
     ConstraintLayout entireAQV;
     ProgressBar aqvProgressBar;
     Album latest;
+    private View loadingPopUp;
     boolean isSpotifyInstalled;
     boolean isFacebookInstalled;
     boolean isTwitterInstalled;
@@ -105,7 +99,6 @@ public class ArtistQuizView extends AppCompatActivity {
     HistoryAdapter compilationAdapter;
     SpotifyService spotifyService;
     private Source source;
-    private int trackPoolSize;
 
 
     @Override
@@ -113,10 +106,11 @@ public class ArtistQuizView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_artist_quiz_view);
 
+        loadingPopUp = findViewById(R.id.aqvSaving);
+
         artistNameTV = findViewById(R.id.aqvArtistName);
         artistBioTV = findViewById(R.id.aqvArtistDescription);
         artistPreviewImage = findViewById(R.id.aqvPreviewImage);
-        backButton = findViewById(R.id.aqvBackButton);
         spotify = findViewById(R.id.aqvSpotify);
         facebook = findViewById(R.id.aqvFacebook);
         twitter = findViewById(R.id.aqvTwitter);
@@ -129,13 +123,16 @@ public class ArtistQuizView extends AppCompatActivity {
         latestType = findViewById(R.id.aqvTrackAlbum);
         latestYear = findViewById(R.id.aqvTrackYear);
         latestMiddleDot = findViewById(R.id.middleDotAfterAlbum);
-        heartLatest = findViewById(R.id.aqvHeartToggleButton);
+        heartLatest = findViewById(R.id.album_heart);
         startQuiz = findViewById(R.id.aqvStartButton);
         latestText = findViewById(R.id.latestTextView);
         latestRelease = findViewById(R.id.latestRelease);
         albumsRV = findViewById(R.id.aqvAlbums);
+        albumsRV.setNestedScrollingEnabled(false);
         compilationsRV = findViewById(R.id.aqvCompilations);
+        compilationsRV.setNestedScrollingEnabled(false);
         singlesRV = findViewById(R.id.aqvSingles);
+        singlesRV.setNestedScrollingEnabled(false);
         singlesTextView = findViewById(R.id.singlesTextView);
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         compilationsTextView = findViewById(R.id.compilationsTextView);
@@ -151,15 +148,7 @@ public class ArtistQuizView extends AppCompatActivity {
             source = (Source) extras.getSerializable("source");
             user = (User) extras.getSerializable("currentUser");
         }
-        Context context = this;
-
-
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+        Activity context = this;
 
         spotify.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -319,21 +308,171 @@ public class ArtistQuizView extends AppCompatActivity {
             }
         });
 
+
         heartLatest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (user != null) {
-                    if (heartLatest.isChecked()) {
-                        AlbumService.heart(user, firebaseUser, reference, latest, spotifyService);
-                    } else {
-                        AlbumService.unheart(user, firebaseUser, reference, latest);
-                    }
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            updatePopUpText(heartLatest.isChecked());
+                            showPopUp();
+
+                            HeartResponse response = null;
+                            if (heartLatest.isChecked()) {
+                                response = AlbumService.heart(firebaseUser, reference, latest, spotifyService,
+                                        () -> hidePopUp());
+                            } else {
+                                response = AlbumService.unheart(firebaseUser, reference, latest, () -> hidePopUp());
+                            }
+
+                            if (response != HeartResponse.OK) {
+                                heartLatest.setChecked(false);
+                                hidePopUp();
+
+                                if (response == HeartResponse.ITEM_EXISTS) {
+                                    heartLatest.setChecked(true);
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+                                    updateLatestInRV();
+
+                                }
+                                else if (response == HeartResponse.NO_ALBUM_TRACKS) {
+                                    ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            heartLatest.setEnabled(false);
+                                            heartLatest.setVisibility(View.GONE);
+                                            latestImage.setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                                            latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                                            latestTitle.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                            latestType.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                                            latestType.setText("Unavailable");
+                                            latestYear.setVisibility(View.GONE);
+                                            disableLatestInRV();
+                                        }
+                                    });
+
+                                }
+
+                                if (response != HeartResponse.ITEM_EXISTS) {
+                                    HeartResponse finalResponse = response;
+                                    context.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            AlbumService.showError(finalResponse, context);
+                                        }
+                                    });
+                                }
+                            }
+                            else {
+                                if (heartLatest.isChecked()) {
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleRed));
+
+                                } else {
+                                    latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                }
+
+                                updateLatestInRV();
+                            }
+
+
+                        }
+                    }).start();
                 } else {
                     SignUpPopUp signUpPopUp = new SignUpPopUp(getParent(), getBaseContext(), "Get Up And Dance! You Can Save This Album By Joining");
                     signUpPopUp.createAndShow();
                 }
             }
+
         });
+    }
+
+    private void disableLatestInRV() {
+        Context context = this;
+                View v = null;
+        switch (latest.getType()) {
+            case ALBUM:
+            case UNINITIALIZED:
+
+                v = albumsRV.getLayoutManager().findViewByPosition(0);
+
+                break;
+            case COMPILATION:
+                v = compilationsRV.getLayoutManager().findViewByPosition(0);
+                break;
+            case SINGLE:
+                v = singlesRV.getLayoutManager().findViewByPosition(0);
+                break;
+        }
+
+
+                ((ToggleButton) v.findViewById(R.id.album_heart))
+                        .setChecked(false);
+                v.findViewById(R.id.album_heart).setEnabled(false);
+                v.findViewById(R.id.album_heart).setVisibility(View.GONE);
+                v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                        ? R.color.mqPurpleRed
+                        : R.color.mqPurple2));
+
+                ((ImageView) v.findViewById(R.id.aqvTrackImage)).setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                v.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                ((TextView) v.findViewById(R.id.aqvTrackTitle)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                ((TextView) v.findViewById(R.id.aqvTrackAlbum)).setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                ((TextView) v.findViewById(R.id.aqvTrackAlbum)).setText("Unavailable");
+                v.findViewById(R.id.aqvTrackYear).setVisibility(View.GONE);
+    }
+
+    private void updateLatestInRV() {
+        Context context = this;
+        View v = null;
+        switch (latest.getType()) {
+            case ALBUM:
+            case UNINITIALIZED:
+                v = albumsRV.getLayoutManager()
+                        .findViewByPosition(0);
+                break;
+            case COMPILATION:
+                v = compilationsRV.getLayoutManager()
+                        .findViewByPosition(0);
+                break;
+            case SINGLE:
+                v = singlesRV.getLayoutManager()
+                        .findViewByPosition(0);
+                break;
+        }
+        ((ToggleButton) v.findViewById(R.id.album_heart))
+                .setChecked(heartLatest.isChecked());
+       v.setBackgroundColor(ContextCompat.getColor(context, heartLatest.isChecked()
+                        ? R.color.mqPurpleRed
+                        : R.color.mqPurple2));
+
+    }
+
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.removing_message
+        );
     }
 
     @Override
@@ -341,11 +480,13 @@ public class ArtistQuizView extends AppCompatActivity {
         super.onStart();
         SpotifyService spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
         CountDownLatch cdl = new CountDownLatch(2);
-
+        Activity activity = this;
+        Context context = this;
         new Thread(new Runnable() {
             public void run() {
 
                 if (source != Source.SEARCH) {
+
                     artist.initCollections(reference, user);
                     cdl.countDown();
                     artist.initTracks(reference, user);
@@ -365,37 +506,32 @@ public class ArtistQuizView extends AppCompatActivity {
                         artistNameTV.setText(artist.getName());
                         artistBioTV.setText(artist.getBio());
 
-
-                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).into(artistPreviewImage);
+                        Picasso.get().load(ItemService.getSmallestPhotoUrl(artist.getPhotoUrl())).placeholder(R.drawable.placeholder).into(artistPreviewImage);
                         if (artist.getExternalLinks() != null) {
                             initializeExternalLinkButtons();
                         }
                     }
                 });
 
+                latest = artist.getLatest();
+                if (user != null && user.getAlbumIds() != null) {
+                    heartLatest.setChecked(user.getAlbumIds().containsValue(latest.getId()));
 
-                if (artist.getLatest() != null) {
-                    reference.child("albums").child(artist.getLatest()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    latestRelease.setBackgroundColor(ContextCompat.getColor(context,
+                            user.getAlbumIds().containsValue(latest.getId())
+                    ? R.color.mqPurpleRed : R.color.mqPurple2));
+                }
+                if (latest != null) {
+                    activity.runOnUiThread(new Runnable() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            latest = (Album) snapshot.getValue(Album.class);
-                            if (latest != null) {
-                                Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
-                                latestTitle.setText(latest.getName());
-                                latestType.setText(latest.getType().toString());
-                                latestYear.setText(latest.getYear());
-                                latestMiddleDot.setText(getString(R.string.middle_dot));
-                            } else {
-                                latestText.setVisibility(View.GONE);
-                                latestRelease.setVisibility(View.GONE);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError error) {
-
+                        public void run() {
+                            Picasso.get().load(ItemService.getSmallestPhotoUrl(latest.getPhotoUrl())).into(latestImage);
                         }
                     });
+                    latestTitle.setText(latest.getName());
+                    latestType.setText(latest.getType().toString());
+                    latestYear.setText(latest.getYear());
+                    latestMiddleDot.setText(getString(R.string.middle_dot));
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -404,6 +540,7 @@ public class ArtistQuizView extends AppCompatActivity {
                             latestRelease.setVisibility(View.GONE);
                         }
                     });
+
                 }
 
                 LogUtil log = new LogUtil("ArtistQuizView", "onStart");
@@ -413,7 +550,15 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), getBaseContext(), 2);
+                            singleAdapter = new HistoryAdapter(user, null, artist.getSingles(), context, 2);
+                            singleAdapter.setHidePopUp(() -> hidePopUp());
+                            singleAdapter.setShowPopUp(() -> showPopUp());
+                            singleAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            singleAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            singleAdapter.setLatestId(latest.getId());
+                            singleAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            singleAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            singleAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -437,7 +582,15 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), getBaseContext(), 2);
+                            compilationAdapter = new HistoryAdapter(user, null, artist.getCompilations(), context, 2);
+                            compilationAdapter.setHidePopUp(() -> hidePopUp());
+                            compilationAdapter.setShowPopUp(() -> showPopUp());
+                            compilationAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            compilationAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            compilationAdapter.setLatestId(latest.getId());
+                            compilationAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            compilationAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            compilationAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -461,7 +614,15 @@ public class ArtistQuizView extends AppCompatActivity {
                     executorService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), getBaseContext(), 2);
+                            albumAdapter = new HistoryAdapter(user, null, artist.getAlbums(), context, 2);
+                            albumAdapter.setHidePopUp(() -> hidePopUp());
+                            albumAdapter.setShowPopUp(() -> showPopUp());
+                            albumAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+                            albumAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
+                            albumAdapter.setLatestId(latest.getId());
+                            albumAdapter.setUpdateLatestFalse(() -> updateLatest(false));
+                            albumAdapter.setUpdateLatestTrue(() -> updateLatest(true));
+                            albumAdapter.setDisableLatest(() -> disableLatest());
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -481,13 +642,6 @@ public class ArtistQuizView extends AppCompatActivity {
                     });
                 }
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        aqvProgressBar.setVisibility(View.GONE);
-                        entireAQV.setVisibility(View.VISIBLE);
-                    }
-                });
 
                 executorService.shutdown();
 
@@ -496,27 +650,42 @@ public class ArtistQuizView extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     log.e(e.getMessage());
                 }
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        aqvProgressBar.setVisibility(View.GONE);
+                        entireAQV.setVisibility(View.VISIBLE);
+                    }
+                });
             }
         }).start();
-
-        Context context = this;
 
         startQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
+                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        startQuiz.setEnabled(false);
+                    }
+                });
+                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(getString(R.string.loading_message));
+                        loadingPopUp.setVisibility(View.VISIBLE);
+                    }
+                });
+
+
                 if (source == Source.SEARCH) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast toast = Toast.makeText(context, "Gathering data. Please wait...", Toast.LENGTH_LONG);
-                            toast.show();
-                        }
-                    });
 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
+
                             Artist artist = initArtist();
 
                             int size = artist.getTrackPoolSize();
@@ -531,25 +700,77 @@ public class ArtistQuizView extends AppCompatActivity {
                                         toast.show();
                                     }
                                 });
+
                             }
+                            ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startQuiz.setEnabled(true);
+                                }
+                            });
                         }
                     }).start();
 
                 } else {
-                    if (artist.getAllTrackIds().size() < 15) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast toast = Toast.makeText(context, "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
-                                toast.show();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Artist artist = initArtist();
+                            int size = artist.getTrackPoolSize();
+                            if (size >= 15 && !artist.isInitializing()) {
+                                goToQuiz(view.getContext());
+                            } else {
+                                ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast toast = Toast.makeText(getBaseContext(), "Not enough data to start quiz. Heart more albums and try again.", Toast.LENGTH_LONG);
+                                        toast.show();
+                                    }
+                                });
                             }
-                        });
-                    } else if (!artist.isInitializing()) {
-                        goToQuiz(view.getContext());
-                    }
+                            ((ArtistQuizView)context).runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startQuiz.setEnabled(true);
+                                    hidePopUp();
+                                }
+                            });
+                        }
+                    }).start();
                 }
+
             }
         });
+
+
+    }
+
+    private void updateLatest(boolean b) {
+        heartLatest.setChecked(b);
+        if (b) {
+            latestRelease.setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurpleRed));
+        }
+        else {
+            latestRelease.setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurple2));
+        }
+    }
+
+    private void disableLatest() {
+        Context context = this;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                heartLatest.setEnabled(false);
+                heartLatest.setVisibility(View.GONE);
+                latestImage.setColorFilter(ContextCompat.getColor(context, R.color.disabled));
+                latestRelease.setBackgroundColor(ContextCompat.getColor(context, R.color.disabledPurple));
+                latestTitle.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                latestType.setTextColor(ContextCompat.getColor(context, R.color.disabledForeground));
+                latestType.setText("Unavailable");
+                latestYear.setVisibility(View.GONE);
+            }
+        });
+
     }
 
     private Artist initArtist() {
@@ -581,8 +802,41 @@ public class ArtistQuizView extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+            if (source == Source.SEARCH) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                        String artistKey = null;
+                        String artistValue = null;
+                        for (Map.Entry<String, String> artistId : user.getArtistIds().entrySet()) {
+                            if (artistId.getValue().equals(artist.getId())) {
+                                artistKey = artistId.getKey();
+                                artistValue = artistId.getValue();
+                            }
+                        }
+
+//                String artistKey = reference.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+                        Intent intent = getIntent();
+
+                        intent.putExtra("artistKey", artistKey);
+                        intent.putExtra("artistId", artist.getId());
+                        intent.putExtra("user", user);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                }).start();
+                return true;
+            } else {
+                finish();
+                return super.onKeyUp(keyCode, event);
+            }
+//           return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
     private void initializeExternalLinkButtons() {
@@ -613,4 +867,5 @@ public class ArtistQuizView extends AppCompatActivity {
         String id = artistId.substring(15);
         return String.format(Locale.ENGLISH, "https://open.spotify.com/artist/%s", id);
     }
+
 }

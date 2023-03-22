@@ -203,7 +203,7 @@ public class GettingStarted {
         for (Map.Entry<String, Artist> artist : selectedArtists.entrySet()) {
             String randomId = artist.getValue().getRandomId();
             Album album = FirebaseService.checkDatabase(db, "albums", randomId, Album.class);
-            AlbumService.heart(user, firebaseUser, db, album, spotifyService);
+            AlbumService.heart(firebaseUser, db, album, spotifyService, null);
         }
         return new Intent(context, ParentOfFragments.class);
     }
