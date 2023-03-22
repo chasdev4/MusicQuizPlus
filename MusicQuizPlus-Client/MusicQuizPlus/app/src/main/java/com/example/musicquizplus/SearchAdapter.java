@@ -184,8 +184,15 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchViewHolder> {
 
                                         }
                                         else {
-                                            holder.getToggleButton().setChecked(!holder.getToggleButton().isChecked());
-                                            if holder.getToggleButton().i
+                                            ((SearchActivity) context).runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    holder.getItemView().setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple2));
+                                                    holder.getBanner().setVisibility(View.GONE);
+                                                    holder.setChecked(false);
+                                                }
+                                            });
+
                                         }
 
                                         if (response != HeartResponse.ITEM_EXISTS) {
