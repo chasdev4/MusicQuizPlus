@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -119,6 +120,7 @@ public class ArtistQuizView extends AppCompatActivity {
     String aqvToolTipsDate, currentDate;
     int aqvToolTips;
     boolean showToolTipsBool;
+    LinearLayout externalLinks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +158,7 @@ public class ArtistQuizView extends AppCompatActivity {
         aqvProgressBar = findViewById(R.id.aqvProgressBar);
         root = findViewById(R.id.aqvRoot);
         invisHeart = findViewById(R.id.invisibleHeartButtonToolTip);
+        externalLinks = findViewById(R.id.linearLayout);
         toolTipsManager = new ToolTipsManager();
 
         Date c = Calendar.getInstance().getTime();
@@ -392,71 +395,23 @@ public class ArtistQuizView extends AppCompatActivity {
 
         if(aqvToolTips < 3) {
             if (track == 0) {
-                builder = new ToolTip.Builder(this, spotify, root, "Click\nTo View\nArtists\nSpotify", ToolTip.POSITION_BELOW);
+                builder = new ToolTip.Builder(this, externalLinks, root, "Click Any Logo Above To View\nThis Artists Social Media Page", ToolTip.POSITION_BELOW);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
                 track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
+                new Handler().postDelayed(this::showToolTips, 3500);
             }
             else if(track == 1)
-            {
-                if(facebook.getVisibility() == View.VISIBLE)
-                {
-                    builder = new ToolTip.Builder(this, facebook, root, "Click To View\nArtists Facebook", ToolTip.POSITION_BELOW);
-                    builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                    builder.setTextAppearance(R.style.TooltipTextAppearance);
-                    toolTipsManager.show(builder.build());
-                }
-                track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
-            }
-            else if(track == 2)
-            {
-                if(twitter.getVisibility() == View.VISIBLE)
-                {
-                    builder = new ToolTip.Builder(this, twitter, root, "Click To View\nArtists Twitter", ToolTip.POSITION_BELOW);
-                    builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                    builder.setTextAppearance(R.style.TooltipTextAppearance);
-                    toolTipsManager.show(builder.build());
-                }
-                track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
-            }
-            else if(track == 3)
-            {
-                if(wikipedia.getVisibility() == View.VISIBLE)
-                {
-                    builder = new ToolTip.Builder(this, wikipedia, root, "Click To View\nArtists Wikipedia", ToolTip.POSITION_BELOW);
-                    builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                    builder.setTextAppearance(R.style.TooltipTextAppearance);
-                    toolTipsManager.show(builder.build());
-                }
-                track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
-            }
-            else if(track == 4)
-            {
-                if(instagram.getVisibility() == View.VISIBLE)
-                {
-                    builder = new ToolTip.Builder(this, instagram, root, "Click To View\nArtists Instagram", ToolTip.POSITION_BELOW);
-                    builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                    builder.setTextAppearance(R.style.TooltipTextAppearance);
-                    toolTipsManager.show(builder.build());
-                }
-                track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
-            }
-            else if(track == 5)
             {
                 builder = new ToolTip.Builder(this, share, root, "Click To\nShare\nSpotify\nArtist", ToolTip.POSITION_BELOW);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
                 track++;
-                new Handler().postDelayed(this::showToolTips, 2500);
+                new Handler().postDelayed(this::showToolTips, 3000);
             }
-            else if(track == 6)
+            else if(track == 2)
             {
                 builder = new ToolTip.Builder(this, invisHeart, root, "Click A Heart To Add\nItem To Your Collection", ToolTip.POSITION_LEFT_TO);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
@@ -465,7 +420,7 @@ public class ArtistQuizView extends AppCompatActivity {
                 track++;
                 new Handler().postDelayed(this::showToolTips, 3000);
             }
-            else if(track == 7)
+            else if(track == 3)
             {
                 builder = new ToolTip.Builder(this, startQuiz, root, "Click Here To Be Quizzed On This Artist", ToolTip.POSITION_ABOVE);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
