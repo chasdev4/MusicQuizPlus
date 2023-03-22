@@ -89,7 +89,6 @@ public class SearchActivity extends AppCompatActivity {
     private boolean allSearch;
     private boolean searchStarted;
     private boolean doingSearch;
-    private boolean searchLimitReached;
 
     private ToolTipsManager toolTipsManager;
     private ToolTip.Builder builder;
