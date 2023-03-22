@@ -355,6 +355,7 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(playlistTrack == 3)
             {
+                /*
                 builder = new ToolTip.Builder(this, searchButton, root, "Search for Your Favorite Music", ToolTip.POSITION_LEFT_TO);
                 builder.setAlign(ToolTip.ALIGN_CENTER);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
@@ -362,9 +363,8 @@ public class ParentOfFragments extends AppCompatActivity {
                 toolTipsManager.show(builder.build());
                 playlistTrack++;
                 new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
-            }
-            else if(playlistTrack == 4)
-            {
+                 */
+
                 muteButton.setVisibility(View.INVISIBLE);
                 settingsButton.setVisibility(View.INVISIBLE);
                 builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_LEFT_TO);
