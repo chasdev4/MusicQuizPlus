@@ -24,7 +24,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -40,8 +39,6 @@ import com.tomergoldst.tooltips.ToolTipsManager;
 
 import java.io.Serializable;
 
-import java.net.ContentHandler;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
@@ -301,7 +298,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     Window window = getWindow();
                     window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
                     window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
-                    ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
+                    ((ConstraintLayout)findViewById(R.id.pqvRoot))
                             .setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurpleGreenBackground));
                 }
             }
@@ -351,13 +348,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                                                 Window window = getWindow();
                                                 window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
                                                 window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
-                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                ((ConstraintLayout) findViewById(R.id.pqvRoot))
                                                         .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreenBackground));
                                             } else {
                                                 Window window = getWindow();
                                                 window.setStatusBarColor(getResources().getColor(R.color.mqPurple3));
                                                 window.setNavigationBarColor(getResources().getColor(R.color.mqPurple3));
-                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                ((ConstraintLayout) findViewById(R.id.pqvRoot))
                                                         .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple3));
                                             }
                                             if (adapter != null) {

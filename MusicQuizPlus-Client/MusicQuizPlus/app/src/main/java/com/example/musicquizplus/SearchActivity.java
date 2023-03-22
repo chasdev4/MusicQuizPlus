@@ -109,7 +109,6 @@ public class SearchActivity extends AppCompatActivity {
         context = this;
 
 
-        homeButton = findViewById(R.id.home_button);
         artist = findViewById(R.id.search_filter_artist);
         album = findViewById(R.id.search_filter_album);
         song = findViewById(R.id.search_filter_song);
@@ -227,6 +226,7 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        hidePopUp();
 
         // Fetching the stored data from the SharedPreference
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
@@ -501,11 +501,6 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        hidePopUp();
-    }
 
     @Override
     public void onStart() {
