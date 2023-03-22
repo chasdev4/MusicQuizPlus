@@ -54,7 +54,8 @@
         </activity>
         <activity
             android:name=".QuizResults"
-            android:exported="false">
+            android:exported="false"
+            android:noHistory="true">
 
             <meta-data
                 android:name="android.app.lib_name"
@@ -62,7 +63,8 @@
         </activity>
         <activity
             android:name=".ActiveQuiz"
-            android:exported="false">
+            android:exported="false"
+            android:noHistory="true">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
