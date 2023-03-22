@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:id="@+id/pqvRoot"
     tools:context=".PlaylistQuizView"
+    android:id="@+id/playlist_quiz_view_layout"
     android:background="@color/mqPurple3">
 
     <androidx.constraintlayout.widget.Guideline
@@ -29,25 +30,15 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.75" />
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/pqvBackButton"
-        android:background="@null"
-        android:src="@drawable/left_chevron"
-        android:layout_marginStart="3dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ImageView
         android:id="@+id/pqvCoverImage"
         android:layout_width="90dp"
         android:layout_height="90dp"
         android:layout_marginStart="5dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
-        app:layout_constraintStart_toEndOf="@+id/pqvBackButton"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="42dp" />
 
     <TextView
         android:id="@+id/pqvTitle"
@@ -111,10 +102,13 @@
         android:id="@+id/playlist_heart"
         android:layout_width="50dp"
         android:layout_height="wrap_content"
-        android:button="@drawable/toggle_heart"
+        android:drawableTop="@drawable/toggle_heart"
         android:background="@android:color/transparent"
         android:gravity="center"
-        android:textColor="@android:color/transparent"
+        android:textOn="@string/saved_label"
+        android:textOff="@string/save_label"
+        android:textSize="12dp"
+        android:textColor="@color/mqWhite"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75"
@@ -154,19 +148,25 @@
         android:layout_height="0dp"
         android:id="@+id/pqvRecyclerView"
         android:layout_margin="10dp"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/pqvStartButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
+        android:background="@drawable/avatar_level_background"
         android:backgroundTint="@color/mqRed"
         android:text="@string/start_quiz"
+        android:paddingHorizontal="15dp"
+        android:textColor="@color/mqWhite"
+        android:textAllCaps="false"
         android:paddingVertical="15dp"
         android:fontFamily="@font/concert_one"
-        android:textSize="22sp"
+        android:textSize="26sp"
         android:elevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -198,4 +198,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/pqvRecyclerView" />
+
+    <include layout="@layout/loading_popup"
+        android:id="@+id/pqvSaving"
+        android:visibility="gone"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

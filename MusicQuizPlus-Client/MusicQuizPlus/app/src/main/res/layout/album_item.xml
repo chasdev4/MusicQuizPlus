@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="80dp"
+    android:id="@+id/album_item_layout"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/mqPurple2"
     android:layout_margin="1dp">
@@ -26,47 +27,97 @@
         android:layout_width="75dp"
         android:layout_height="0dp"
         android:layout_margin="1dp"
+        android:clickable="false"
         app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <RelativeLayout
+        android:id="@+id/item_result_banner"
+        android:layout_width="75dp"
+        android:layout_height="0dp"
+        android:layout_margin="1dp"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:id="@+id/item_result_banner_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/mqBlue"
+            android:visibility="visible"
+            android:background="@drawable/saved_banner_bg"
+            android:paddingVertical="5dp"
+            android:ellipsize="none"
+            android:layout_marginLeft="-25dp"
+            android:layout_marginTop="3dp"
+            android:rotation="-40"
+            android:text="@string/saved_label"
+            android:textSize="10sp"
+            android:paddingHorizontal="30dp"
+            android:textColor="@color/mqWhite"
+            android:fontFamily="@font/fugaz_one"
+            android:textAllCaps="true"
+            />
+    </RelativeLayout>
     <TextView
         android:id="@+id/itemTitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="-18dp"
+        android:layout_marginTop="20dp"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+
         android:fontFamily="@font/concert_one"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/sample_song_title"
         android:paddingLeft="10dp"
         android:textColor="@color/mqWhite"
         android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline"
         app:layout_constraintStart_toEndOf="@+id/image"
+        app:layout_constraintEnd_toStartOf="@id/album_heart"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/itemSubtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:fontFamily="@font/commissioner"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:singleLine="true"
         android:text="@string/sample_artist"
         android:paddingLeft="10dp"
         android:textColor="@color/mqWhite"
         android:textSize="12sp"
         android:layout_marginStart="2dp"
         app:layout_constraintStart_toEndOf="@+id/image"
+        app:layout_constraintEnd_toStartOf="@id/album_heart"
         app:layout_constraintTop_toBottomOf="@+id/itemTitle" />
-
     <ToggleButton
-        android:id="@+id/heart_toggle_button"
+        android:id="@+id/album_heart"
         android:layout_width="50dp"
-        android:layout_height="match_parent"
-        android:backgroundTint="@color/mqPurple2"
-        android:button="@drawable/toggle_heart"
-        android:padding="8dp"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/toggle_heart"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:textOn="@string/saved_label"
+        android:textOff="@string/save_label"
+        android:textSize="12dp"
+        android:paddingHorizontal="5dp"
+        android:paddingVertical="13dp"
+        android:textColor="@color/mqWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

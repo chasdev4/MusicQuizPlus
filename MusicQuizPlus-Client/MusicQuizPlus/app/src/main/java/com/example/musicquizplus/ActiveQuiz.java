@@ -130,6 +130,7 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         closeQuiz.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                countDownTimer.cancel();
                 finish();
                 pauseAudio(mediaPlayer);
                 //Intent intent = new Intent(getBaseContext(), ParentOfFragments)

@@ -27,24 +27,13 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.75" />
 
-    <ImageButton
-        android:id="@+id/profile_back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
-        android:background="@null"
-        android:src="@drawable/left_chevron"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/guideline"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/guideline"
-        app:layout_constraintStart_toEndOf="@id/profile_back_button"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <include
@@ -52,7 +41,7 @@
             layout="@layout/user_avatar_layout"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginLeft="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -169,6 +158,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
+
+    <TextView
+        android:id="@+id/log_out_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log Out"
+        android:fontFamily="@font/commissioner"
+        android:textColor="@color/mqWhite"
+        android:layout_margin="15dp"
+        android:textSize="20sp"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

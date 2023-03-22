@@ -1,5 +1,7 @@
 package service;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -163,6 +165,9 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
+            if (json == "[]") {
+                return null;
+            }
             return gson.fromJson(json, JsonElement.class).getAsJsonObject();
 
         } catch (IOException e) {
@@ -266,7 +271,15 @@ public class SpotifyService {
         {
             // Use gson to get a JsonObject
             String json = response.body().string();
-            return gson.fromJson(json, JsonElement.class).getAsJsonObject().get("tracks").getAsJsonArray();
+            JsonArray jsonArray = null;
+            try {
+                 jsonArray = gson.fromJson(json, JsonElement.class).getAsJsonObject().get("tracks").getAsJsonArray();
+            }
+            catch (NullPointerException e) {
+                Log.e("SpotifyService.java", "getTracks: Elements returned null");
+                return null;
+            }
+            return jsonArray;
         } catch (IOException e) {
             e.printStackTrace();
         }

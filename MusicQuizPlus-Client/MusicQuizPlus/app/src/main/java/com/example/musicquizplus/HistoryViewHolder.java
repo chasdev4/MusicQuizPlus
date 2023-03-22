@@ -21,7 +21,7 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     TextView playlistAlbum;
     TextView playlistArtist;
     TextView playlistYear;
-    ImageButton playlistAudio;
+    ToggleButton playlistAudio;
     RecyclerView recyclerView;
     ImageView aqvPreviewImage;
     TextView aqvAlbumTitle;
@@ -30,6 +30,8 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
     ToggleButton aqvHeartAlbum;
 
     View view;
+    private String trackId;
+
 
     HistoryViewHolder(View itemView, int switchOn)
     {
@@ -68,8 +70,16 @@ public class HistoryViewHolder extends RecyclerView.ViewHolder {
                 aqvAlbumTitle = itemView.findViewById(R.id.aqvTrackTitle);
                 aqvAlbumType = itemView.findViewById(R.id.aqvTrackAlbum);
                 aqvAlbumYear = itemView.findViewById(R.id.aqvTrackYear);
-                aqvHeartAlbum = itemView.findViewById(R.id.aqvHeartToggleButton);
+                aqvHeartAlbum = itemView.findViewById(R.id.album_heart);
         }
         view  = itemView;
+    }
+
+    public String getTrackId() {
+        return trackId;
+    }
+
+    public void setTrackId(String trackId) {
+        this.trackId = trackId;
     }
 }

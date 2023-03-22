@@ -2,6 +2,7 @@ package com.example.musicquizplus;
 
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -15,6 +16,7 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
     private TextView subtitle;
     private ImageView image;
     private ToggleButton toggleButton;
+    private RelativeLayout banner;
 
     public TrackResultViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -22,9 +24,15 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
         this.title = itemView.findViewById(R.id.itemTitle);
         this.subtitle = itemView.findViewById(R.id.itemSubtitle);
         this.image = itemView.findViewById(R.id.image);
-        this.toggleButton = itemView.findViewById(R.id.heart_toggle_button);
+        this.toggleButton = itemView.findViewById(R.id.album_heart);
+        this.banner = itemView.findViewById(R.id.item_result_banner);
     }
 
+    public TextView getTitle() {return title;
+    }
+    public TextView getSubtitle() {
+        return subtitle;
+    }
     public void setTitle(String title) {
         this.title.setText(title);
     }
@@ -47,5 +55,13 @@ public class TrackResultViewHolder  extends RecyclerView.ViewHolder{
 
     public ToggleButton getToggleButton() {
         return toggleButton;
+    }
+
+    public RelativeLayout getBanner() {
+        return banner;
+    }
+
+    public View getItemView() {
+        return itemView;
     }
 }

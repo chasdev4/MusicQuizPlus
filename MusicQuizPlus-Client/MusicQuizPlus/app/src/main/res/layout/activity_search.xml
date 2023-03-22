@@ -5,8 +5,8 @@
     android:id="@+id/searchRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/mqPurple3"
     android:layout_alignParentTop="true"
+    android:background="@color/mqPurple3"
     tools:context=".SearchActivity">
 
     <androidx.constraintlayout.widget.Guideline
@@ -15,6 +15,14 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.4" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVert75"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
+
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
@@ -38,124 +46,210 @@
         android:id="@+id/search_filter_group"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_margin="16dp"
         android:layout_centerInParent="true"
+        android:layout_margin="16dp"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/search_recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/search_recycler_view"
         app:layout_constraintTop_toBottomOf="@id/search_bar">
 
         <RadioButton
             android:id="@+id/search_filter_all"
             style="@style/AllFilterButtonStyle"
-            android:text="@string/search_filter_all"
-            android:checked="true"/>
+            android:checked="true"
+            android:text="@string/search_filter_all" />
 
         <RadioButton
             android:id="@+id/search_filter_artist"
             style="@style/SearchFilterButtonStyle"
-            android:text="@string/search_filter_artist"
-            android:checked="false"/>
+            android:checked="false"
+            android:text="@string/search_filter_artist" />
 
         <RadioButton
             android:id="@+id/search_filter_album"
             style="@style/SearchFilterButtonStyle"
-            android:text="@string/search_filter_album"
-            android:checked="false"/>
+            android:checked="false"
+            android:text="@string/search_filter_album" />
 
         <RadioButton
             android:id="@+id/search_filter_song"
             style="@style/SearchFilterButtonStyle"
-            android:text="@string/search_filter_song"
-            android:checked="false"/>
+            android:checked="false"
+            android:text="@string/search_filter_song" />
 
         <RadioButton
             android:id="@+id/search_filter_playlist"
             style="@style/PlaylistFilterButtonStyle"
-            android:text="@string/search_filter_playlist"
-            android:checked="false"/>
+            android:checked="false"
+            android:text="@string/search_filter_playlist" />
     </RadioGroup>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:visibility="visible"
+        android:layout_margin="16dp"
         android:clickable="true"
         android:focusable="true"
-        android:layout_margin="16dp"
+        android:visibility="visible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/search_filter_group"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_filter_group" />
+
     <ImageView
+        android:id="@+id/search_empty_image"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:layout_marginTop="10dp"
-        android:id="@+id/search_empty_image"
-        android:src="@drawable/search"
-        android:padding="10dp"
         android:alpha="0.4"
+        android:padding="10dp"
+        android:src="@drawable/search"
         app:layout_constraintBottom_toTopOf="@id/search_empty_text"
-        app:layout_constraintTop_toTopOf="@+id/guidelineHor40"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHor40" />
+
     <TextView
         android:id="@+id/search_empty_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:alpha="0.4"
+        android:fontFamily="@font/commissioner"
+        android:gravity="center"
         android:text="@string/search_initial_text"
         android:textColor="@color/mqWhite"
-        android:fontFamily="@font/commissioner"
         android:textSize="16sp"
-        android:alpha="0.4"
-        android:gravity="center"
 
-        app:layout_constraintTop_toBottomOf="@id/search_empty_image"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <ImageButton
-        android:id="@+id/home_button"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_marginBottom="15dp"
-        android:layout_marginEnd="15dp"
-        android:background="@drawable/round_button_no_stroke"
-        android:elevation="8dp"
-        android:src="@drawable/home_icon"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="@string/home_button_content_description"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_empty_image" />
 
     <ImageButton
         android:id="@+id/backToTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="38dp"
         android:background="@drawable/round_button_no_stroke"
+        android:contentDescription="@string/back_to_top_content_description"
         android:elevation="8dp"
         android:src="@drawable/up_chevron"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/home_button"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginEnd="30dp"
-        android:layout_marginBottom="5dp"
-        android:contentDescription="@string/back_to_top_content_description"/>
+        app:layout_constraintStart_toStartOf="@+id/guidelineVert75" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/play_album_banner"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ProgressBar
+            android:id="@+id/play_album_progressbar"
+            style="@style/Widget.MaterialComponents.LinearProgressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/charcoal"
+            android:indeterminate="false"
+            android:progress="100"
+            android:progressDrawable="@drawable/play_album_now_bar" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:background="@android:color/transparent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/concert_one"
+                android:text="Play Now?"
+                android:textAlignment="center"
+                android:textColor="@color/mqWhite"
+                android:textSize="22sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/play_album_yes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/avatar_level_background"
+                android:backgroundTint="@color/mqBlue"
+                android:elevation="8dp"
+                android:fontFamily="@font/concert_one"
+                android:paddingHorizontal="15dp"
+                android:paddingVertical="15dp"
+                android:text="Yes"
+                android:textAllCaps="false"
+                android:textColor="@color/mqWhite"
+                android:textSize="22sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/play_album_no"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/avatar_level_background"
+                android:backgroundTint="@color/mqRed"
+                android:elevation="8dp"
+                android:fontFamily="@font/concert_one"
+                android:paddingHorizontal="15dp"
+                android:paddingVertical="15dp"
+                android:text="No"
+                android:textAllCaps="false"
+                android:textColor="@color/mqWhite"
+                android:textSize="22sp" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/play_album_checkbox"
+                style="@style/PlayAlbumNowStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_weight="1"
+                android:buttonTint="@color/spotifyGreen"
+                android:fontFamily="@font/concert_one"
+                android:text="Don't Show Again"
+                android:textColor="@color/white"
+
+                android:textSize="18sp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ProgressBar
         android:id="@+id/search_progress_bar"
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:indeterminate="true"
-        android:indeterminateTintMode="src_atop"
         android:alpha="0.4"
+        android:indeterminate="true"
         android:indeterminateTint="@color/mqWhite"
+        android:indeterminateTintMode="src_atop"
         app:layout_constraintBottom_toBottomOf="@+id/search_recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <include
+        android:id="@+id/search_saving"
+        layout="@layout/loading_popup"
+        android:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

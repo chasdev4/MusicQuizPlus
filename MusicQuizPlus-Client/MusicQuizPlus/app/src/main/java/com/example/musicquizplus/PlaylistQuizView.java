@@ -2,12 +2,17 @@ package com.example.musicquizplus;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,12 +20,16 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.google.firebase.auth.FirebaseUser;
@@ -30,14 +39,17 @@ import com.tomergoldst.tooltips.ToolTip;
 import com.tomergoldst.tooltips.ToolTipsManager;
 
 import java.io.Serializable;
+
 import java.net.ContentHandler;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import model.GoogleSignIn;
@@ -45,8 +57,11 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.HeartResponse;
 import model.type.Source;
+import service.FirebaseService;
 import service.SpotifyService;
+import service.firebase.AlbumService;
 import service.firebase.PlaylistService;
 
 public class PlaylistQuizView extends AppCompatActivity implements Serializable {
@@ -55,7 +70,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     TextView title;
     TextView owner;
     RecyclerView listView;
-    Button startQuiz;
+    AppCompatButton startQuiz;
     Playlist playlist;
     HistoryAdapter adapter;
     Handler mainHandler = new Handler();
@@ -63,7 +78,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
     GoogleSignIn googleSignIn = new GoogleSignIn();
     FirebaseUser firebaseUser = googleSignIn.getAuth().getCurrentUser();
-    ImageButton backButton;
     ImageButton spotifyButton;
     ImageButton shareButton;
     boolean isSpotifyInstalled;
@@ -72,6 +86,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     private ToggleButton heartButton;
     private User user;
     private ProgressBar progressBar;
+
     private ToolTipsManager toolTipsManager;
     private ToolTip.Builder builder;
     ConstraintLayout root;
@@ -80,11 +95,16 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     int pqvToolTips;
     boolean showToolTipsBool;
 
+    private View loadingPopUp;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_playlist_quiz_view);
 
+        loadingPopUp = findViewById(R.id.pqvSaving);
         coverImage = findViewById(R.id.pqvCoverImage);
         title = findViewById(R.id.pqvTitle);
         title.setSelected(true);
@@ -94,7 +114,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         listView.setVisibility(View.INVISIBLE);
         startQuiz = findViewById(R.id.pqvStartButton);
         backToTop = findViewById(R.id.pqvBackToTop);
-        backButton = findViewById(R.id.pqvBackButton);
         spotifyButton = findViewById(R.id.pqvSpotifyButton);
         shareButton = findViewById(R.id.pqvShareButton);
         heartButton = findViewById(R.id.playlist_heart);
@@ -142,12 +161,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             }
         });
 
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
+
         spotifyService = new SpotifyService(getString(R.string.SPOTIFY_KEY));
 
         spotifyButton.setOnClickListener(new View.OnClickListener() {
@@ -283,6 +297,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             if(user != null)
             {
                 heartButton.setChecked(user.getPlaylistIds().containsValue(playlist.getId()));
+                if (heartButton.isChecked()) {
+                    Window window = getWindow();
+                    window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                    window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                    ((ConstraintLayout)findViewById(R.id.playlist_quiz_view_layout))
+                            .setBackgroundColor(ContextCompat.getColor(this, R.color.mqPurpleGreenBackground));
+                }
             }
 
             Activity activity = this;
@@ -295,13 +316,58 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            if(firebaseUser != null)
+
+                            updatePopUpText(heartButton.isChecked());
+                            showPopUp();
+                            if(user != null && firebaseUser != null)
                             {
+                                updatePopUpText(heartButton.isChecked());
+                                updatePopUpColor(!heartButton.isChecked());
+                                showPopUp();
+
+                                HeartResponse response = null;
                                 if (heartButton.isChecked()) {
                                     SpotifyService spotifyService = new SpotifyService(view.getContext().getString(R.string.SPOTIFY_KEY));
-                                    PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService);
+                                    response = PlaylistService.heart(user, firebaseUser, db, playlist, spotifyService, () -> hidePopUp());
                                 } else {
-                                    PlaylistService.unheart(user, firebaseUser, db, playlist);
+                                    response = PlaylistService.unheart(user, firebaseUser, db, playlist, () -> hidePopUp());
+                                }
+                                if (response != HeartResponse.OK) {
+                                    heartButton.setChecked(false);
+                                    hidePopUp();
+                                    if (response != HeartResponse.ITEM_EXISTS) {
+                                        HeartResponse finalResponse = response;
+                                        ((PlaylistQuizView) context).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                AlbumService.showError(finalResponse, context);
+                                            }
+                                        });
+                                    }
+                                }
+                                else {
+                                    updatePopUpColor(heartButton.isChecked());
+                                            if (heartButton.isChecked()) {
+                                                Window window = getWindow();
+                                                window.setStatusBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                                window.setNavigationBarColor(getResources().getColor(R.color.mqPurpleGreenBackground));
+                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                        .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurpleGreenBackground));
+                                            } else {
+                                                Window window = getWindow();
+                                                window.setStatusBarColor(getResources().getColor(R.color.mqPurple3));
+                                                window.setNavigationBarColor(getResources().getColor(R.color.mqPurple3));
+                                                ((ConstraintLayout) findViewById(R.id.playlist_quiz_view_layout))
+                                                        .setBackgroundColor(ContextCompat.getColor(context, R.color.mqPurple3));
+                                            }
+                                            if (adapter != null) {
+                                                listView.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        adapter.notifyDataSetChanged();
+                                                    }
+                                                });
+                                            }
                                 }
                             }
                             else
@@ -331,6 +397,8 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
 
             new FetchImage(playlist.getPhotoUrl().get(0).getUrl(), coverImage, title, playlist.getName(), mainHandler).start();
         }
+        Context context = this;
+
 
         new Thread(new Runnable() {
             public void run() {
@@ -340,7 +408,9 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     cdl.countDown();
                 } else {
                     playlist = PlaylistService.populatePlaylistTracks(reference, playlist, spotifyService);
-                    playlist.initCollection(reference);
+                    if (playlist.getTracks() == null || playlist.getTracks().size() == 0) {
+                        playlist.initCollection(reference);
+                    }
                     cdl.countDown();
                 }
 
@@ -349,24 +419,28 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter = new HistoryAdapter(user, tracksList, null, getBaseContext(), 1);
-                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                            @Override
-                            public void onChanged() {
-                                super.onChanged();
-                                onDataChange();
-                            }
-                        });
-                        listView.setAdapter(adapter);
-                        listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
-                        onDataChange();
-                    }
-                });
+                if (playlist.getTracks() != null) {
+                    List<Track> tracksList = new ArrayList<>(playlist.getTracks().values());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter = new HistoryAdapter(user, tracksList, null, context, 1);
+                            adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                                @Override
+                                public void onChanged() {
+                                    super.onChanged();
+                                    onDataChange();
+                                }
+                            });
+                            listView.setAdapter(adapter);
+                            listView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
+                            onDataChange();
+                        }
+                    });
+                }
+                else {
+                    Log.d("TAG", "run: ");
+                }
 
             }
         }).start();
@@ -375,14 +449,31 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             @Override
             public void onClick(View view) {
                 if (!playlist.isInitializing()) {
-                    Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
-                    intent.putExtra("currentPlaylist", playlist);
-                    intent.putExtra("currentUser", user);
-                    startActivity(intent);
+                    if (playlist.getTracks().size() >= 15) {
+                        Intent intent = new Intent(view.getContext(), ActiveQuiz.class);
+                        intent.putExtra("currentPlaylist", playlist);
+                        intent.putExtra("currentUser", user);
+                        startActivity(intent);
+                    }
+                    else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(context,
+                                        "Not enough data to start this quiz, choose different playlist", Toast.LENGTH_LONG);
+                                toast.show();
+                            }
+                        });
+                    }
                 }
             }
         });
 
+    }
+
+    private void updatePopUpColor(boolean alternate) {
+        loadingPopUp.findViewById(R.id.popup_background).setBackgroundColor(ContextCompat.getColor(this,
+                alternate ? R.color.mqPurpleGreen : R.color.mqPurple2));
     }
 
     private void onDataChange() {
@@ -400,4 +491,68 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         return String.format(Locale.ENGLISH, "https://open.spotify.com/playlist/%s", id);
     }
 
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.removing_message
+        );
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+            if (heartButton.isChecked()) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        user = FirebaseService.checkDatabase(reference, "users", firebaseUser.getUid(), User.class);
+                        String playlistKey = null;
+                        String playlistValue = null;
+                        for (Map.Entry<String, String> playlistId : user.getPlaylistIds().entrySet()) {
+                            if (playlistId.getValue().equals(playlist.getId())) {
+                                playlistKey = playlistId.getKey();
+                                playlistValue = playlistId.getValue();
+                            }
+                        }
+
+                        Intent intent = getIntent();
+
+                        intent.putExtra("playlistKey", playlistKey);
+                        intent.putExtra("playlistValue", playlistValue);
+                        intent.putExtra("user", user);
+                        setResult(RESULT_OK, intent);
+                        finish();
+                    }
+                }).start();
+            }
+            else {
+                return super.onKeyUp(keyCode, event);
+            }
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    public boolean isChecked() {
+        return heartButton.isChecked();
+    }
 }

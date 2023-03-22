@@ -2,15 +2,17 @@ package service.firebase;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -19,15 +21,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import model.PhotoUrl;
 import model.User;
 import model.ValidationObject;
 import model.item.Playlist;
 import model.item.Track;
+import model.type.HeartResponse;
 import model.type.Severity;
 import service.FirebaseService;
 import service.SpotifyService;
-import utils.FormatUtil;
 import utils.LogUtil;
 import utils.ValidationUtil;
 
@@ -208,7 +209,7 @@ public class PlaylistService {
         });
         try {
             done.await();
-        } catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
@@ -216,22 +217,23 @@ public class PlaylistService {
     }
 
     // When the user "hearts" a playlist
-    public static void heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
-                             SpotifyService spotifyService) {
-        LogUtil log = new LogUtil(TAG, "heartPlaylist");
+    public static HeartResponse heart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist,
+                                      SpotifyService spotifyService, Runnable hidePopup) {
+        LogUtil log = new LogUtil(TAG, "heart");
 
         // Return if any of these fields are null
+        Playlist finalPlaylist = playlist;
         List<ValidationObject> validationObjects = new ArrayList<>() {
             {
                 add(new ValidationObject(user, User.class, Severity.HIGH));
                 add(new ValidationObject(firebaseUser, FirebaseUser.class, Severity.HIGH));
                 add(new ValidationObject(db, DatabaseReference.class, Severity.HIGH));
-                add(new ValidationObject(playlist, Playlist.class, Severity.HIGH));
+                add(new ValidationObject(finalPlaylist, Playlist.class, Severity.HIGH));
                 add(new ValidationObject(spotifyService, SpotifyService.class, Severity.HIGH));
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {
-            return;
+            return HeartResponse.NULL_PARAMETER;
         }
 
         // Add the playlistId to the user
@@ -241,7 +243,7 @@ public class PlaylistService {
         // If the playlist wasn't added, return
         if (!result) {
             log.w(String.format("%s already exists in playlistIds list.", playlist.getId()));
-            return;
+            return HeartResponse.ITEM_EXISTS;
         }
 
         // Save the playlistId to the db user
@@ -262,41 +264,63 @@ public class PlaylistService {
         }
         // Playlist exists but something really really unexpected happened
         else if (!playlist.getId().equals(playlist1.getId())) {
-            log.e("Playlist retrieved but the ID's don't match. That was unexpected...");
-            return;
+            log.w("Playlist retrieved but the ID's don't match. That was unexpected...");
         }
         // Playlist exists and the followers are only known on the db
         else if (playlist1.isFollowersKnown() && !playlist.isFollowersKnown()) {
             playlist.setFollowersKnown(true);
             playlist.setFollowers(playlist1.getFollowers());
         }
+        Map<String, Object> updates = new HashMap<>();
 
         // Save the playlist to the db
-        db.child("playlists").child(playlist.getId()).setValue(playlist);
-        log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+
 
         // Increment the follower count
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(1));
+        db.child("playlists").child(playlist.getId()).child("followers").setValue(ServerValue.increment(1));
         if (!playlist.isFollowersKnown()) {
-            updates.put("playlists/"+playlist.getId()+"/followersKnown", true);
+            db.child("playlists").child(playlist.getId()).child("followersKnown").setValue(true);
         }
 
-        db.updateChildren(updates);
 
-        savePlaylistTracks(db, playlist);
+        playlist = savePlaylistTracks(db, playlist);
+        updates.put("playlists/" + playlist.getId(), playlist);
+        try {
+            db.updateChildren(updates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    hidePopup.run();
+                }
+            });
+            log.i(String.format("%s saved to child \"playlists\"", playlist.getId()));
+        }
+        catch (DatabaseException e) {
+            log.e(e.getMessage());
+            return HeartResponse.DATABASE_ERROR;
+        }
+        return HeartResponse.OK;
+
     }
 
-    public static void savePlaylistTracks(DatabaseReference db, Playlist playlist) {
+    public static Playlist savePlaylistTracks(DatabaseReference db, Playlist playlist) {
         // Save each track to the database
+        List<Integer> removeQueue = new ArrayList<>();
         for (int i = 0; i < playlist.getTracks().size(); i++) {
-            db.child("tracks").child(playlist.getTracks().get(i).getId()).setValue(playlist.getTracks().get(i));
-
+            Track track = playlist.getTracks().get(i);
+            if (track != null) {
+                db.child("tracks").child(track.getId()).setValue(track);
+            } else {
+                removeQueue.add(i);
+            }
         }
+        for (Integer index : removeQueue) {
+            playlist.getTracks().remove(index);
+        }
+        return playlist;
     }
 
-    public static void unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist) {
-        LogUtil log = new LogUtil(TAG, "unheartPlaylist");
+    public static HeartResponse unheart(User user, FirebaseUser firebaseUser, DatabaseReference db, Playlist playlist, Runnable hidePopup) {
+        LogUtil log = new LogUtil(TAG, "unheart");
 
         // Null check
         List<ValidationObject> validationObjects = new ArrayList<>() {
@@ -308,7 +332,7 @@ public class PlaylistService {
             }
         };
         if (ValidationUtil.nullCheck(validationObjects, log)) {
-            return;
+            return HeartResponse.NULL_PARAMETER;
         }
 
         // Attempt to remove the playlist from the user
@@ -317,44 +341,51 @@ public class PlaylistService {
         // If the playlist wasn't found, abort
         if (key == null) {
             log.w("Playlist not previously saved to user. Aborting...");
-            return;
+            return HeartResponse.ITEM_NOT_FOUND;
         }
 
         // Remove the playlist from the database user
         db.child("users").child(firebaseUser.getUid()).child("playlistIds").child(key).removeValue();
         log.i(String.format("\"%s : %s\" removed from users/%s/playlistIds", key, playlist.getId(), firebaseUser.getUid()));
+        Map<String, String> defaultPlaylistIds = getDefaultPlaylistIds(db);
+        if (!defaultPlaylistIds.containsValue(playlist.getId())) {
+            // If the playlist is on it's last follower or lower, remove it and it's tracks from the database
+            if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
+                for (String trackId : playlist.getTrackIds()) {
+                    // Get the track from the database
+                    Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
+                    if (track != null) {
+                        // Check to see if it's safe to delete, the track may belong to a saved album
+                        if (!track.isAlbumKnown()) {
+                            db.child("tracks").child(trackId).removeValue();
+                            log.i(String.format("%s removed from database child /tracks", trackId));
+                        } else {
+                            log.i(String.format("%s belongs to a saved album.", trackId));
+                        }
 
-        // If the playlist is on it's last follower or lower, remove it and it's tracks from the database
-        if (playlist.getFollowers() <= 1 && playlist.isFollowersKnown()) {
-            for (String trackId : playlist.getTrackIds()) {
-                // Get the track from the database
-                Track track = FirebaseService.checkDatabase(db, "tracks", trackId, Track.class);
-                // Check to see if it's safe to delete, the track may belong to a saved album
-                if (!track.isAlbumKnown()) {
-                    db.child("tracks").child(trackId).removeValue();
-                    log.i(String.format("%s removed from database child /tracks", trackId));
+                        db.child("tracks").child(trackId).removeValue();
+                    }
                 }
-                else {
-                    log.i(String.format("%s belongs to a saved album.", trackId));
-                }
+                log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 
-                db.child("tracks").child(trackId).removeValue();
+                // Remove the playlist from the database
+
+                db.child("playlists").child(playlist.getId()).removeValue();
+                log.i(String.format("%s removed from /playlists", playlist.getId()));
+                hidePopup.run();
             }
-            log.i(String.format("%s tracks belonging to %s have removed from /tracks", String.valueOf(playlist.getTrackIds().size()), playlist.getId(), firebaseUser.getUid()));
 
-            // Remove the playlist from the database
-            db.child("playlists").child(playlist.getId()).removeValue();
-            log.i(String.format("%s removed from /playlists", playlist.getId()));
+            // Else the playlist has enough followers to live
+            else {
+                // Decrement the follower count
+                db.child("playlists").child(playlist.getId()).child("followers").setValue(ServerValue.increment(-1));
+                hidePopup.run();
+                log.i(String.format("%s follower count has decremented.", playlist.getId()));
+            }
+        }
+        hidePopup.run();
+        return HeartResponse.OK;
 
-        }
-        // Else the playlist has enough followers to live
-        else {
-            // Decrement the follower count
-            Map<String, Object> updates = new HashMap<>();
-            updates.put("playlists/"+playlist.getId()+"/followers", ServerValue.increment(-1));
-            db.updateChildren(updates);
-            log.i(String.format("%s follower count has decremented.", playlist.getId()));
-        }
     }
 
 }

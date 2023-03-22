@@ -6,8 +6,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -20,19 +22,19 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
+import java.util.Map;
+
 import model.GoogleSignIn;
 import model.TrackResult;
 import model.User;
-import model.type.Role;
+import service.FirebaseService;
 import service.ItemService;
-import service.SpotifyService;
 
 public class TrackResultActivity extends AppCompatActivity {
 
     private TextView title;
     private TextView subtitle;
     private ImageView image;
-    private ImageButton backButton;
     private ImageView noResults;
     private TextView noResultsText;
     private Context context;
@@ -40,6 +42,7 @@ public class TrackResultActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RadioGroup radioGroup;
     private ImageButton backToTop;
+    private View loadingPopUp;
 
     private TrackResult trackResult;
     private GoogleSignIn googleSignIn;
@@ -57,6 +60,8 @@ public class TrackResultActivity extends AppCompatActivity {
         firebaseUser = googleSignIn.getAuth().getCurrentUser();
         db = FirebaseDatabase.getInstance().getReference();
 
+        loadingPopUp = findViewById(R.id.track_result_saving);
+
         title = findViewById(R.id.track_result_title);
         subtitle = findViewById(R.id.track_result_subtitle);
         image = findViewById(R.id.track_result_image);
@@ -64,31 +69,35 @@ public class TrackResultActivity extends AppCompatActivity {
         noResults.setVisibility(View.GONE);
         noResultsText = findViewById(R.id.track_result_no_results_text);
         noResultsText.setVisibility(View.GONE);
-        backButton = findViewById(R.id.track_result_back);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
 
         radioGroup = findViewById(R.id.track_result_radio_group);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                trackResult.changeTab();
-                if (i == R.id.title_match_tab) {
-                    trackResultAdapter.setCollection(trackResult.getTitleMatch());
-                }
-                else {
-                    trackResultAdapter.setCollection(trackResult.getSuggested());
-                }
-                recyclerView.post(new Runnable() {
+                new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        trackResultAdapter.notifyDataSetChanged();
+                        trackResult.changeTab();
+                        User user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+
+                        trackResultAdapter.setUser(user);
+
+                        if (i == R.id.title_match_tab) {
+                            trackResultAdapter.setCollection(trackResult.getTitleMatch());
+                        } else {
+                            trackResultAdapter.setCollection(trackResult.getSuggested());
+                        }
+
+
+                        recyclerView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                trackResultAdapter.notifyDataSetChanged();
+                            }
+                        });
                     }
-                });
+                }).start();
+
             }
         });
 
@@ -123,6 +132,31 @@ public class TrackResultActivity extends AppCompatActivity {
         });
     }
 
+    private void hidePopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void showPopUp() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void updatePopUpText(boolean b) {
+        ((TextView) loadingPopUp.findViewById(R.id.loading_text)).setText(
+                b ? R.string.saving_message
+                        : R.string.removing_message
+        );
+    }
+
     private void setupRecyclerView() {
         trackResultAdapter = new TrackResultAdapter(this, this);
         trackResultAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -132,6 +166,10 @@ public class TrackResultActivity extends AppCompatActivity {
                 onDataChange();
             }
         });
+        trackResultAdapter.setHidePopUp(() -> hidePopUp());
+        trackResultAdapter.setShowPopUp(() -> showPopUp());
+        trackResultAdapter.setUpdatePopUpTextTrue(() -> updatePopUpText(true));
+        trackResultAdapter.setUpdatePopUpTextFalse(() -> updatePopUpText(false));
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
@@ -145,8 +183,7 @@ public class TrackResultActivity extends AppCompatActivity {
             recyclerView.setVisibility(View.GONE);
             noResults.setVisibility(View.VISIBLE);
             noResultsText.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             recyclerView.setVisibility(View.VISIBLE);
             noResults.setVisibility(View.GONE);
             noResultsText.setVisibility(View.GONE);
@@ -178,5 +215,38 @@ public class TrackResultActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.isTracking()
+                && !event.isCanceled()) {
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    user = FirebaseService.checkDatabase(db, "users", firebaseUser.getUid(), User.class);
+                    String albumKey = null;
+                    String albumValue = null;
+                    for (Map.Entry<String, String> albumId : user.getAlbumIds().entrySet()) {
+                        if (albumId.getValue().equals(trackResult.getAlbumId())) {
+                            albumKey = albumId.getKey();
+                            albumValue = albumId.getValue();
+                        }
+                    }
+
+//                String artistKey = reference.child("users").child(firebaseUser.getUid()).child("artistIds").push().getKey();
+                    Intent intent = getIntent();
+
+                    intent.putExtra("albumKey", albumKey);
+                    intent.putExtra("albumValue", albumValue);
+                    intent.putExtra("user", user);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            }).start();
+
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 
 }

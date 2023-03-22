@@ -983,8 +983,14 @@ public class Quiz implements Serializable {
                     new GeneratedQuiz(quizId, difficulty));
             user.updateGeneratedQuizHistory(db, firebaseUser.getUid(), playlist.getId(), quizId);
         }
+        if (this.type == QuizType.PLAYLIST) {
+            user.updateHistoryIds(db, firebaseUser.getUid(), history,playlist.getId(), type);
 
-        user.updateHistoryIds(db, firebaseUser.getUid(), history);
+        }
+        else {
+            user.updateHistoryIds(db, firebaseUser.getUid(), history,artist.getId(), type);
+
+        }
         for (Track track : wrong) {
             history.remove(track);
         }

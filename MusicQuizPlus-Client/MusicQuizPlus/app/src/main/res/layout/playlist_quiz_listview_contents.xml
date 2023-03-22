@@ -87,13 +87,14 @@
 
     </RelativeLayout>
 
-    <ImageButton
+    <ToggleButton
         android:id="@+id/playSampleAudio"
-        android:layout_width="wrap_content"
+        android:layout_width="45dp"
         android:layout_height="wrap_content"
-        android:background="@null"
-        android:src="@drawable/play_audio"
+        android:background="@android:color/transparent"
+        android:button="@drawable/toggle_play"
         android:layout_marginEnd="20dp"
+        android:checked="false"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
