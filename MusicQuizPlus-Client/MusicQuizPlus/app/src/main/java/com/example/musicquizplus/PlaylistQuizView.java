@@ -213,8 +213,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             if(!currentDate.equals(pqvToolTipsDate))
             {
                 new Handler().postDelayed(this::showNext, 2500);
-                pqvToolTips++;
-                pqvToolTipsDate = currentDate;
             }
         }
     }
@@ -277,6 +275,11 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                 toolTipsManager.show(builder.build());
                 track++;
                 new Handler().postDelayed(this::showNext, 3000);
+            }
+            else if(track == 4)
+            {
+                pqvToolTips++;
+                pqvToolTipsDate = currentDate;
             }
         }
     }
