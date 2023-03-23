@@ -214,7 +214,12 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_playlists);
                         }
                         toolTipsManager.dismissAll();
+                        playlistTrack = 0;
 
+                        if(showToolTipsBool && !currentDate.equals(playlistFragToolTipsDate))
+                        {
+                            startPlaylistFragmentToolTips();
+                        }
                         break;
                     case 1:
                         if (artistsBackToTopListener != null) {
@@ -222,10 +227,17 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_artists);
                         }
                         toolTipsManager.dismissAll();
+                        artistTrack = 0;
 
                         if(showToolTipsBool && !currentDate.equals(artistFragToolTipsDate))
                         {
                             startArtistFragmentToolTips();
+                        }
+
+                        if(muteButton.getVisibility() != View.VISIBLE && settingsButton.getVisibility() != View.VISIBLE)
+                        {
+                            muteButton.setVisibility(View.VISIBLE);
+                            settingsButton.setVisibility(View.VISIBLE);
                         }
                         break;
                     case 2:
@@ -234,6 +246,7 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_history);
                         }
                         toolTipsManager.dismissAll();
+                        historyTrack = 0;
 
                         if(showToolTipsBool && !currentDate.equals(historyFragToolTipsDate))
                         {
@@ -348,7 +361,10 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(playlistTrack == 2)
             {
-                builder = new ToolTip.Builder(this, invisibleImageRight, root, "Swipe From Right To Left For Artist View", ToolTip.POSITION_LEFT_TO);
+                muteButton.setVisibility(View.INVISIBLE);
+                settingsButton.setVisibility(View.INVISIBLE);
+                builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_LEFT_TO);
+                builder.setAlign(ToolTip.ALIGN_LEFT);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
@@ -357,10 +373,7 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(playlistTrack == 3)
             {
-                muteButton.setVisibility(View.INVISIBLE);
-                settingsButton.setVisibility(View.INVISIBLE);
-                builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_LEFT_TO);
-                builder.setAlign(ToolTip.ALIGN_LEFT);
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe From Right To\nLeft For Artist View", ToolTip.POSITION_ABOVE);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
@@ -403,15 +416,6 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(artistTrack == 1)
             {
-                builder = new ToolTip.Builder(this, invisibleImageRight, root, "Swipe From Right To Left For History View", ToolTip.POSITION_LEFT_TO);
-                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                builder.setTextAppearance(R.style.TooltipTextAppearance);
-                toolTipsManager.show(builder.build());
-                artistTrack++;
-                new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
-            }
-            else if(artistTrack == 2)
-            {
                 builder = new ToolTip.Builder(this, searchButton, root, "Search For An Artist\nTo Save For Quizzing", ToolTip.POSITION_LEFT_TO);
                 builder.setAlign(ToolTip.ALIGN_CENTER);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
@@ -420,16 +424,16 @@ public class ParentOfFragments extends AppCompatActivity {
                 artistTrack++;
                 new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
             }
-            else if(artistTrack == 3)
+            else if(artistTrack == 2)
             {
-                builder = new ToolTip.Builder(this, invisibleImageLeft, root, "Swipe From Left To Right For Playlist View", ToolTip.POSITION_RIGHT_TO);
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe Left Or Right", ToolTip.POSITION_ABOVE);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
                 artistTrack++;
                 new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
             }
-            else if(artistTrack == 4)
+            else if(artistTrack == 3)
             {
                 artistFragToolTips++;
                 artistFragToolTipsDate = currentDate;
@@ -455,7 +459,7 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(historyTrack == 1)
             {
-                builder = new ToolTip.Builder(this, invisibleImageLeft, root, "Swipe From Left To Right For Artists View", ToolTip.POSITION_RIGHT_TO);
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe From Left To\nRight For Artists View", ToolTip.POSITION_ABOVE);
                 builder.setAlign(ToolTip.ALIGN_CENTER);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
