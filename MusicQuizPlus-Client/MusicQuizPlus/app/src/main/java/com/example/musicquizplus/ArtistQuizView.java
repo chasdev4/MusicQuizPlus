@@ -522,8 +522,6 @@ public class ArtistQuizView extends AppCompatActivity {
             if(!currentDate.equals(aqvToolTipsDate))
             {
                 new Handler().postDelayed(this::showToolTips, 3000);
-                aqvToolTips++;
-                aqvToolTipsDate = currentDate;
             }
         }
     }
@@ -581,6 +579,11 @@ public class ArtistQuizView extends AppCompatActivity {
                 toolTipsManager.show(builder.build());
                 track++;
                 new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 4)
+            {
+                aqvToolTips++;
+                aqvToolTipsDate = currentDate;
             }
         }
     }
