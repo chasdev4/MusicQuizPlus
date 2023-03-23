@@ -239,8 +239,6 @@ public class SearchActivity extends AppCompatActivity {
             if(!currentDate.equals(searchToolTipsDate))
             {
                 new Handler().postDelayed(this::showToolTips, 1500);
-                searchToolTips++;
-                searchToolTipsDate = currentDate;
             }
         }
     }
@@ -300,6 +298,11 @@ public class SearchActivity extends AppCompatActivity {
                 toolTipsManager.show(builder.build());
                 track++;
                 new Handler().postDelayed(this::showToolTips, 3000);
+            }
+            else if(track == 4)
+            {
+                searchToolTips++;
+                searchToolTipsDate = currentDate;
             }
         }
     }
