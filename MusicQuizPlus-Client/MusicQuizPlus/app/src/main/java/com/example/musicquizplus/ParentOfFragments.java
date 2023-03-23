@@ -226,8 +226,6 @@ public class ParentOfFragments extends AppCompatActivity {
                         if(showToolTipsBool && !currentDate.equals(artistFragToolTipsDate))
                         {
                             startArtistFragmentToolTips();
-                            artistFragToolTips++;
-                            artistFragToolTipsDate = currentDate;
                         }
                         break;
                     case 2:
@@ -240,8 +238,6 @@ public class ParentOfFragments extends AppCompatActivity {
                         if(showToolTipsBool && !currentDate.equals(historyFragToolTipsDate))
                         {
                             startHistoryFragmentToolTips();
-                            historyFragToolTips++;
-                            historyFragToolTipsDate = currentDate;
                         }
                         break;
                 }
