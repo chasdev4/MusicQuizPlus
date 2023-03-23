@@ -121,7 +121,7 @@ public class PlaylistFragment extends Fragment {
 
         Context context = getContext();
         Activity activity = getActivity();
-        if (user != null) {
+        if (user != null && gridView.getCount() == 0) {
             gridView.setAdapter(new PlaylistsAdapter(getContext(), R.layout.gridview_contents, new ArrayList<>()));
         }
         new Thread(new Runnable() {
