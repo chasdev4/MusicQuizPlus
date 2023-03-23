@@ -284,22 +284,16 @@ public class ParentOfFragments extends AppCompatActivity {
                     {
                         playlistTrack = 0;
                         startPlaylistFragmentToolTips();
-                        playlistFragToolTips++;
-                        playlistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 1)
                     {
                         artistTrack = 0;
                         startArtistFragmentToolTips();
-                        artistFragToolTips++;
-                        artistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 2)
                     {
                         historyTrack = 0;
                         startHistoryFragmentToolTips();
-                        historyFragToolTips++;
-                        historyFragToolTipsDate = currentDate;
                     }
                 }
                 else
@@ -387,6 +381,11 @@ public class ParentOfFragments extends AppCompatActivity {
                 playlistTrack++;
                 new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
             }
+            else if(playlistTrack == 4)
+            {
+                playlistFragToolTips++;
+                playlistFragToolTipsDate = currentDate;
+            }
         }
     }
 
@@ -434,6 +433,11 @@ public class ParentOfFragments extends AppCompatActivity {
                 artistTrack++;
                 new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
             }
+            else if(artistTrack == 4)
+            {
+                artistFragToolTips++;
+                artistFragToolTipsDate = currentDate;
+            }
         }
     }
 
@@ -462,6 +466,11 @@ public class ParentOfFragments extends AppCompatActivity {
                 toolTipsManager.show(builder.build());
                 historyTrack++;
                 new Handler().postDelayed(this::startHistoryFragmentToolTips, 3000);
+            }
+            else if(historyTrack == 2)
+            {
+                historyFragToolTips++;
+                historyFragToolTipsDate = currentDate;
             }
         }
     }
@@ -496,8 +505,6 @@ public class ParentOfFragments extends AppCompatActivity {
             if(!currentDate.equals(playlistFragToolTipsDate))
             {
                 new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
-                playlistFragToolTips++;
-                playlistFragToolTipsDate = currentDate;
             }
         }
         else
