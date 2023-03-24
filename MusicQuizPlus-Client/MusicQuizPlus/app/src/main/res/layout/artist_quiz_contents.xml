@@ -64,6 +64,7 @@
 
     <TextView
         android:id="@+id/middleDotAfterAlbum"
+        android:text="@string/bullet_char"
         android:layout_width="4dp"
         android:layout_height="20dp"
         android:textColor="@color/mqWhite"

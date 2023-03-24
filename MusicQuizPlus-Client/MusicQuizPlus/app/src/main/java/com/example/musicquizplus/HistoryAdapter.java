@@ -31,6 +31,7 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Track;
+import model.type.AlbumType;
 import model.type.HeartResponse;
 import service.FirebaseService;
 import service.ItemService;
@@ -247,7 +248,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryViewHolder> {
 
                 Picasso.get().load(ItemService.getSmallestPhotoUrl(album.getPhotoUrl())).into(viewHolder.aqvPreviewImage);
                 viewHolder.aqvAlbumTitle.setText(album.getName());
-                viewHolder.aqvAlbumType.setText(album.getType().toString());
+                viewHolder.aqvAlbumType.setText(album.getType() == AlbumType.SINGLE
+                        ? "Single"
+                        : album.getType() == AlbumType.COMPILATION
+                        ? "Compilation"
+                        : "Album");
                 viewHolder.aqvAlbumYear.setText(album.getYear());
                 boolean lastChoice = false;
                 if (user != null) {
