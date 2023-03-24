@@ -112,6 +112,11 @@ public class ActiveQuiz extends AppCompatActivity implements View.OnClickListene
         questionResults = findViewById(R.id.questionResultCV);
         questionResultImage = findViewById(R.id.questionResultIV);
 
+        if(ParentOfFragments.getFirstLaunchEver())
+        {
+            closeQuiz.setVisibility(View.GONE);
+        }
+
         beginTimer();
         //beginMultiplierTimer();
 
