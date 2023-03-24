@@ -488,7 +488,21 @@ public class Quiz implements Serializable {
         int guessAlbumCount = (int) (numQuestions * guessAlbumChance);
         int guessArtistCount = 0;
         if (isPlaylistQuiz) {
-            guessArtistCount = (int) (numQuestions * GUESS_ARTIST_CHANCE);
+            List<String> distinctArtistNames = new ArrayList<>();
+            for (Track track : tracks) {
+                if (!distinctArtistNames.contains(track.getArtistName())) {
+                    distinctArtistNames.add(track.getArtistName());
+                }
+            }
+            if (distinctArtistNames.size() < 4) {
+                guessArtistCount = 0;
+            }
+            else if (distinctArtistNames.size() >= 4 && distinctArtistNames.size() < 8) {
+                guessArtistCount = 1;
+            }
+            else {
+                guessArtistCount = (int) (numQuestions * GUESS_ARTIST_CHANCE);
+            }
         }
         else {
             guessArtistCount = (int) featuredArtistsNames.size() / 4;
