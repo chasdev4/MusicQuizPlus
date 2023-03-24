@@ -324,9 +324,6 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-
-                            updatePopUpText(heartButton.isChecked());
-                            showPopUp();
                             if(user != null && firebaseUser != null)
                             {
                                 updatePopUpText(heartButton.isChecked());
