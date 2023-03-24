@@ -90,7 +90,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
     int track = 0;
     String pqvToolTipsDate, currentDate;
     int pqvToolTips;
-    boolean showToolTipsBool;
+    boolean showToolTipsBool, firstLaunchEver;
 
     private View loadingPopUp;
 
@@ -131,6 +131,14 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         {
             user = (User) extras.getSerializable("currentUser");
             playlist = (Playlist) extras.getSerializable("currentPlaylist");
+            firstLaunchEver = extras.getBoolean("firstLaunchEver");
+
+            if(firstLaunchEver)
+            {
+                startQuiz.setVisibility(View.INVISIBLE);
+                ((TextView)loadingPopUp.findViewById(R.id.loading_text)).setText(R.string.loading_quiz);
+                loadingPopUp.setVisibility(View.VISIBLE);
+            }
         }
 
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -208,7 +216,7 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
         pqvToolTipsDate = sh.getString("pqvToolTipsDate", "");
         showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
 
-        if(showToolTipsBool)
+        if(showToolTipsBool && !firstLaunchEver)
         {
             if(!currentDate.equals(pqvToolTipsDate))
             {
@@ -481,8 +489,13 @@ public class PlaylistQuizView extends AppCompatActivity implements Serializable 
             listView.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.VISIBLE);
         }else {
-        listView.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.INVISIBLE);
+            listView.setVisibility(View.VISIBLE);
+            progressBar.setVisibility(View.INVISIBLE);
+            if(firstLaunchEver)
+            {
+                loadingPopUp.setVisibility(View.GONE);
+                startQuiz.performClick();
+            }
         }
     }
 
