@@ -58,6 +58,7 @@ import model.SignUpPopUp;
 import model.User;
 import model.item.Album;
 import model.item.Artist;
+import model.type.AlbumType;
 import model.type.ExternalLinkType;
 import model.type.HeartResponse;
 import model.type.Source;
@@ -642,7 +643,11 @@ public class ArtistQuizView extends AppCompatActivity {
                         }
                     });
                     latestTitle.setText(latest.getName());
-                    latestType.setText(latest.getType().toString());
+                    latestType.setText(latest.getType() == AlbumType.SINGLE
+                            ? "Single"
+                            : latest.getType() == AlbumType.COMPILATION
+                            ? "Compilation"
+                            : "Album");
                     latestYear.setText(latest.getYear());
                     latestMiddleDot.setText(getString(R.string.middle_dot));
                 } else {

@@ -67,7 +67,6 @@ public class SearchActivity extends AppCompatActivity {
     private TextView emptySearchText;
     private ProgressBar progressBar;
 
-    private ImageButton homeButton;
     private RadioButton artist, album, song, playlist;
 
     private View loadingPopUp;
@@ -89,7 +88,6 @@ public class SearchActivity extends AppCompatActivity {
     private boolean allSearch;
     private boolean searchStarted;
     private boolean doingSearch;
-    private boolean searchLimitReached;
 
     private ToolTipsManager toolTipsManager;
     private ToolTip.Builder builder;
@@ -226,6 +224,7 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        searchView.clearFocus();
         hidePopUp();
 
         // Fetching the stored data from the SharedPreference
