@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,8 @@ import java.util.concurrent.TimeUnit;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
+import model.item.Artist;
+import model.item.Playlist;
 import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
@@ -60,16 +63,18 @@ public class ParentOfFragments extends AppCompatActivity {
     private ViewPager2 viewPager2;
     private MediaPlayer mediaPlayer;
     private ToggleButton muteButton, toolTipsToggleButton;
-    private TextView userLevel;
+    private TextView userLevel, firstLaunchHeader;
     private ImageView userCustomAvatar, invisibleImageRight, invisibleGridView, invisibleImageLeft;
     private ImageButton backToTop;
     private Button pageTitle;
     private ImageButton settingsButton;
+    private LinearLayout dotNavRoot;
 
     private ImageButton searchButton;
     private ConstraintLayout root;
     View userAvatar;
     Boolean showToolTipsBool;
+    public static Boolean firstLaunchEver;
 
     private RadioGroup dotNavigator;
 
@@ -111,8 +116,10 @@ public class ParentOfFragments extends AppCompatActivity {
         root = findViewById(R.id.parentOfFragsRoot);
         invisibleGridView = findViewById(R.id.invisibleGridView);
         toolTipsToggleButton = findViewById(R.id.toolTipsToggleButton);
+        firstLaunchHeader = findViewById(R.id.firstLaunchTextView);
 
         dotNavigator = findViewById(R.id.dot_navigator);
+        dotNavRoot = findViewById(R.id.dotNavigatorLinearLayout);
 
         Context context = this;
         ImageButton helpButton = findViewById(R.id.embeddedHelp);
@@ -214,7 +221,12 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_playlists);
                         }
                         toolTipsManager.dismissAll();
+                        playlistTrack = 0;
 
+                        if(showToolTipsBool && !currentDate.equals(playlistFragToolTipsDate))
+                        {
+                            startPlaylistFragmentToolTips();
+                        }
                         break;
                     case 1:
                         if (artistsBackToTopListener != null) {
@@ -222,12 +234,17 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_artists);
                         }
                         toolTipsManager.dismissAll();
+                        artistTrack = 0;
 
                         if(showToolTipsBool && !currentDate.equals(artistFragToolTipsDate))
                         {
                             startArtistFragmentToolTips();
-                            artistFragToolTips++;
-                            artistFragToolTipsDate = currentDate;
+                        }
+
+                        if(muteButton.getVisibility() != View.VISIBLE && settingsButton.getVisibility() != View.VISIBLE)
+                        {
+                            muteButton.setVisibility(View.VISIBLE);
+                            settingsButton.setVisibility(View.VISIBLE);
                         }
                         break;
                     case 2:
@@ -236,12 +253,11 @@ public class ParentOfFragments extends AppCompatActivity {
                             dotNavigator.check(R.id.radio_history);
                         }
                         toolTipsManager.dismissAll();
+                        historyTrack = 0;
 
                         if(showToolTipsBool && !currentDate.equals(historyFragToolTipsDate))
                         {
                             startHistoryFragmentToolTips();
-                            historyFragToolTips++;
-                            historyFragToolTipsDate = currentDate;
                         }
                         break;
                 }
@@ -284,22 +300,16 @@ public class ParentOfFragments extends AppCompatActivity {
                     {
                         playlistTrack = 0;
                         startPlaylistFragmentToolTips();
-                        playlistFragToolTips++;
-                        playlistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 1)
                     {
                         artistTrack = 0;
                         startArtistFragmentToolTips();
-                        artistFragToolTips++;
-                        artistFragToolTipsDate = currentDate;
                     }
                     else if(tabLayout.getSelectedTabPosition() == 2)
                     {
                         historyTrack = 0;
                         startHistoryFragmentToolTips();
-                        historyFragToolTips++;
-                        historyFragToolTipsDate = currentDate;
                     }
                 }
                 else
@@ -358,25 +368,6 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(playlistTrack == 2)
             {
-                builder = new ToolTip.Builder(this, invisibleImageRight, root, "Swipe From Right To Left For Artist View", ToolTip.POSITION_LEFT_TO);
-                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                builder.setTextAppearance(R.style.TooltipTextAppearance);
-                toolTipsManager.show(builder.build());
-                playlistTrack++;
-                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
-            }
-            else if(playlistTrack == 3)
-            {
-                /*
-                builder = new ToolTip.Builder(this, searchButton, root, "Search for Your Favorite Music", ToolTip.POSITION_LEFT_TO);
-                builder.setAlign(ToolTip.ALIGN_CENTER);
-                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                builder.setTextAppearance(R.style.TooltipTextAppearance);
-                toolTipsManager.show(builder.build());
-                playlistTrack++;
-                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
-                 */
-
                 muteButton.setVisibility(View.INVISIBLE);
                 settingsButton.setVisibility(View.INVISIBLE);
                 builder = new ToolTip.Builder(this, toolTipsToggleButton, root, "Click To Toggle Hints On or Off", ToolTip.POSITION_LEFT_TO);
@@ -386,6 +377,30 @@ public class ParentOfFragments extends AppCompatActivity {
                 toolTipsManager.show(builder.build());
                 playlistTrack++;
                 new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
+            }
+            else if(playlistTrack == 3)
+            {
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe From Right To\nLeft For Artist View", ToolTip.POSITION_ABOVE);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                playlistTrack++;
+                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
+            }
+            else if(playlistTrack == 4)
+            {
+                builder = new ToolTip.Builder(this, searchButton, root, "Search for Your Favorite Music", ToolTip.POSITION_LEFT_TO);
+                builder.setAlign(ToolTip.ALIGN_CENTER);
+                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
+                builder.setTextAppearance(R.style.TooltipTextAppearance);
+                toolTipsManager.show(builder.build());
+                playlistTrack++;
+                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 3000);
+            }
+            else if (playlistTrack == 5)
+            {
+                playlistFragToolTips++;
+                playlistFragToolTipsDate = currentDate;
             }
         }
     }
@@ -408,15 +423,6 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(artistTrack == 1)
             {
-                builder = new ToolTip.Builder(this, invisibleImageRight, root, "Swipe From Right To Left For History View", ToolTip.POSITION_LEFT_TO);
-                builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
-                builder.setTextAppearance(R.style.TooltipTextAppearance);
-                toolTipsManager.show(builder.build());
-                artistTrack++;
-                new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
-            }
-            else if(artistTrack == 2)
-            {
                 builder = new ToolTip.Builder(this, searchButton, root, "Search For An Artist\nTo Save For Quizzing", ToolTip.POSITION_LEFT_TO);
                 builder.setAlign(ToolTip.ALIGN_CENTER);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
@@ -425,14 +431,19 @@ public class ParentOfFragments extends AppCompatActivity {
                 artistTrack++;
                 new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
             }
-            else if(artistTrack == 3)
+            else if(artistTrack == 2)
             {
-                builder = new ToolTip.Builder(this, invisibleImageLeft, root, "Swipe From Left To Right For Playlist View", ToolTip.POSITION_RIGHT_TO);
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe Left Or Right", ToolTip.POSITION_ABOVE);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
                 artistTrack++;
                 new Handler().postDelayed(this::startArtistFragmentToolTips, 3000);
+            }
+            else if(artistTrack == 3)
+            {
+                artistFragToolTips++;
+                artistFragToolTipsDate = currentDate;
             }
         }
     }
@@ -455,13 +466,18 @@ public class ParentOfFragments extends AppCompatActivity {
             }
             else if(historyTrack == 1)
             {
-                builder = new ToolTip.Builder(this, invisibleImageLeft, root, "Swipe From Left To Right For Artists View", ToolTip.POSITION_RIGHT_TO);
+                builder = new ToolTip.Builder(this, dotNavigator, root, "Swipe From Left To\nRight For Artists View", ToolTip.POSITION_ABOVE);
                 builder.setAlign(ToolTip.ALIGN_CENTER);
                 builder.setBackgroundColor(getResources().getColor(R.color.mqBlue));
                 builder.setTextAppearance(R.style.TooltipTextAppearance);
                 toolTipsManager.show(builder.build());
                 historyTrack++;
                 new Handler().postDelayed(this::startHistoryFragmentToolTips, 3000);
+            }
+            else if(historyTrack == 2)
+            {
+                historyFragToolTips++;
+                historyFragToolTipsDate = currentDate;
             }
         }
     }
@@ -475,6 +491,7 @@ public class ParentOfFragments extends AppCompatActivity {
         // Fetching the stored data from the SharedPreference
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
+        firstLaunchEver = sh.getBoolean("firstLaunchEver", true);
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
         artistFragToolTips = sh.getInt("artistFragToolTips", 0);
         historyFragToolTips = sh.getInt("historyFragToolTips", 0);
@@ -485,24 +502,52 @@ public class ParentOfFragments extends AppCompatActivity {
         int aqvNum = sh.getInt("aqvToolTips", 0);
         int searchNum = sh.getInt("searchToolTips", 0);
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            boolean tutorialComplete = extras.getBoolean("firstLaunchTutorialFinished");
+            if(tutorialComplete)
+            {
+                setHeaderVisibility(View.VISIBLE);
+                firstLaunchHeader.setVisibility(View.GONE);
+                viewPager2.setUserInputEnabled(true);
+                firstLaunchEver = false;
+                userAvatar.performClick();
+            }
+        }
+
         if(playlistFragToolTips == 3 && artistFragToolTips == 3 && historyFragToolTips == 3 && pqvNum == 3 && aqvNum == 3 && searchNum == 3)
         {
             showToolTipsBool = false;
         }
 
-        if(showToolTipsBool)
+        if(firstLaunchEver)
         {
-            toolTipsToggleButton.setChecked(true);
-            if(!currentDate.equals(playlistFragToolTipsDate))
-            {
-                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
-                playlistFragToolTips++;
-                playlistFragToolTipsDate = currentDate;
-            }
+            //go through tutorial
+
+            //disable regular header
+            setHeaderVisibility(View.GONE);
+
+            //enable first launch header
+            firstLaunchHeader.setVisibility(View.VISIBLE);
+
+            //disable horizontal swiping to other fragments
+            viewPager2.setUserInputEnabled(false);
         }
         else
         {
-            toolTipsToggleButton.setChecked(false);
+            if(showToolTipsBool)
+            {
+                toolTipsToggleButton.setChecked(true);
+                if(!currentDate.equals(playlistFragToolTipsDate))
+                {
+                    new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
+                }
+            }
+            else
+            {
+                toolTipsToggleButton.setChecked(false);
+            }
         }
     }
 
@@ -543,6 +588,7 @@ public class ParentOfFragments extends AppCompatActivity {
         myEdit.putString("artistFragToolTipsDate", artistFragToolTipsDate);
         myEdit.putString("historyFragToolTipsDate", historyFragToolTipsDate);
         myEdit.putBoolean("showToolTipsBool", showToolTipsBool);
+        myEdit.putBoolean("firstLaunchEver", firstLaunchEver);
         myEdit.apply();
     }
 
@@ -620,6 +666,18 @@ public class ParentOfFragments extends AppCompatActivity {
         }).start();
     }
 
+    private void setHeaderVisibility(int visibility)
+    {
+        userAvatar.setVisibility(visibility);
+        pageTitle.setVisibility(visibility);
+        toolTipsToggleButton.setVisibility(visibility);
+        settingsButton.setVisibility(visibility);
+        muteButton.setVisibility(visibility);
+        searchButton.setVisibility(visibility);
+        dotNavRoot.setVisibility(visibility);
+    }
+
+
     public void setPlaylistsBackToTopListener(View.OnClickListener playlistsBackToTopListener) {
         this.playlistsBackToTopListener = playlistsBackToTopListener;
     }
@@ -638,6 +696,10 @@ public class ParentOfFragments extends AppCompatActivity {
 
     public ImageButton getBackToTop() {
         return backToTop;
+    }
+
+    public static Boolean getFirstLaunchEver() {
+        return firstLaunchEver;
     }
 
     public User getUser() { return user; }

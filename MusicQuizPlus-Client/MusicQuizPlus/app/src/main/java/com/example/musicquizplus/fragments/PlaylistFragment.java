@@ -3,6 +3,7 @@ package com.example.musicquizplus.fragments;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
+import com.example.musicquizplus.ActiveQuiz;
 import com.example.musicquizplus.ParentOfFragments;
 import com.example.musicquizplus.PlaylistQuizView;
 import com.example.musicquizplus.PlaylistsAdapter;
@@ -50,9 +52,11 @@ public class PlaylistFragment extends Fragment {
     private View.OnClickListener backToTopListener;
     private DatabaseReference reference;
     private List<String> defaultPlaylistIDs = new ArrayList<>();
+    private List<String> firstLaunchPlaylistIds = new ArrayList<>();
     private User user;
     private ProgressBar pgb;
     ParentOfFragments main;
+    private boolean firstLaunchEver;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,6 +70,7 @@ public class PlaylistFragment extends Fragment {
         reference = FirebaseDatabase.getInstance().getReference();
         pgb = view.findViewById(R.id.playlistProgressBar);
         main = ((ParentOfFragments)getActivity());
+        firstLaunchEver = main.getFirstLaunchEver();
 
         gridView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -99,6 +104,12 @@ public class PlaylistFragment extends Fragment {
                     Intent intent = new Intent(view.getContext(), PlaylistQuizView.class);
                     intent.putExtra("currentPlaylist", clickedOnPlaylist);
                     intent.putExtra("currentUser", ((ParentOfFragments) getActivity()).getUser());
+
+                    if(firstLaunchEver)
+                    {
+                        intent.putExtra("firstLaunchEver", firstLaunchEver);
+                    }
+
                     startActivity(intent);
                 }
             }
@@ -118,10 +129,9 @@ public class PlaylistFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-
         Context context = getContext();
         Activity activity = getActivity();
-        if (user != null) {
+        if (user != null && gridView.getCount() == 0) {
             gridView.setAdapter(new PlaylistsAdapter(getContext(), R.layout.gridview_contents, new ArrayList<>()));
         }
         new Thread(new Runnable() {
@@ -206,10 +216,24 @@ public class PlaylistFragment extends Fragment {
                                 });
                                 if(gridView.getCount() == 0)
                                 {
-                                    FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, defaultPlaylistIDs);
+                                    if(firstLaunchEver)
+                                    {
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DX1lVhptIYRda");
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DWXRqgorJj26U");
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DX4o1oenSJRJd");
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DXbTxeAdrVG2l");
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DX4UtSsGT1Sbe");
+                                        firstLaunchPlaylistIds.add("spotify:playlist:37i9dQZF1DWTJ7xPn4vNaz");
+
+                                        FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, firstLaunchPlaylistIds);
+                                    }
+                                    else
+                                    {
+                                        FirebaseService.populateGridViewByPlaylistIDs(reference, getActivity(), getContext(), gridView, defaultPlaylistIDs);
+                                    }
+
                                 }
                             }
-
                         }
                     }).start();
                 }

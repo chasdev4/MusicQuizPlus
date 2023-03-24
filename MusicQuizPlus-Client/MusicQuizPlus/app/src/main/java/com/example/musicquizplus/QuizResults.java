@@ -89,6 +89,10 @@ public class QuizResults extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(view.getContext(), ParentOfFragments.class);
+                if(ParentOfFragments.getFirstLaunchEver())
+                {
+                    intent.putExtra("firstLaunchTutorialFinished", true);
+                }
                 startActivity(intent);
             }
         });
