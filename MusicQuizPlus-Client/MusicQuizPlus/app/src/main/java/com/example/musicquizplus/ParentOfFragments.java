@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,8 @@ import java.util.concurrent.TimeUnit;
 import model.GoogleSignIn;
 import model.SignUpPopUp;
 import model.User;
+import model.item.Artist;
+import model.item.Playlist;
 import model.type.Source;
 import service.FirebaseService;
 import service.ItemService;
@@ -60,16 +63,18 @@ public class ParentOfFragments extends AppCompatActivity {
     private ViewPager2 viewPager2;
     private MediaPlayer mediaPlayer;
     private ToggleButton muteButton, toolTipsToggleButton;
-    private TextView userLevel;
+    private TextView userLevel, firstLaunchHeader;
     private ImageView userCustomAvatar, invisibleImageRight, invisibleGridView, invisibleImageLeft;
     private ImageButton backToTop;
     private Button pageTitle;
     private ImageButton settingsButton;
+    private LinearLayout dotNavRoot;
 
     private ImageButton searchButton;
     private ConstraintLayout root;
     View userAvatar;
     Boolean showToolTipsBool;
+    public static Boolean firstLaunchEver;
 
     private RadioGroup dotNavigator;
 
@@ -111,8 +116,10 @@ public class ParentOfFragments extends AppCompatActivity {
         root = findViewById(R.id.parentOfFragsRoot);
         invisibleGridView = findViewById(R.id.invisibleGridView);
         toolTipsToggleButton = findViewById(R.id.toolTipsToggleButton);
+        firstLaunchHeader = findViewById(R.id.firstLaunchTextView);
 
         dotNavigator = findViewById(R.id.dot_navigator);
+        dotNavRoot = findViewById(R.id.dotNavigatorLinearLayout);
 
         Context context = this;
         ImageButton helpButton = findViewById(R.id.embeddedHelp);
@@ -484,6 +491,7 @@ public class ParentOfFragments extends AppCompatActivity {
         // Fetching the stored data from the SharedPreference
         SharedPreferences sh = getSharedPreferences("ToolTipsData", MODE_PRIVATE);
         showToolTipsBool = sh.getBoolean("showToolTipsBool", true);
+        firstLaunchEver = sh.getBoolean("firstLaunchEver", true);
         playlistFragToolTips = sh.getInt("playlistFragToolTips", 0);
         artistFragToolTips = sh.getInt("artistFragToolTips", 0);
         historyFragToolTips = sh.getInt("historyFragToolTips", 0);
@@ -494,22 +502,52 @@ public class ParentOfFragments extends AppCompatActivity {
         int aqvNum = sh.getInt("aqvToolTips", 0);
         int searchNum = sh.getInt("searchToolTips", 0);
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null)
+        {
+            boolean tutorialComplete = extras.getBoolean("firstLaunchTutorialFinished");
+            if(tutorialComplete)
+            {
+                setHeaderVisibility(View.VISIBLE);
+                firstLaunchHeader.setVisibility(View.GONE);
+                viewPager2.setUserInputEnabled(true);
+                firstLaunchEver = false;
+                userAvatar.performClick();
+            }
+        }
+
         if(playlistFragToolTips == 3 && artistFragToolTips == 3 && historyFragToolTips == 3 && pqvNum == 3 && aqvNum == 3 && searchNum == 3)
         {
             showToolTipsBool = false;
         }
 
-        if(showToolTipsBool)
+        if(firstLaunchEver)
         {
-            toolTipsToggleButton.setChecked(true);
-            if(!currentDate.equals(playlistFragToolTipsDate))
-            {
-                new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
-            }
+            //go through tutorial
+
+            //disable regular header
+            setHeaderVisibility(View.GONE);
+
+            //enable first launch header
+            firstLaunchHeader.setVisibility(View.VISIBLE);
+
+            //disable horizontal swiping to other fragments
+            viewPager2.setUserInputEnabled(false);
         }
         else
         {
-            toolTipsToggleButton.setChecked(false);
+            if(showToolTipsBool)
+            {
+                toolTipsToggleButton.setChecked(true);
+                if(!currentDate.equals(playlistFragToolTipsDate))
+                {
+                    new Handler().postDelayed(this::startPlaylistFragmentToolTips, 2500);
+                }
+            }
+            else
+            {
+                toolTipsToggleButton.setChecked(false);
+            }
         }
     }
 
@@ -550,6 +588,7 @@ public class ParentOfFragments extends AppCompatActivity {
         myEdit.putString("artistFragToolTipsDate", artistFragToolTipsDate);
         myEdit.putString("historyFragToolTipsDate", historyFragToolTipsDate);
         myEdit.putBoolean("showToolTipsBool", showToolTipsBool);
+        myEdit.putBoolean("firstLaunchEver", firstLaunchEver);
         myEdit.apply();
     }
 
@@ -627,6 +666,18 @@ public class ParentOfFragments extends AppCompatActivity {
         }).start();
     }
 
+    private void setHeaderVisibility(int visibility)
+    {
+        userAvatar.setVisibility(visibility);
+        pageTitle.setVisibility(visibility);
+        toolTipsToggleButton.setVisibility(visibility);
+        settingsButton.setVisibility(visibility);
+        muteButton.setVisibility(visibility);
+        searchButton.setVisibility(visibility);
+        dotNavRoot.setVisibility(visibility);
+    }
+
+
     public void setPlaylistsBackToTopListener(View.OnClickListener playlistsBackToTopListener) {
         this.playlistsBackToTopListener = playlistsBackToTopListener;
     }
@@ -645,6 +696,10 @@ public class ParentOfFragments extends AppCompatActivity {
 
     public ImageButton getBackToTop() {
         return backToTop;
+    }
+
+    public static Boolean getFirstLaunchEver() {
+        return firstLaunchEver;
     }
 
     public User getUser() { return user; }
