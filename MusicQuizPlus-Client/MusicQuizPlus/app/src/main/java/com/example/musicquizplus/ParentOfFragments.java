@@ -179,7 +179,7 @@ public class ParentOfFragments extends AppCompatActivity {
 
                     SignUpPopUp signUpPopUp = new SignUpPopUp(activity, context, getString(R.string.user_profile_signup_header));
                     signUpPopUp.createAndShow();
-                } else {
+                } else if (user != null) {
                     Intent intent = new Intent(context, ProfileActivity.class);
                     intent.putExtra("user", user);
                     startActivityForResult(intent, 3);
